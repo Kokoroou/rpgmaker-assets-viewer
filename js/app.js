@@ -21,7 +21,7 @@ function loadMVMZFolder(files) {
 // ─── RGSSAD archive loading ───────────────────────────
 async function loadRGSSAD(file) {
   const st = EL.setupStatus;
-  if (st) { st.textContent = '⟳ Đang đọc archive…'; st.className = 'info'; }
+  if (st) { st.textContent = '⟳ Reading archive…'; st.className = 'info'; }
   try {
     const buf    = await file.arrayBuffer();
     const parsed = parseRGSSAD(buf);
@@ -44,7 +44,7 @@ async function loadRGSSAD(file) {
       S.folders.get(folder).push(item.name);
     }
 
-    if (st) { st.textContent = `✓ Đọc được ${S.files.size} mục từ "${file.name}"`; st.className = 'ok'; }
+    if (st) { st.textContent = `✓ Loaded ${S.files.size} items from "${file.name}"`; st.className = 'ok'; }
     showGrid();
   } catch (e) {
     if (st) { st.textContent = `✕ ${e.message}`; st.className = 'err'; }
@@ -54,7 +54,7 @@ async function loadRGSSAD(file) {
 // ─── Auto-detect game folder ──────────────────────────
 async function loadGameFolder(allFiles) {
   const st = EL.setupStatus;
-  if (st) { st.textContent = '⟳ Đang phân tích thư mục…'; st.className = 'info'; }
+  if (st) { st.textContent = '⟳ Analyzing folder…'; st.className = 'info'; }
 
   const rgssadFile = allFiles.find(f => /\.(rgssad|rgss2a|rgss3a)$/i.test(f.name));
   if (rgssadFile) {
@@ -77,7 +77,7 @@ async function loadGameFolder(allFiles) {
 
 // ─── Grid activation ──────────────────────────────────
 function showGrid() {
-  EL.countBadge.textContent = S.files.size ? `${S.files.size} mục` : '';
+  EL.countBadge.textContent = S.files.size ? `${S.files.size} items` : '';
   renderSidebar();
   const first = S.folders.keys().next().value;
   if (first) {

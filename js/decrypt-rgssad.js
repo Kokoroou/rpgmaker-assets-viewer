@@ -100,9 +100,9 @@ function parseRGSSADv3(buf) {
 function parseRGSSAD(buf) {
   const raw = new Uint8Array(buf);
   if (String.fromCharCode(...raw.slice(0, 6)) !== 'RGSSAD')
-    throw new Error('Không phải file RGSSAD hợp lệ');
+    throw new Error('Not a valid RGSSAD file');
   const ver = raw[7];
   if (ver === 1) return parseRGSSADv1(buf);
   if (ver === 3) return parseRGSSADv3(buf);
-  throw new Error(`Phiên bản RGSSAD v${ver} chưa được hỗ trợ (chỉ hỗ trợ v1 và v3)`);
+  throw new Error(`RGSSAD v${ver} is not supported (only v1 and v3 are supported)`);
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -225,6 +225,22 @@ body::before {
   border: 1px solid var(--bd);
 }
 .folder-item.active .f-count { background: var(--a20); border-color: var(--a40); color: var(--a); }
+
+/* ── Tree sidebar ────────────────────────────────────── */
+.tree-toggle {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  color: var(--t3);
+  border-radius: 2px;
+  transition: color .12s, transform .15s;
+}
+.tree-toggle:hover { color: var(--t2); }
+.tree-toggle.expanded { transform: rotate(90deg); }
+.tree-spacer { width: 16px; flex-shrink: 0; }
+.tree-children { display: none; }
+.tree-children.open { display: block; }
 
 /* ── Main ────────────────────────────────────────────── */
 #main {
@@ -582,7 +598,6 @@ body::before {
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--r);
   transition: color .12s, background .12s;
-  title: "Tải về";
 }
 #lb-download:hover { color: var(--t); background: var(--s2); }
 
@@ -628,6 +643,17 @@ body::before {
 #setup-status.warn { color: var(--warn);background: rgba(251,191,36,.08); }
 #setup-status.info { color: var(--t2);  background: var(--s2); }
 
+/* ── Privacy note ────────────────────────────────────── */
+.privacy-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 11px; color: var(--t3);
+  padding: 9px 12px;
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  line-height: 1.5;
+}
+
 /* ── Hidden inputs ───────────────────────────────────── */
 #folder-input, #sys-json-modal-input, #rgssad-input { display: none; }
 
@@ -651,7 +677,7 @@ body::before {
 
   <div id="search-wrap">
     <span id="search-icon">⌕</span>
-    <input type="text" id="search-box" placeholder="Tìm kiếm…" autocomplete="off" spellcheck="false">
+    <input type="text" id="search-box" placeholder="Search…" autocomplete="off" spellcheck="false">
   </div>
 
   <div id="header-right">
@@ -660,7 +686,7 @@ body::before {
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
         <path d="M1 3.5A1.5 1.5 0 012.5 2H5l1.5 2H11A1.5 1.5 0 0112.5 5.5v5A1.5 1.5 0 0111 12H2.5A1.5 1.5 0 011 10.5V3.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
       </svg>
-      Mở thư mục game
+      Open Folder
     </button>
   </div>
 </div>
@@ -670,7 +696,7 @@ body::before {
 
   <!-- ── Sidebar ── -->
   <div id="sidebar">
-    <div id="sidebar-header">Thư mục</div>
+    <div id="sidebar-header">Folders</div>
   </div>
 
   <!-- ── Main ── -->
@@ -681,24 +707,28 @@ body::before {
       <div id="setup-inner">
         <div>
           <div class="setup-title">Sprite<span style="color:var(--a)">Vault</span></div>
-          <div class="setup-sub">Xem &amp; trích xuất ảnh, âm thanh từ game RPG Maker</div>
+          <div class="setup-sub">View &amp; extract images and audio from RPG Maker games</div>
         </div>
 
         <div id="drop-zone">
           <div class="dz-icon">📂</div>
-          <div class="dz-label">Hỗ trợ RPG Maker MV · MZ · XP · VX · VX Ace</div>
+          <div class="dz-label">Supports RPG Maker MV · MZ · XP · VX · VX Ace</div>
           <button class="btn-primary" id="open-game-btn" style="font-size:14px;padding:10px 28px">
-            Chọn thư mục game
+            Select Game Folder
           </button>
           <div id="setup-status"></div>
         </div>
 
-        <div class="or-divider">hoặc</div>
+        <div class="or-divider">or</div>
 
         <div style="display:flex;justify-content:center">
           <button class="btn-ghost" id="load-rgssad-btn">
-            📦 Chọn file archive (.rgssad / .rgss2a / .rgss3a)…
+            📦 Select archive (.rgssad / .rgss2a / .rgss3a)…
           </button>
+        </div>
+
+        <div class="privacy-note">
+          🔒 All files are processed entirely in your browser. Nothing is uploaded to any server.
         </div>
       </div>
     </div>
@@ -718,8 +748,8 @@ body::before {
     <div id="grid-wrap" style="display:none">
       <div id="empty-search">
         <div class="e-icon">⌕</div>
-        <div>Không tìm thấy mục nào</div>
-        <div style="font-size:11px;color:var(--t3)">Thử từ khoá khác</div>
+        <div>No items found</div>
+        <div style="font-size:11px;color:var(--t3)">Try a different keyword</div>
       </div>
       <div id="grid"></div>
     </div>
@@ -729,15 +759,15 @@ body::before {
 
 <!-- ╔════ LIGHTBOX ════╗ -->
 <div id="lightbox" role="dialog" aria-modal="true">
-  <button id="lb-close" title="Đóng (Esc)">✕</button>
-  <button id="lb-download" title="Tải về">⬇</button>
+  <button id="lb-close" title="Close (Esc)">✕</button>
+  <button id="lb-download" title="Download">⬇</button>
   <span id="lb-counter"></span>
-  <button class="lb-nav" id="lb-prev" title="Trước (←)">‹</button>
+  <button class="lb-nav" id="lb-prev" title="Previous (←)">‹</button>
   <div id="lb-img-wrap">
     <img id="lb-img" src="" alt="">
     <audio id="lb-audio" controls></audio>
   </div>
-  <button class="lb-nav" id="lb-next" title="Sau (→)">›</button>
+  <button class="lb-nav" id="lb-next" title="Next (→)">›</button>
   <div id="lb-bar">
     <div id="lb-name"></div>
     <div id="lb-meta"></div>
