@@ -148,10 +148,26 @@
   border-radius: var(--r);
 }
 #setup-status:empty { display: none; }
-#setup-status.ok   { color: var(--ok);  background: rgba(52,211,153,.08); }
-#setup-status.err  { color: var(--err); background: rgba(248,113,113,.08); }
-#setup-status.warn { color: var(--warn); background: rgba(251,191,36,.08); }
-#setup-status.info { color: var(--t2);  background: var(--s2); }
+#setup-status.ok      { color: var(--ok);  background: rgba(52,211,153,.08); }
+#setup-status.err     { color: var(--err); background: rgba(248,113,113,.08); }
+#setup-status.warn    { color: var(--warn); background: rgba(251,191,36,.08); }
+#setup-status.info    { color: var(--t2);  background: var(--s2); }
+#setup-status.loading {
+  color: var(--t2);
+  background: var(--s2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-spinner {
+  width: 11px; height: 11px;
+  border: 1.5px solid var(--bd2);
+  border-top-color: var(--a);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
 
 /* ── Privacy note ────────────────────────────────────── */
 .privacy-note {

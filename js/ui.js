@@ -45,7 +45,7 @@ async function entryToURL(entry) {
   if (S.blobCache.has(entry.path)) return S.blobCache.get(entry.path);
   let data, url;
   if (entry._getData) {
-    data = entry._getData();
+    data = await entry._getData();
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
     if (!S.key) throw new Error('No encryption key set');

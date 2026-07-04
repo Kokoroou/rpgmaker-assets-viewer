@@ -2,6 +2,17 @@
 const _sw = localStorage.getItem('sidebarWidth');
 if (_sw) document.documentElement.style.setProperty('--sw', _sw + 'px');
 
+// ─── Status helper ────────────────────────────────────
+function setStatus(el, cls, text) {
+  if (!el) return;
+  el.className = cls;
+  if (cls === 'loading') {
+    el.innerHTML = '<span class="status-spinner"></span>' + text;
+  } else {
+    el.textContent = text;
+  }
+}
+
 // ─── MV/MZ folder loading ─────────────────────────────
 function loadMVMZFolder(files) {
   clearBlobCache();
@@ -25,9 +36,10 @@ function loadMVMZFolder(files) {
 // ─── RGSSAD archive loading ───────────────────────────
 async function loadRGSSAD(file) {
   const st = EL.setupStatus;
-  if (st) { st.textContent = '⟳ Reading archive…'; st.className = 'info'; }
+  setStatus(st, 'loading', 'Reading archive…');
   try {
     const buf    = await file.arrayBuffer();
+    setStatus(st, 'loading', 'Indexing files…');
     const parsed = parseRGSSAD(buf);
 
     clearBlobCache();
@@ -39,26 +51,30 @@ async function loadRGSSAD(file) {
       const parts   = item.name.split('/');
       const folder  = parts.length > 1 ? parts.slice(0, -1).join('/') : '__root__';
       const isAudio = AUDIO_EXT.test(item.name);
+      const { offset, size, fKey } = item;
       S.files.set(item.name, {
         name: item.name, path: item.name,
         isAudio, isImage: !isAudio,
-        _getData: item.getData,
+        _getData: async () => {
+          const ab = await file.slice(offset, offset + size).arrayBuffer();
+          return rgssDecryptData(new Uint8Array(ab), fKey);
+        },
       });
       if (!S.folders.has(folder)) S.folders.set(folder, []);
       S.folders.get(folder).push(item.name);
     }
 
-    if (st) { st.textContent = `✓ Loaded ${S.files.size} items from "${file.name}"`; st.className = 'ok'; }
+    setStatus(st, 'ok', `✓ Loaded ${S.files.size} items from "${file.name}"`);
     showGrid();
   } catch (e) {
-    if (st) { st.textContent = `✕ ${e.message}`; st.className = 'err'; }
+    setStatus(st, 'err', `✕ ${e.message}`);
   }
 }
 
 // ─── Auto-detect game folder ──────────────────────────
 async function loadGameFolder(allFiles) {
   const st = EL.setupStatus;
-  if (st) { st.textContent = '⟳ Analyzing folder…'; st.className = 'info'; }
+  setStatus(st, 'loading', 'Analyzing folder…');
 
   const rgssadFile = allFiles.find(f => /\.(rgssad|rgss2a|rgss3a)$/i.test(f.name));
   if (rgssadFile) {

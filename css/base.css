@@ -37,3 +37,6 @@ body::before {
 
 /* ── Focus ───────────────────────────────────────────── */
 :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+
+/* ── Shared animation ────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }

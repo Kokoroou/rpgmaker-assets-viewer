@@ -81,7 +81,6 @@
   border-radius: 50%;
   animation: spin .7s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .card.error .card-img::after { content: '✕'; font-size: 18px; color: var(--err); opacity: .6; }
 

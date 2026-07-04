@@ -52,10 +52,7 @@ function parseRGSSADv1(buf) {
     pos += size;
   }
 
-  return entries.map(e => ({
-    name:    e.name,
-    getData: () => rgssDecryptData(new Uint8Array(buf, e.offset, e.size), e.fKey),
-  }));
+  return entries.map(e => ({ name: e.name, offset: e.offset, size: e.size, fKey: e.fKey }));
 }
 
 // RPG Maker VX Ace (.rgss3a) — version byte = 3
@@ -91,10 +88,7 @@ function parseRGSSADv3(buf) {
     });
   }
 
-  return entries.map(e => ({
-    name:    e.name,
-    getData: () => rgssDecryptData(new Uint8Array(buf, e.offset, e.size), e.fKey),
-  }));
+  return entries.map(e => ({ name: e.name, offset: e.offset >>> 0, size: e.size, fKey: e.fKey }));
 }
 
 function parseRGSSAD(buf) {
