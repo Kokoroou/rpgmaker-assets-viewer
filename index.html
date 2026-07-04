@@ -99,6 +99,13 @@
     <!-- Toolbar + Grid -->
     <div id="toolbar">
       <span id="folder-path"></span>
+      <button class="btn-ghost" id="dl-folder-btn" title="Download all files in this folder as ZIP">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M6 1.5v5.5M3.5 5.5l2.5 2 2.5-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.5 10.5h9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <span>Download folder</span>
+      </button>
       <div class="size-control">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <rect x="1" y="1" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/>
@@ -110,9 +117,9 @@
 
     <div id="grid-wrap" style="display:none">
       <div id="empty-search">
-        <div class="e-icon">⌕</div>
-        <div>No items found</div>
-        <div style="font-size:11px;color:var(--t3)">Try a different keyword</div>
+        <div class="e-icon" id="empty-icon">⌕</div>
+        <div id="empty-msg">No items found</div>
+        <div id="empty-sub" style="font-size:11px;color:var(--t3)">Try a different keyword</div>
       </div>
       <div id="grid"></div>
     </div>

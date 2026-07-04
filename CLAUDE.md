@@ -17,15 +17,15 @@ The app uses the browser File API (`webkitdirectory`, `arrayBuffer`, `Blob URL`)
 
 ## Architecture
 
-`index.html` contains the HTML structure and all CSS. Logic is split into six JS files loaded in order:
+`index.html` contains the HTML structure. CSS is split into modules under `css/`. Logic is split into six JS files loaded in order:
 
 ```
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
 js/state.js          — global S object
 js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
-js/ui.js             — DOM refs (EL), rendering, lightbox, entryToURL()
-js/app.js            — event handlers, loadMVMZFolder(), loadRGSSAD(), init
+js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryToURL(), showEmptyState()
+js/app.js            — event handlers, loadMVMZFolder(), loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
 ```
 
 All files share a single global scope — no modules.
@@ -49,8 +49,10 @@ All files share a single global scope — no modules.
 `entryToURL(entry)` in `ui.js` handles both types with blob cache.
 
 **Two loading flows:**
-1. **MV/MZ** — `readSystemJson()` → `applyKey()` → `loadMVMZFolder(files)`
+1. **MV/MZ** — `loadGameFolder(files)` auto-detects RGSSAD or calls `applyKey()` + `loadMVMZFolder(files)`
 2. **RGSSAD** — `loadRGSSAD(file)` → `parseRGSSAD(buffer)` → populate S → `showGrid()`
+
+**ZIP download:** `downloadFolder()` in `app.js` reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
 
 **Supported formats:**
 

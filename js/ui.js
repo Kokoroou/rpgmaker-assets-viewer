@@ -14,9 +14,13 @@ const EL = {
   gridWrap:         $('grid-wrap'),
   grid:             $('grid'),
   emptySearch:      $('empty-search'),
+  emptyIcon:        $('empty-icon'),
+  emptyMsg:         $('empty-msg'),
+  emptySub:         $('empty-sub'),
   searchBox:        $('search-box'),
   sizeSlider:       $('size-slider'),
   countBadge:       $('count-badge'),
+  dlFolderBtn:      $('dl-folder-btn'),
   lightbox:         $('lightbox'),
   lbImg:            $('lb-img'),
   lbAudio:          $('lb-audio'),
@@ -162,6 +166,13 @@ function setActiveFolder(key) {
 }
 
 // ─── Grid ─────────────────────────────────────────────
+function showEmptyState(icon, msg, sub) {
+  EL.emptySearch.style.display = 'flex';
+  EL.emptyIcon.textContent = icon;
+  EL.emptyMsg.textContent  = msg;
+  EL.emptySub.textContent  = sub;
+}
+
 function showFolder(key) {
   S.currentFolder = key;
   setActiveFolder(key);
@@ -172,8 +183,19 @@ function showFolder(key) {
 
   const label = key === '__root__' ? 'root' : key;
   EL.folderPath.innerHTML = `<strong>${label}</strong> &ensp;·&ensp; ${filtered.length} items`;
-  EL.grid.innerHTML       = '';
-  EL.emptySearch.style.display = filtered.length ? 'none' : 'flex';
+  EL.grid.innerHTML = '';
+
+  if (filtered.length === 0) {
+    if (q) {
+      showEmptyState('⌕', 'No items found', 'Try a different keyword');
+    } else {
+      showEmptyState('📂', 'No media files in this folder', 'Only images and audio are shown');
+    }
+  } else {
+    EL.emptySearch.style.display = 'none';
+  }
+
+  if (EL.dlFolderBtn) EL.dlFolderBtn.disabled = filtered.length === 0;
 
   filtered.forEach((path, i) => {
     const entry = S.files.get(path);

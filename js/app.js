@@ -99,12 +99,20 @@ async function loadGameFolder(allFiles) {
 function showGrid() {
   EL.countBadge.textContent = S.files.size ? `${S.files.size} items` : '';
   renderSidebar();
+  EL.setup.style.display    = 'none';
+  EL.toolbar.classList.add('show');
+  EL.gridWrap.style.display = 'block';
   const first = S.folders.keys().next().value;
   if (first) {
-    EL.setup.style.display    = 'none';
-    EL.toolbar.classList.add('show');
-    EL.gridWrap.style.display = 'block';
     showFolder(first);
+  } else {
+    EL.folderPath.innerHTML = '';
+    EL.grid.innerHTML       = '';
+    S.currentFolder = null;
+    S.currentMedia  = [];
+    if (EL.dlFolderBtn) EL.dlFolderBtn.disabled = true;
+    showEmptyState('📂', 'No supported media files found',
+      'Make sure you selected a valid RPG Maker game folder');
   }
 }
 
@@ -184,6 +192,9 @@ $('about-btn').addEventListener('click',   () => $('about-modal').classList.add(
 $('about-close').addEventListener('click', () => $('about-modal').classList.remove('open'));
 $('about-modal').addEventListener('click', e => { if (e.target === $('about-modal')) $('about-modal').classList.remove('open'); });
 
+// ─── Events: Download folder ──────────────────────────
+$('dl-folder-btn').addEventListener('click', downloadFolder);
+
 // ─── Events: Sidebar resize ───────────────────────────
 let _resizing = false;
 $('sidebar-resizer').addEventListener('mousedown', () => {
@@ -205,4 +216,118 @@ document.addEventListener('mouseup', () => {
   document.body.style.cursor = '';
   document.body.style.userSelect = '';
 });
+
+// ─── ZIP writer ────────────────────────────────────────
+const _CRC32 = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    t[i] = c;
+  }
+  return t;
+})();
+
+function crc32(buf) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) c = _CRC32[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function buildZip(items) {
+  const enc = new TextEncoder();
+  const localChunks = [], cdChunks = [], metas = [];
+  let offset = 0;
+
+  for (const { name, data } of items) {
+    const nb  = enc.encode(name);
+    const crc = crc32(data);
+    const lh  = new ArrayBuffer(30 + nb.length);
+    const lv  = new DataView(lh);
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, data.length, true);
+    lv.setUint32(22, data.length, true);
+    lv.setUint16(26, nb.length, true);
+    new Uint8Array(lh, 30).set(nb);
+    metas.push({ nb, crc, size: data.length, offset });
+    localChunks.push(lh, data);
+    offset += 30 + nb.length + data.length;
+  }
+
+  const cdStart = offset;
+  for (const m of metas) {
+    const cd = new ArrayBuffer(46 + m.nb.length);
+    const cv = new DataView(cd);
+    cv.setUint32(0, 0x02014b50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint32(16, m.crc, true);
+    cv.setUint32(20, m.size, true);
+    cv.setUint32(24, m.size, true);
+    cv.setUint16(28, m.nb.length, true);
+    cv.setUint32(42, m.offset, true);
+    new Uint8Array(cd, 46).set(m.nb);
+    cdChunks.push(cd);
+    offset += 46 + m.nb.length;
+  }
+
+  const eocd = new ArrayBuffer(22);
+  const ev   = new DataView(eocd);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(8,  metas.length, true);
+  ev.setUint16(10, metas.length, true);
+  ev.setUint32(12, offset - cdStart, true);
+  ev.setUint32(16, cdStart, true);
+
+  return new Blob([...localChunks, ...cdChunks, eocd], { type: 'application/zip' });
+}
+
+// ─── Download folder as ZIP ───────────────────────────
+async function downloadFolder() {
+  const key = S.currentFolder;
+  if (!key) return;
+  const paths = S.folders.get(key) || [];
+  if (!paths.length) return;
+
+  const btn   = $('dl-folder-btn');
+  const label = btn.querySelector('span');
+  btn.disabled = true;
+
+  try {
+    const items = [];
+    let done = 0;
+    for (const path of paths) {
+      const entry = S.files.get(path);
+      if (!entry) continue;
+      try {
+        let data;
+        if (entry._getData) {
+          data = new Uint8Array(await entry._getData());
+        } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
+          if (!S.key) throw new Error('No encryption key');
+          data = new Uint8Array(decryptMVMZ(await entry._file.arrayBuffer(), S.key));
+        } else {
+          data = new Uint8Array(await entry._file.arrayBuffer());
+        }
+        items.push({ name: canonicalExt(entry.name.split('/').pop()), data });
+      } catch {}
+      label.textContent = `${++done} / ${paths.length}…`;
+    }
+
+    const zip = buildZip(items);
+    const folderName = key === '__root__' ? 'assets' : key.split('/').pop();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zip);
+    a.download = `${folderName}.zip`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
+  } catch (e) {
+    alert(`Download failed: ${e.message}`);
+  } finally {
+    btn.disabled = false;
+    label.textContent = 'Download folder';
+  }
+}
 

@@ -9,15 +9,17 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and
 - **Zero-install** — open `index.html` directly in any modern browser
 - **Local-only processing** — files are read via the browser File API; nothing is uploaded or transmitted
 - **Auto key extraction** — reads `encryptionKey` from `data/System.json` automatically (MV/MZ)
-- **Manual key entry** — hex key can be typed directly if you already know it
 - **RGSSAD archive support** — load `.rgssad` / `.rgss2a` / `.rgss3a` archives directly (XP/VX/VX Ace)
 - **Audio preview** — plays decrypted `.ogg_`, `.m4a_`, `.rpgmvo`, `.rpgmvm` files in-browser
-- **Folder browser** — sidebar groups assets by sub-folder
+- **Folder browser** — sidebar groups assets by sub-folder with an expandable tree
 - **Lazy-loaded grid** — renders thumbnails on demand; handles large directories without freezing
 - **Lightbox viewer** — full-resolution image preview or audio player with keyboard navigation (`←` / `→` / `Esc`)
-- **Download** — save any decrypted asset to disk directly from the lightbox
+- **Download individual** — save any decrypted asset to disk from the lightbox
+- **Download folder** — export all files in the current folder as a `.zip` (no-dependency, in-browser ZIP builder)
 - **Search** — real-time filename filter
 - **Adjustable tile size** — slider from 70 px to 280 px
+- **Resizable sidebar** — drag the sidebar edge; preference persisted to `localStorage`
+- **Light / dark theme** — toggle in the header; preference persisted
 
 ## Supported Formats
 
@@ -50,16 +52,17 @@ No encryption key needed — keys are embedded in the archive.
 
 1. Clone or download this repository.
 2. Open `index.html` in a Chromium-based browser (Chrome, Edge, Brave) or Firefox.
-3. In **Step 1**, click **Chọn data/System.json…** and pick `<YourGame>/data/System.json`. The encryption key is read automatically.
-4. In **Step 2**, click **Chọn thư mục img…** and pick the `<YourGame>/img/` folder.
-5. Browse, search, preview, and download assets.
+3. Click **Select Game Folder** and pick the game's root directory.
+   - The encryption key is auto-detected from `data/System.json`.
+   - All decrypted images and audio appear in the sidebar tree.
+4. Browse folders, search by filename, click an asset to preview it, or use **Download folder** in the toolbar to export the whole folder as a `.zip`.
 
 ### RPG Maker XP / VX / VX Ace
 
 1. Open `index.html` in a browser.
-2. In the **RPG Maker XP / VX / VX Ace** section, click **Chọn file archive…**
-3. Pick `Game.rgssad`, `Game.rgss2a`, or `Game.rgss3a` from the game folder.
-4. Browse, search, preview, and download assets.
+2. Click **Select archive** and pick `Game.rgssad`, `Game.rgss2a`, or `Game.rgss3a`.
+   - No key entry needed — keys are embedded in the archive.
+3. Browse, search, preview, and download assets.
 
 > **Browser compatibility:** Folder selection (`webkitdirectory`) is supported by all major desktop browsers. Mobile browsers may not support it.
 
@@ -67,18 +70,26 @@ No encryption key needed — keys are embedded in the archive.
 
 ```
 rpg-maker-decrypter-ui/
-├── index.html          # HTML structure + CSS
+├── index.html            # HTML structure
+├── css/
+│   ├── style.css         # Imports all modules
+│   ├── tokens.css        # Design tokens (colors, radii, etc.)
+│   ├── base.css          # Reset, body, scrollbars
+│   ├── layout.css        # Header, sidebar, buttons, About modal
+│   ├── setup.css         # Landing/setup screen
+│   ├── grid.css          # Toolbar, grid, cards, lightbox styles
+│   └── lightbox.css      # Lightbox overlay
 ├── js/
-│   ├── constants.js    # Extension regexes, MIME types, EXT_REMAP
-│   ├── state.js        # Global state object S
-│   ├── decrypt-mvmz.js # MV/MZ XOR decryption
+│   ├── constants.js      # Extension regexes, MIME types, EXT_REMAP
+│   ├── state.js          # Global state object S
+│   ├── decrypt-mvmz.js   # MV/MZ XOR decryption
 │   ├── decrypt-rgssad.js # RGSSAD v1/v3 archive parser
-│   ├── ui.js           # Rendering, lightbox, download
-│   └── app.js          # Event handlers, loading logic
+│   ├── ui.js             # Rendering, sidebar tree, lightbox, download
+│   └── app.js            # Event handlers, loading logic, ZIP writer
 ├── LICENSE
 ├── README.md
-└── references/         # Local reference code (not committed — see .gitignore)
-    └── RPGMakerDecrypter/   # Reference: uuksu/RPGMakerDecrypter (MIT)
+└── references/           # Local reference code (not committed — see .gitignore)
+    └── RPGMakerDecrypter/    # Reference: uuksu/RPGMakerDecrypter (MIT)
 ```
 
 ---
@@ -140,7 +151,9 @@ If you are a rights holder and believe this tool is being used to infringe your 
 - [x] RPG Maker MV/MZ audio preview (`.ogg_`, `.m4a_`, `.rpgmvo`, `.rpgmvm`)
 - [x] RPG Maker XP / VX / VX Ace RGSSAD archive support (`.rgssad`, `.rgss2a`, `.rgss3a`)
 - [x] Download decrypted assets from lightbox
-- [ ] Batch export (ZIP via JSZip or streaming download)
+- [x] Batch export — download current folder as `.zip` (no-dependency, in-browser ZIP builder)
+- [x] Expandable sidebar folder tree with resizable panel
+- [x] Light / dark theme toggle
 - [ ] Drag-and-drop folder / archive loading
 - [ ] Audio waveform / duration display in lightbox
 

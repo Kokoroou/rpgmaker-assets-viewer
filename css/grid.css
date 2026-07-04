@@ -1,4 +1,7 @@
 /* ── Toolbar ─────────────────────────────────────────── */
+.btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+.btn-ghost:disabled:hover { border-color: var(--bd); color: var(--t2); }
+
 #toolbar {
   display: none;
   align-items: center;
