@@ -14,20 +14,26 @@ function setStatus(el, cls, text) {
 }
 
 // ─── MV/MZ folder loading ─────────────────────────────
-function loadMVMZFolder(files) {
+async function loadMVMZFolder(files) {
   clearBlobCache();
   S.files.clear();
   S.folders.clear();
 
-  for (const f of files) {
+  const st = EL.setupStatus;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
     if (!MEDIA_EXT.test(f.name)) continue;
-    const rel    = f.webkitRelativePath;
+    const rel    = f._dragPath || f.webkitRelativePath;
     const parts  = rel.split('/');
     const folder = parts.length >= 3 ? parts.slice(1, -1).join('/') : '__root__';
     const isAudio = AUDIO_EXT.test(f.name);
     S.files.set(rel, { name: f.name, path: rel, isAudio, isImage: !isAudio, _file: f });
     if (!S.folders.has(folder)) S.folders.set(folder, []);
     S.folders.get(folder).push(rel);
+    if (i % 10000 === 9999) {
+      setStatus(st, 'loading', `Indexing… ${S.files.size} media files`);
+      await new Promise(r => setTimeout(r, 0));
+    }
   }
 
   showGrid();
@@ -75,6 +81,7 @@ async function loadRGSSAD(file) {
 async function loadGameFolder(allFiles) {
   const st = EL.setupStatus;
   setStatus(st, 'loading', 'Analyzing folder…');
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
   const rgssadFile = allFiles.find(f => /\.(rgssad|rgss2a|rgss3a)$/i.test(f.name));
   if (rgssadFile) {
@@ -83,7 +90,8 @@ async function loadGameFolder(allFiles) {
   }
 
   const sysJson = allFiles.find(f =>
-    f.name === 'System.json' && f.webkitRelativePath.toLowerCase().includes('/data/')
+    f.name === 'System.json' &&
+    (f._dragPath || f.webkitRelativePath || '').toLowerCase().includes('/data/')
   );
   if (sysJson) {
     try {
@@ -92,13 +100,17 @@ async function loadGameFolder(allFiles) {
     } catch {}
   }
 
-  loadMVMZFolder(allFiles);
+  await loadMVMZFolder(allFiles);
 }
 
 // ─── Grid activation ──────────────────────────────────
 function showGrid() {
   EL.countBadge.textContent = S.files.size ? `${S.files.size} items` : '';
   renderSidebar();
+  const sidebarHidden = localStorage.getItem('sidebarHidden') === '1';
+  EL.sidebar.classList.toggle('hidden', sidebarHidden);
+  $('sidebar-resizer').classList.toggle('hidden', sidebarHidden);
+  $('sidebar-toggle').setAttribute('aria-pressed', sidebarHidden ? 'false' : 'true');
   EL.setup.style.display    = 'none';
   EL.toolbar.classList.add('show');
   EL.gridWrap.style.display = 'block';
@@ -131,12 +143,17 @@ $('open-game-btn').addEventListener('click', () => EL.folderInput.click());
 EL.folderInput.addEventListener('change', async () => {
   const files = Array.from(EL.folderInput.files);
   if (files.length) {
+    const orig = EL.openBtn.innerHTML;
+    EL.openBtn.disabled = true;
+    EL.openBtn.innerHTML = '<span class="status-spinner"></span>Loading…';
     EL.grid.innerHTML = '';
     EL.folderPath.innerHTML = '';
     EL.countBadge.textContent = '';
     EL.searchBox.value = '';
     S.query = '';
     await loadGameFolder(files);
+    EL.openBtn.disabled = false;
+    EL.openBtn.innerHTML = orig;
   }
   EL.folderInput.value = '';
 });
@@ -159,7 +176,7 @@ EL.rgssadInput.addEventListener('change', async () => {
 EL.lbClose.addEventListener('click', closeLightbox);
 EL.lbPrev.addEventListener('click', () => lbMove(-1));
 EL.lbNext.addEventListener('click', () => lbMove(+1));
-EL.lightbox.addEventListener('click', e => { if (e.target === EL.lightbox) closeLightbox(); });
+EL.lightbox.addEventListener('click', e => { if (e.target === EL.lightbox && _lbZ <= 1) closeLightbox(); });
 EL.lbDownload.addEventListener('click', () => downloadEntry(EL.lbDownload.dataset.path));
 
 // ─── Events: Search & size slider ─────────────────────
@@ -195,6 +212,14 @@ $('about-modal').addEventListener('click', e => { if (e.target === $('about-moda
 // ─── Events: Download folder ──────────────────────────
 $('dl-folder-btn').addEventListener('click', downloadFolder);
 
+// ─── Events: Sidebar toggle ───────────────────────────
+$('sidebar-toggle').addEventListener('click', () => {
+  const hidden = EL.sidebar.classList.toggle('hidden');
+  $('sidebar-resizer').classList.toggle('hidden', hidden);
+  $('sidebar-toggle').setAttribute('aria-pressed', hidden ? 'false' : 'true');
+  localStorage.setItem('sidebarHidden', hidden ? '1' : '0');
+});
+
 // ─── Events: Sidebar resize ───────────────────────────
 let _resizing = false;
 $('sidebar-resizer').addEventListener('mousedown', () => {
@@ -215,6 +240,86 @@ document.addEventListener('mouseup', () => {
   $('sidebar-resizer').classList.remove('dragging');
   document.body.style.cursor = '';
   document.body.style.userSelect = '';
+});
+
+// ─── Drag & drop ──────────────────────────────────────
+async function traverseEntry(entry, pathPrefix, files, onProgress) {
+  const entryPath = pathPrefix ? pathPrefix + '/' + entry.name : entry.name;
+  if (entry.isFile) {
+    const file = await new Promise((res, rej) => entry.file(res, rej));
+    file._dragPath = entryPath;
+    files.push(file);
+    if (files.length % 500 === 0) onProgress?.(files.length);
+  } else if (entry.isDirectory) {
+    const reader = entry.createReader();
+    let batch;
+    do {
+      batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+      for (const e of batch) await traverseEntry(e, entryPath, files, onProgress);
+    } while (batch.length > 0);
+  }
+}
+
+async function handleDrop(dataTransfer) {
+  const overlay = $('drag-overlay');
+  const msg     = $('drag-msg');
+  const items   = [...dataTransfer.items];
+
+  const resetMsg = () => { msg.textContent = 'Drop game folder or archive here'; };
+  const prepareReload = () => {
+    EL.grid.innerHTML = ''; EL.folderPath.innerHTML = '';
+    EL.countBadge.textContent = ''; EL.searchBox.value = ''; S.query = '';
+  };
+
+  for (const item of items) {
+    if (item.kind !== 'file') continue;
+    const entry = item.webkitGetAsEntry?.();
+    if (!entry || !entry.isFile) continue;
+    if (/\.(rgssad|rgss2a|rgss3a)$/i.test(entry.name)) {
+      overlay.classList.add('active');
+      msg.textContent = `Loading ${entry.name}…`;
+      const file = await new Promise((res, rej) => entry.file(res, rej));
+      prepareReload();
+      await loadRGSSAD(file);
+      overlay.classList.remove('active');
+      resetMsg();
+      return;
+    }
+  }
+
+  for (const item of items) {
+    if (item.kind !== 'file') continue;
+    const entry = item.webkitGetAsEntry?.();
+    if (!entry || !entry.isDirectory) continue;
+    overlay.classList.add('active');
+    msg.textContent = 'Reading folder…';
+    const files = [];
+    await traverseEntry(entry, '', files, count => {
+      msg.textContent = `Reading folder… ${count} files`;
+    });
+    msg.textContent = `Indexing ${files.length} files…`;
+    prepareReload();
+    await loadGameFolder(files);
+    overlay.classList.remove('active');
+    resetMsg();
+    return;
+  }
+}
+
+let _dragDepth = 0;
+document.addEventListener('dragenter', e => {
+  if (!e.dataTransfer.types.includes('Files')) return;
+  if (++_dragDepth === 1) $('drag-overlay').classList.add('active');
+});
+document.addEventListener('dragleave', () => {
+  if (--_dragDepth <= 0) { _dragDepth = 0; $('drag-overlay').classList.remove('active'); }
+});
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', async e => {
+  e.preventDefault();
+  _dragDepth = 0;
+  $('drag-overlay').classList.remove('active');
+  if (e.dataTransfer.types.includes('Files')) await handleDrop(e.dataTransfer);
 });
 
 // ─── ZIP writer ────────────────────────────────────────

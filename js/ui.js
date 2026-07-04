@@ -26,12 +26,29 @@ const EL = {
   lbAudio:          $('lb-audio'),
   lbName:           $('lb-name'),
   lbMeta:           $('lb-meta'),
+  lbImgWrap:        $('lb-img-wrap'),
   lbClose:          $('lb-close'),
   lbPrev:           $('lb-prev'),
   lbNext:           $('lb-next'),
   lbCounter:        $('lb-counter'),
   lbDownload:       $('lb-download'),
 };
+
+// ─── Lightbox zoom state ──────────────────────────────
+let _lbZ = 1, _lbTx = 0, _lbTy = 0;
+let _lbPanning = false, _lbPx = 0, _lbPy = 0;
+let _lbMdx = 0, _lbMdy = 0;
+
+function _lbApply() {
+  EL.lbImg.style.transform = `translate(${_lbTx}px,${_lbTy}px) scale(${_lbZ})`;
+  EL.lbImg.classList.toggle('zoomed', _lbZ > 1);
+}
+
+function _lbReset() {
+  _lbZ = 1; _lbTx = 0; _lbTy = 0; _lbPanning = false;
+  EL.lbImg.style.transform = '';
+  EL.lbImg.classList.remove('zoomed', 'grabbing');
+}
 
 // ─── Intersection Observer (lazy image loading) ───────
 const obs = new IntersectionObserver(entries => {
@@ -239,6 +256,7 @@ function makeCard(entry, idx) {
 
 // ─── Lightbox ─────────────────────────────────────────
 async function openLightbox(idx) {
+  _lbReset();
   S.lbIdx = idx;
   EL.lightbox.classList.add('open');
   await loadLbEntry(idx);
@@ -247,9 +265,11 @@ async function openLightbox(idx) {
 function closeLightbox() {
   EL.lbAudio.pause();
   EL.lightbox.classList.remove('open');
+  _lbReset();
 }
 
 function lbMove(d) {
+  _lbReset();
   const n = S.currentMedia.length;
   S.lbIdx = (S.lbIdx + d + n) % n;
   loadLbEntry(S.lbIdx);
@@ -274,6 +294,13 @@ async function loadLbEntry(idx) {
     try {
       EL.lbAudio.src = await entryToURL(entry);
       EL.lbAudio.play().catch(() => {});
+      EL.lbAudio.addEventListener('loadedmetadata', () => {
+        const d = EL.lbAudio.duration;
+        if (!isFinite(d)) return;
+        const m = Math.floor(d / 60);
+        const s = Math.floor(d % 60);
+        EL.lbMeta.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      }, { once: true });
     } catch (e) {
       EL.lbMeta.textContent = `⚠ ${e.message}`;
     }
@@ -295,6 +322,54 @@ async function loadLbEntry(idx) {
     }
   }
 }
+
+// ─── Lightbox zoom (wheel + drag) ────────────────────
+EL.lightbox.addEventListener('wheel', e => {
+  if (!EL.lightbox.classList.contains('open') || EL.lbImg.style.display === 'none') return;
+  e.preventDefault();
+  const rect = EL.lbImg.getBoundingClientRect();
+  const mx   = e.clientX - (rect.left + rect.right)  / 2;
+  const my   = e.clientY - (rect.top  + rect.bottom) / 2;
+  const nz   = Math.max(1, Math.min(8, _lbZ * (e.deltaY < 0 ? 1.2 : 1 / 1.2)));
+  if (nz === 1) {
+    _lbZ = 1; _lbTx = 0; _lbTy = 0;
+  } else {
+    const s = nz / _lbZ;
+    _lbTx += mx * (1 - s);
+    _lbTy += my * (1 - s);
+    _lbZ = nz;
+  }
+  _lbApply();
+}, { passive: false });
+
+EL.lbImg.addEventListener('click', e => {
+  if (Math.hypot(e.clientX - _lbMdx, e.clientY - _lbMdy) > 3) return;
+  if (_lbZ > 1) { _lbZ = 1; _lbTx = 0; _lbTy = 0; } else { _lbZ = 2; }
+  _lbApply();
+});
+
+EL.lightbox.addEventListener('mousedown', e => {
+  _lbMdx = e.clientX; _lbMdy = e.clientY;
+  if (_lbZ <= 1) return;
+  e.preventDefault();
+  _lbPanning = true;
+  _lbPx = e.clientX - _lbTx;
+  _lbPy = e.clientY - _lbTy;
+  EL.lbImg.classList.add('grabbing');
+});
+
+document.addEventListener('mousemove', e => {
+  if (!_lbPanning) return;
+  _lbTx = e.clientX - _lbPx;
+  _lbTy = e.clientY - _lbPy;
+  _lbApply();
+});
+
+document.addEventListener('mouseup', () => {
+  if (!_lbPanning) return;
+  _lbPanning = false;
+  EL.lbImg.classList.remove('grabbing');
+});
 
 // ─── Download ─────────────────────────────────────────
 async function downloadEntry(path) {

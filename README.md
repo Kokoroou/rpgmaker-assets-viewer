@@ -154,8 +154,8 @@ If you are a rights holder and believe this tool is being used to infringe your 
 - [x] Batch export — download current folder as `.zip` (no-dependency, in-browser ZIP builder)
 - [x] Expandable sidebar folder tree with resizable panel
 - [x] Light / dark theme toggle
-- [ ] Drag-and-drop folder / archive loading
-- [ ] Audio waveform / duration display in lightbox
+- [x] Drag-and-drop folder / archive loading
+- [x] Audio duration display in lightbox
 
 ## Acknowledgments
 

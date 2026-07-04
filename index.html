@@ -57,10 +57,10 @@
 <div id="layout">
 
   <!-- ── Sidebar ── -->
-  <div id="sidebar">
+  <div id="sidebar" class="hidden">
     <div id="sidebar-header">Folders</div>
   </div>
-  <div id="sidebar-resizer"></div>
+  <div id="sidebar-resizer" class="hidden"></div>
 
   <!-- ── Main ── -->
   <div id="main">
@@ -98,6 +98,12 @@
 
     <!-- Toolbar + Grid -->
     <div id="toolbar">
+      <button class="btn-icon" id="sidebar-toggle" title="Toggle sidebar">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <rect x="1" y="1" width="3.5" height="11" rx="1" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M6.5 3.5H12M6.5 6.5H12M6.5 9.5H12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </button>
       <span id="folder-path"></span>
       <button class="btn-ghost" id="dl-folder-btn" title="Download all files in this folder as ZIP">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -192,6 +198,14 @@
       🔒 <strong>Privacy:</strong> All decryption happens entirely in your browser — no files are uploaded to any server.<br><br>
       ⚖️ <strong>Legal:</strong> This tool is intended for personal use only, to access assets from games you own. Redistribution of extracted assets may violate the game's license or copyright.
     </div>
+  </div>
+</div>
+
+<!-- Drag & drop overlay -->
+<div id="drag-overlay">
+  <div id="drag-inner">
+    <div class="dz-icon">📂</div>
+    <div id="drag-msg">Drop game folder or archive here</div>
   </div>
 </div>
 

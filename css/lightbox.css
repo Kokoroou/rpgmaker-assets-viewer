@@ -9,6 +9,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 #lightbox.open { display: flex; }
 
@@ -23,7 +24,12 @@
   background: repeating-conic-gradient(var(--c1) 0% 25%, var(--c2) 0% 50%) 0 0 / 14px 14px;
   transition: opacity .2s;
   display: block;
+  cursor: zoom-in;
+  transform-origin: center center;
+  user-select: none;
 }
+#lb-img.zoomed { cursor: grab; }
+#lb-img.grabbing { cursor: grabbing; }
 
 #lb-audio {
   display: none;
