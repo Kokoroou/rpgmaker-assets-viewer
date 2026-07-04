@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprite Vault</title>
+<style>
+/* ── Tokens ──────────────────────────────────────────── */
+:root {
+  --bg:   #07080d;
+  --s1:   #0c0d18;
+  --s2:   #111220;
+  --s3:   #171828;
+  --bd:   #1c1e30;
+  --bd2:  #272944;
+  --a:    #f59e0b;
+  --a10:  rgba(245,158,11,.10);
+  --a20:  rgba(245,158,11,.20);
+  --a40:  rgba(245,158,11,.40);
+  --t:    #eeeef6;
+  --t2:   #686a88;
+  --t3:   #30324e;
+  --ok:   #34d399;
+  --err:  #f87171;
+  --warn: #fbbf24;
+  --r:    3px;
+}
+
+/* ── Reset ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+input { font: inherit; }
+
+/* ── Base ────────────────────────────────────────────── */
+body {
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--t);
+  display: flex;
+  flex-direction: column;
+}
+
+/* subtle dot-grid texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Scrollbars ──────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: var(--bd2) transparent; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 9px; }
+::-webkit-scrollbar-thumb:hover { background: var(--t3); }
+
+/* ── Header ──────────────────────────────────────────── */
+#header {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 48px;
+  background: rgba(7,8,13,.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
+}
+
+/* amber left-edge accent */
+#header::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 2px;
+  background: var(--a);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 8px var(--a40);
+}
+
+#logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--t);
+  flex-shrink: 0;
+  padding-left: 6px;
+}
+#logo span { color: var(--a); }
+
+#search-wrap {
+  flex: 1;
+  max-width: 260px;
+  position: relative;
+}
+#search-icon {
+  position: absolute;
+  left: 9px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--t2);
+  font-size: 12px;
+  pointer-events: none;
+}
+#search-box {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 5px 10px 5px 28px;
+  color: var(--t);
+  font-size: 12px;
+  outline: none;
+  transition: border-color .15s;
+}
+#search-box:focus { border-color: var(--a); }
+#search-box::placeholder { color: var(--t3); }
+
+#header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+#key-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  font-size: 11px;
+  color: var(--t2);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#key-chip:hover { border-color: var(--a); color: var(--t); }
+#key-chip .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--t3);
+  flex-shrink: 0;
+  transition: background .2s, box-shadow .2s;
+}
+#key-chip.has-key .dot { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+#key-chip.has-key { color: var(--t); }
+
+#count-badge { font-size: 11px; color: var(--t2); white-space: nowrap; }
+
+.btn-primary {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--a);
+  color: #09080a;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .02em;
+  border-radius: var(--r);
+  transition: opacity .15s, box-shadow .15s;
+  white-space: nowrap;
+  box-shadow: 0 0 0 0 var(--a40);
+}
+.btn-primary:hover { opacity: .88; box-shadow: 0 0 16px var(--a40); }
+
+.btn-ghost {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 11px;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  color: var(--t2);
+  font-size: 12px;
+  border-radius: var(--r);
+  transition: border-color .15s, color .15s;
+  white-space: nowrap;
+}
+.btn-ghost:hover { border-color: var(--bd2); color: var(--t); }
+
+/* ── Layout ──────────────────────────────────────────── */
+#layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+#sidebar {
+  width: 192px;
+  flex-shrink: 0;
+  background: var(--s1);
+  border-right: 1px solid var(--bd);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar-header {
+  padding: 10px 12px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+  border-left: 2px solid transparent;
+  transition: background .12s, border-color .12s;
+}
+.folder-item:hover { background: var(--s3); }
+.folder-item.active {
+  background: var(--a10);
+  border-left-color: var(--a);
+}
+.folder-item.active .f-name { color: var(--a); }
+.f-icon { font-size: 13px; flex-shrink: 0; }
+.f-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--t2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color .12s;
+}
+.folder-item:hover .f-name { color: var(--t); }
+.f-count {
+  font-size: 10px;
+  color: var(--t3);
+  font-variant-numeric: tabular-nums;
+  background: var(--s2);
+  padding: 1px 5px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  border: 1px solid var(--bd);
+}
+.folder-item.active .f-count { background: var(--a20); border-color: var(--a40); color: var(--a); }
+
+/* ── Main ────────────────────────────────────────────── */
+#main {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Setup Wizard ────────────────────────────────────── */
+#setup {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+#setup-inner {
+  width: 100%;
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setup-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--t);
+  margin-bottom: 4px;
+}
+.setup-sub {
+  font-size: 12px;
+  color: var(--t2);
+}
+
+.setup-step {
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.setup-step.done { border-color: rgba(52,211,153,.25); }
+.setup-step.done .step-num { background: var(--ok); color: #061410; }
+
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.step-num {
+  width: 24px; height: 24px;
+  background: var(--s3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--t2);
+  flex-shrink: 0;
+  transition: background .2s, color .2s;
+}
+.step-title { font-size: 14px; font-weight: 600; color: var(--t); }
+.step-desc  { font-size: 12px; color: var(--t2); }
+.step-status {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.step-status.pending { color: var(--t3); background: var(--s3); }
+.step-status.ok  { color: var(--ok); background: rgba(52,211,153,.12); }
+.step-status.warn { color: var(--warn); background: rgba(251,191,36,.12); }
+
+.step-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+/* file tree */
+.file-tree {
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--t2);
+}
+.file-tree .hl-key  { color: var(--warn); font-weight: 600; }
+.file-tree .hl-img  { color: var(--a);   font-weight: 600; }
+.file-tree .hl-dim  { color: var(--t3); }
+
+.step-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.step-feedback {
+  font-size: 11px;
+  min-height: 16px;
+  padding: 4px 10px;
+  border-radius: var(--r);
+}
+.step-feedback.ok   { color: var(--ok);  background: rgba(52,211,153,.08); }
+.step-feedback.err  { color: var(--err); background: rgba(248,113,113,.08); }
+.step-feedback.warn { color: var(--warn);background: rgba(251,191,36,.08); }
+
+.or-divider {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--t3);
+}
+.or-divider::before, .or-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--bd);
+}
+
+.key-manual-input {
+  display: flex; gap: 6px; align-items: center;
+}
+.key-manual-input input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 6px 10px;
+  color: var(--t);
+  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+  font-size: 11px;
+  outline: none;
+  transition: border-color .15s;
+}
+.key-manual-input input:focus { border-color: var(--a); }
+.key-manual-input input::placeholder { color: var(--t3); }
+
+/* ── Toolbar ─────────────────────────────────────────── */
+#toolbar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--s1);
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+#toolbar.show { display: flex; }
+#folder-path {
+  font-size: 12px;
+  color: var(--t2);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#folder-path strong { color: var(--t); }
+.size-control {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--t3);
+}
+#size-slider { width: 72px; accent-color: var(--a); cursor: pointer; }
+
+/* ── Grid ────────────────────────────────────────────── */
+#grid-wrap { flex: 1; overflow-y: auto; padding: 14px; }
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--ts, 120px), 1fr));
+  gap: 6px;
+}
+
+.card {
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: 1;
+  transition: border-color .15s, transform .12s, box-shadow .15s;
+}
+.card:hover {
+  border-color: var(--a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(245,158,11,.15);
+}
+.card-img {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    repeating-conic-gradient(#14151f 0% 25%, #111220 0% 50%) 0 0 / 12px 12px;
+  position: relative;
+}
+.card-img img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.card-name {
+  padding: 3px 6px 4px;
+  font-size: 10px;
+  color: var(--t2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--s1);
+  border-top: 1px solid var(--bd);
+}
+
+/* loading/error states */
+.card.loading .card-img::after {
+  content: '';
+  width: 18px; height: 18px;
+  border: 2px solid var(--bd2);
+  border-top-color: var(--a);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.card.error .card-img::after {
+  content: '✕';
+  font-size: 18px;
+  color: var(--err);
+  opacity: .6;
+}
+
+/* ── Empty state (inside grid area) ─────────────────── */
+#empty-search {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px;
+  color: var(--t2);
+  font-size: 13px;
+  text-align: center;
+}
+#empty-search .e-icon { font-size: 36px; opacity: .3; }
+
+/* ── Lightbox ────────────────────────────────────────── */
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4,5,9,.94);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#lightbox.open { display: flex; }
+
+#lb-img-wrap {
+  position: relative;
+  max-width: 90vw;
+  max-height: 80vh;
+}
+#lb-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--r);
+  background:
+    repeating-conic-gradient(#14151f 0% 25%, #111220 0% 50%) 0 0 / 14px 14px;
+  transition: opacity .2s;
+  display: block;
+}
+
+#lb-bar {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+#lb-name { font-size: 13px; color: var(--t); font-weight: 500; }
+#lb-meta { font-size: 11px; color: var(--t2); display: flex; gap: 14px; }
+
+.lb-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px;
+  background: var(--s2);
+  border: 1px solid var(--bd2);
+  color: var(--t);
+  font-size: 20px;
+  border-radius: var(--r);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, border-color .12s;
+}
+.lb-nav:hover { background: var(--s3); border-color: var(--a); }
+#lb-prev { left: 14px; }
+#lb-next { right: 14px; }
+
+#lb-close {
+  position: fixed;
+  top: 14px; right: 18px;
+  font-size: 20px;
+  color: var(--t2);
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r);
+  transition: color .12s, background .12s;
+}
+#lb-close:hover { color: var(--t); background: var(--s2); }
+
+#lb-counter {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--t2);
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 99px;
+  padding: 3px 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Key Modal ───────────────────────────────────────── */
+#key-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4,5,9,.8);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+#key-modal.open { display: flex; }
+
+#key-modal-box {
+  background: var(--s1);
+  border: 1px solid var(--bd2);
+  border-radius: var(--r);
+  width: 420px;
+  max-width: 100%;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6);
+}
+.modal-head {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--bd);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-close {
+  font-size: 18px;
+  color: var(--t2);
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r);
+  transition: color .12s, background .12s;
+}
+.modal-close:hover { color: var(--t); background: var(--s3); }
+.modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+.modal-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-bottom: 4px;
+}
+#modal-key-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 8px 11px;
+  color: var(--t);
+  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+  font-size: 12px;
+  outline: none;
+  transition: border-color .15s;
+}
+#modal-key-input:focus { border-color: var(--a); }
+#modal-key-input::placeholder { color: var(--t3); }
+
+#modal-status {
+  font-size: 11px;
+  min-height: 20px;
+  padding: 5px 10px;
+  border-radius: var(--r);
+}
+#modal-status.ok   { color: var(--ok);  background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.2); }
+#modal-status.err  { color: var(--err); background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2); }
+#modal-status.warn { color: var(--warn);background: rgba(251,191,36,.08);  border: 1px solid rgba(251,191,36,.2); }
+#modal-status:empty { display: none; }
+
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; padding: 0 20px 20px; }
+
+/* ── Hidden inputs ───────────────────────────────────── */
+#folder-input, #sys-json-input, #sys-json-modal-input { display: none; }
+
+/* ── Focus ───────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ╔════ HEADER ════╗ -->
+<div id="header">
+  <div id="logo">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="1" y="1" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".9"/>
+      <rect x="10" y="1" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
+      <rect x="1" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
+      <rect x="10" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".2"/>
+    </svg>
+    Sprite<span>Vault</span>
+  </div>
+
+  <div id="search-wrap">
+    <span id="search-icon">⌕</span>
+    <input type="text" id="search-box" placeholder="Tìm kiếm ảnh…" autocomplete="off" spellcheck="false">
+  </div>
+
+  <div id="header-right">
+    <span id="count-badge"></span>
+    <div id="key-chip" title="Click để đổi key">
+      <span class="dot"></span>
+      <span id="key-label">Chưa có key</span>
+    </div>
+    <button class="btn-primary" id="open-btn">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M1 3.5A1.5 1.5 0 012.5 2H5l1.5 2H11A1.5 1.5 0 0112.5 5.5v5A1.5 1.5 0 0111 12H2.5A1.5 1.5 0 011 10.5V3.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+      </svg>
+      Mở thư mục img
+    </button>
+  </div>
+</div>
+
+<!-- ╔════ LAYOUT ════╗ -->
+<div id="layout">
+
+  <!-- ── Sidebar ── -->
+  <div id="sidebar">
+    <div id="sidebar-header">Thư mục</div>
+    <!-- injected by JS -->
+  </div>
+
+  <!-- ── Main ── -->
+  <div id="main">
+
+    <!-- Setup Wizard (hiện khi chưa mở folder) -->
+    <div id="setup">
+      <div id="setup-inner">
+        <div>
+          <div class="setup-title">Bắt đầu xem ảnh</div>
+          <div class="setup-sub">Làm theo 2 bước dưới đây để mở game RPG Maker MZ bất kỳ</div>
+        </div>
+
+        <!-- Step 1: Key -->
+        <div class="setup-step" id="step1-card">
+          <div class="step-head">
+            <div class="step-num" id="step1-num">1</div>
+            <div>
+              <div class="step-title">Lấy Encryption Key</div>
+              <div class="step-desc">Key dùng để giải mã ảnh trong game</div>
+            </div>
+            <span class="step-status pending" id="step1-status">Chưa có</span>
+          </div>
+          <div class="step-body">
+
+            <div class="file-tree">
+              <span class="hl-dim">📂 </span><span>TênGame/</span><br>
+              <span class="hl-dim">│  ├── 📄 Game.exe</span><br>
+              <span class="hl-dim">│  ├── 📂 </span><span class="hl-key">data/</span><br>
+              <span class="hl-dim">│  │   └── 📄 </span><span class="hl-key">System.json</span>
+              <span class="hl-dim">  ← mở file này</span><br>
+              <span class="hl-dim">│  └── 📂 </span><span class="hl-img">img/</span>
+              <span class="hl-dim">        ← bước 2</span>
+            </div>
+
+            <div class="step-actions">
+              <button class="btn-ghost" id="load-sys-btn">
+                📄 Chọn data/System.json…
+              </button>
+              <span id="step1-feedback" class="step-feedback"></span>
+            </div>
+
+            <div class="or-divider">hoặc nhập key thủ công</div>
+
+            <div class="key-manual-input">
+              <input type="text" id="manual-key-input"
+                placeholder="game-secret-key-hex-string"
+                spellcheck="false" autocomplete="off" maxlength="64">
+              <button class="btn-ghost" id="manual-key-save">Lưu</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Step 2: Open folder -->
+        <div class="setup-step" id="step2-card">
+          <div class="step-head">
+            <div class="step-num" id="step2-num">2</div>
+            <div>
+              <div class="step-title">Mở thư mục img</div>
+              <div class="step-desc">Chọn thư mục <code style="font-family:monospace;color:var(--a)">img</code> trong thư mục game</div>
+            </div>
+            <span class="step-status pending" id="step2-status">Chờ bước 1</span>
+          </div>
+          <div class="step-body">
+            <button class="btn-primary" id="open-btn-setup" style="width:fit-content">
+              📂 Chọn thư mục img…
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Toolbar + Grid (hiện khi có ảnh) -->
+    <div id="toolbar">
+      <span id="folder-path"></span>
+      <div class="size-control">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <rect x="1" y="1" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="7" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <input type="range" id="size-slider" min="70" max="280" value="120">
+      </div>
+    </div>
+
+    <div id="grid-wrap" style="display:none">
+      <div id="empty-search">
+        <div class="e-icon">⌕</div>
+        <div>Không tìm thấy ảnh nào</div>
+        <div style="font-size:11px;color:var(--t3)">Thử từ khoá khác</div>
+      </div>
+      <div id="grid"></div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ╔════ LIGHTBOX ════╗ -->
+<div id="lightbox" role="dialog" aria-modal="true">
+  <button id="lb-close" title="Đóng (Esc)">✕</button>
+  <span id="lb-counter"></span>
+  <button class="lb-nav" id="lb-prev" title="Trước (←)">‹</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-nav" id="lb-next" title="Sau (→)">›</button>
+  <div id="lb-bar">
+    <div id="lb-name"></div>
+    <div id="lb-meta"></div>
+  </div>
+</div>
+
+<!-- ╔════ KEY MODAL ════╗ -->
+<div id="key-modal" role="dialog" aria-modal="true">
+  <div id="key-modal-box">
+    <div class="modal-head">
+      <span>🔑 Đổi Encryption Key</span>
+      <button class="modal-close" id="modal-close-btn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <div class="modal-label">Tự động từ file</div>
+        <button class="btn-ghost" id="modal-load-sys-btn" style="width:100%;justify-content:flex-start">
+          📄 Chọn data/System.json để đọc key tự động…
+        </button>
+      </div>
+      <div class="or-divider">hoặc nhập tay</div>
+      <div>
+        <div class="modal-label">Encryption Key</div>
+        <input type="text" id="modal-key-input"
+          placeholder="2d81b9a7ec6e2db234052181221f8999"
+          spellcheck="false" autocomplete="off" maxlength="64">
+      </div>
+      <div id="modal-status"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-cancel-btn">Huỷ</button>
+      <button class="btn-primary" id="modal-save-btn">Lưu key</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="folder-input" webkitdirectory multiple>
+<input type="file" id="sys-json-input" accept=".json">
+<input type="file" id="sys-json-modal-input" accept=".json">
+
+<script>
+// ─── Constants ────────────────────────────────────────
+const RPG_HEADER   = [0x52,0x50,0x47,0x4d,0x56,0,0,0,0,3,1,0,0,0,0,0];
+const IMAGE_EXT    = /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp)$/i;
+const ENCRYPTED_EXT = /\.(png_|rpgmvp)$/i;
+
+// ─── State ────────────────────────────────────────────
+const S = {
+  key:           localStorage.getItem('rpg_enc_key') || '',
+  files:         new Map(),
+  folders:       new Map(),
+  currentFolder: null,
+  currentImages: [],
+  lbIdx:         0,
+  blobCache:     new Map(),
+  query:         '',
+};
+
+// ─── Elements ─────────────────────────────────────────
+const q   = id => document.getElementById(id);
+const EL  = {
+  openBtn:      q('open-btn'),
+  openBtnSetup: q('open-btn-setup'),
+  folderInput:  q('folder-input'),
+  sysJsonInput: q('sys-json-input'),
+  sysJsonModalInput: q('sys-json-modal-input'),
+  sidebar:      q('sidebar'),
+  setup:        q('setup'),
+  step1Card:    q('step1-card'),
+  step1Num:     q('step1-num'),
+  step1Status:  q('step1-status'),
+  step1Feedback:q('step1-feedback'),
+  step2Status:  q('step2-status'),
+  toolbar:      q('toolbar'),
+  folderPath:   q('folder-path'),
+  gridWrap:     q('grid-wrap'),
+  grid:         q('grid'),
+  emptySearch:  q('empty-search'),
+  searchBox:    q('search-box'),
+  sizeSlider:   q('size-slider'),
+  countBadge:   q('count-badge'),
+  keyChip:      q('key-chip'),
+  keyLabel:     q('key-label'),
+  // setup step 1
+  loadSysBtn:   q('load-sys-btn'),
+  manualKeyInput: q('manual-key-input'),
+  manualKeySave:  q('manual-key-save'),
+  // lightbox
+  lightbox:     q('lightbox'),
+  lbImg:        q('lb-img'),
+  lbName:       q('lb-name'),
+  lbMeta:       q('lb-meta'),
+  lbClose:      q('lb-close'),
+  lbPrev:       q('lb-prev'),
+  lbNext:       q('lb-next'),
+  lbCounter:    q('lb-counter'),
+  // key modal
+  keyModal:     q('key-modal'),
+  modalLoadSysBtn: q('modal-load-sys-btn'),
+  modalKeyInput:   q('modal-key-input'),
+  modalStatus:     q('modal-status'),
+  modalCloseBtn:   q('modal-close-btn'),
+  modalCancelBtn:  q('modal-cancel-btn'),
+  modalSaveBtn:    q('modal-save-btn'),
+};
+
+// ─── Key management ───────────────────────────────────
+function applyKey(key) {
+  S.key = key;
+  localStorage.setItem('rpg_enc_key', key);
+  updateKeyUI();
+  clearBlobCache();
+  if (S.currentFolder) showFolder(S.currentFolder);
+}
+
+function updateKeyUI() {
+  const k = S.key;
+  EL.keyChip.classList.toggle('has-key', !!k);
+  EL.keyLabel.textContent = k ? k.slice(0,8) + '…' + k.slice(-4) : 'Chưa có key';
+  EL.keyChip.title = k ? `Key: ${k}\nClick để đổi` : 'Click để nhập key';
+
+  // Update setup step 1
+  if (k) {
+    EL.step1Card.classList.add('done');
+    EL.step1Num.textContent = '✓';
+    EL.step1Status.textContent = 'Đã có key';
+    EL.step1Status.className = 'step-status ok';
+    EL.step2Status.textContent = 'Sẵn sàng';
+    EL.step2Status.className = 'step-status ok';
+  } else {
+    EL.step1Card.classList.remove('done');
+    EL.step1Num.textContent = '1';
+    EL.step1Status.textContent = 'Chưa có';
+    EL.step1Status.className = 'step-status pending';
+    EL.step2Status.textContent = 'Chờ bước 1';
+    EL.step2Status.className = 'step-status pending';
+  }
+}
+updateKeyUI();
+
+// ─── Read System.json ─────────────────────────────────
+async function readSystemJson(file, feedbackEl, onSuccess) {
+  try {
+    const txt  = await file.text();
+    const json = JSON.parse(txt);
+    const key  = json.encryptionKey;
+    const hasImg = json.hasEncryptedImages;
+
+    if (!key) {
+      setFeedback(feedbackEl, 'err', '✕ Không tìm thấy encryptionKey trong file này');
+      return;
+    }
+    if (hasImg === false) {
+      setFeedback(feedbackEl, 'warn',
+        `⚠ Key: ${key.slice(0,12)}…  (game này không mã hóa ảnh)`);
+    } else {
+      setFeedback(feedbackEl, 'ok', `✓ Đọc được key từ "${json.gameTitle || file.name}"`);
+    }
+    onSuccess(key);
+  } catch (e) {
+    setFeedback(feedbackEl, 'err', `✕ Lỗi: ${e.message}`);
+  }
+}
+
+function setFeedback(el, type, msg) {
+  el.textContent = msg;
+  el.className = `step-feedback ${type}`;
+}
+
+// ─── Setup step 1 events ──────────────────────────────
+EL.loadSysBtn.addEventListener('click', () => EL.sysJsonInput.click());
+EL.sysJsonInput.addEventListener('change', async () => {
+  const file = EL.sysJsonInput.files[0];
+  if (!file) return;
+  EL.sysJsonInput.value = '';
+  await readSystemJson(file, EL.step1Feedback, key => {
+    EL.manualKeyInput.value = key;
+    applyKey(key);
+  });
+});
+
+EL.manualKeySave.addEventListener('click', () => {
+  const k = EL.manualKeyInput.value.trim().toLowerCase();
+  if (!k) { setFeedback(EL.step1Feedback, 'err', '✕ Key không được để trống'); return; }
+  if (!/^[0-9a-f]{32}$/.test(k)) {
+    setFeedback(EL.step1Feedback, 'warn', '⚠ Key thường là chuỗi hex 32 ký tự — kiểm tra lại');
+    return;
+  }
+  applyKey(k);
+  setFeedback(EL.step1Feedback, 'ok', `✓ Đã lưu key`);
+});
+
+// ─── Key modal ────────────────────────────────────────
+EL.keyChip.addEventListener('click', () => {
+  EL.modalKeyInput.value = S.key;
+  EL.modalStatus.textContent = '';
+  EL.modalStatus.className = '';
+  EL.keyModal.classList.add('open');
+  EL.modalKeyInput.focus();
+});
+EL.modalCloseBtn.addEventListener('click',  () => EL.keyModal.classList.remove('open'));
+EL.modalCancelBtn.addEventListener('click', () => EL.keyModal.classList.remove('open'));
+EL.keyModal.addEventListener('click', e => { if (e.target === EL.keyModal) EL.keyModal.classList.remove('open'); });
+
+EL.modalLoadSysBtn.addEventListener('click', () => EL.sysJsonModalInput.click());
+EL.sysJsonModalInput.addEventListener('change', async () => {
+  const file = EL.sysJsonModalInput.files[0];
+  if (!file) return;
+  EL.sysJsonModalInput.value = '';
+  try {
+    const json = JSON.parse(await file.text());
+    const key  = json.encryptionKey;
+    if (!key) { showModalStatus('err', '✕ Không tìm thấy encryptionKey trong file này'); return; }
+    EL.modalKeyInput.value = key;
+    showModalStatus(json.hasEncryptedImages === false ? 'warn' : 'ok',
+      json.hasEncryptedImages === false
+        ? '⚠ Key đọc được nhưng game này không mã hóa ảnh'
+        : `✓ Đọc được key từ "${json.gameTitle || file.name}"`);
+  } catch (e) {
+    showModalStatus('err', `✕ Lỗi đọc file: ${e.message}`);
+  }
+});
+
+EL.modalSaveBtn.addEventListener('click', () => {
+  const k = EL.modalKeyInput.value.trim().toLowerCase();
+  if (!k) { showModalStatus('err', '✕ Key không được để trống'); return; }
+  applyKey(k);
+  EL.keyModal.classList.remove('open');
+});
+
+function showModalStatus(type, msg) {
+  const colors = {
+    ok:   'color:var(--ok);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2)',
+    err:  'color:var(--err);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2)',
+    warn: 'color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)',
+  };
+  EL.modalStatus.textContent = msg;
+  EL.modalStatus.style.cssText = `padding:5px 10px;border-radius:3px;font-size:11px;${colors[type]}`;
+}
+
+// ─── Decryption ───────────────────────────────────────
+function decrypt(buffer, key) {
+  const hdr = new Uint8Array(buffer, 0, 16);
+  for (let i = 0; i < 16; i++)
+    if (hdr[i] !== RPG_HEADER[i]) throw new Error('Header không hợp lệ — sai key hoặc không phải file RPG Maker');
+  const body = buffer.slice(16);
+  const view = new DataView(body);
+  const bytes = key.match(/.{2}/g);
+  if (!bytes || bytes.length < 16) throw new Error('Key quá ngắn (cần 32 ký tự hex)');
+  for (let i = 0; i < 16; i++)
+    view.setUint8(i, view.getUint8(i) ^ parseInt(bytes[i], 16));
+  return body;
+}
+
+async function fileToURL(file) {
+  const path = file.webkitRelativePath || file.name;
+  if (S.blobCache.has(path)) return S.blobCache.get(path);
+  let url;
+  if (ENCRYPTED_EXT.test(file.name)) {
+    if (!S.key) throw new Error('Chưa có encryption key');
+    const buf = await file.arrayBuffer();
+    const dec = decrypt(buf, S.key);
+    url = URL.createObjectURL(new Blob([dec], { type: 'image/png' }));
+  } else {
+    url = URL.createObjectURL(file);
+  }
+  S.blobCache.set(path, url);
+  return url;
+}
+
+function clearBlobCache() {
+  for (const u of S.blobCache.values()) URL.revokeObjectURL(u);
+  S.blobCache.clear();
+}
+
+// ─── Folder loading ───────────────────────────────────
+[EL.openBtn, EL.openBtnSetup].forEach(b => b.addEventListener('click', () => EL.folderInput.click()));
+
+EL.folderInput.addEventListener('change', () => {
+  const files = Array.from(EL.folderInput.files);
+  if (!files.length) return;
+  clearBlobCache();
+  S.files.clear();
+  S.folders.clear();
+
+  for (const f of files) {
+    if (!IMAGE_EXT.test(f.name)) continue;
+    const rel   = f.webkitRelativePath;
+    const parts = rel.split('/');
+    const folder = parts.length >= 3 ? parts.slice(1, -1).join('/') : '__root__';
+    S.files.set(rel, f);
+    if (!S.folders.has(folder)) S.folders.set(folder, []);
+    S.folders.get(folder).push(rel);
+  }
+
+  const total = S.files.size;
+  EL.countBadge.textContent = total ? `${total} ảnh` : '';
+  renderSidebar();
+
+  const first = S.folders.keys().next().value;
+  if (first) {
+    EL.setup.style.display   = 'none';
+    EL.toolbar.classList.add('show');
+    EL.gridWrap.style.display = 'block';
+    showFolder(first);
+  }
+  EL.folderInput.value = '';
+});
+
+// ─── Sidebar ──────────────────────────────────────────
+function renderSidebar() {
+  // keep header
+  const hdr = EL.sidebar.querySelector('#sidebar-header');
+  EL.sidebar.innerHTML = '';
+  if (hdr) EL.sidebar.appendChild(hdr);
+  else {
+    const h = document.createElement('div');
+    h.id = 'sidebar-header';
+    h.textContent = 'Thư mục';
+    EL.sidebar.appendChild(h);
+  }
+
+  const sorted = [...S.folders.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [key, paths] of sorted) {
+    const label = key === '__root__' ? '(root)' : key.split('/').pop();
+    const el = document.createElement('div');
+    el.className = 'folder-item';
+    el.dataset.folder = key;
+    el.title = key;
+    el.innerHTML = `
+      <span class="f-icon">📁</span>
+      <span class="f-name">${label}</span>
+      <span class="f-count">${paths.length}</span>`;
+    el.addEventListener('click', () => showFolder(key));
+    EL.sidebar.appendChild(el);
+  }
+}
+
+function setActiveFolder(key) {
+  for (const el of EL.sidebar.querySelectorAll('.folder-item'))
+    el.classList.toggle('active', el.dataset.folder === key);
+}
+
+// ─── Grid ─────────────────────────────────────────────
+function showFolder(key) {
+  S.currentFolder = key;
+  setActiveFolder(key);
+  const all      = S.folders.get(key) || [];
+  const q2       = S.query.toLowerCase();
+  const filtered = q2 ? all.filter(p => p.toLowerCase().includes(q2)) : all;
+  S.currentImages = filtered;
+
+  const label = key === '__root__' ? 'root' : key;
+  EL.folderPath.innerHTML = `<strong>${label}</strong> &ensp;·&ensp; ${filtered.length} ảnh`;
+
+  EL.grid.innerHTML = '';
+  EL.emptySearch.style.display = filtered.length ? 'none' : 'flex';
+
+  for (let i = 0; i < filtered.length; i++) {
+    const path = filtered[i];
+    const file = S.files.get(path);
+    if (file) EL.grid.appendChild(makeCard(file, path, i));
+  }
+}
+
+// ─── Lazy load ────────────────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (e.isIntersecting && e.target._load) {
+      e.target._load();
+      delete e.target._load;
+      obs.unobserve(e.target);
+    }
+  }
+}, { rootMargin: '200px' });
+
+function makeCard(file, path, idx) {
+  const card = document.createElement('div');
+  card.className = 'card loading';
+  const name = file.name.replace(/\.(png_|rpgmvp)$/i, '.png');
+  card.innerHTML = `
+    <div class="card-img"></div>
+    <div class="card-name" title="${name}">${name}</div>`;
+
+  const wrap = card.querySelector('.card-img');
+  card._load = async () => {
+    try {
+      const url = await fileToURL(file);
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = name;
+      img.addEventListener('load',  () => card.classList.remove('loading', 'error'));
+      img.addEventListener('error', () => { card.classList.remove('loading'); card.classList.add('error'); });
+      wrap.appendChild(img);
+    } catch {
+      card.classList.remove('loading');
+      card.classList.add('error');
+    }
+  };
+  obs.observe(card);
+  card.addEventListener('click', () => openLightbox(idx));
+  return card;
+}
+
+// ─── Size slider ──────────────────────────────────────
+EL.sizeSlider.addEventListener('input', () => {
+  EL.grid.style.setProperty('--ts', EL.sizeSlider.value + 'px');
+});
+
+// ─── Search ───────────────────────────────────────────
+let searchTimer;
+EL.searchBox.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    S.query = EL.searchBox.value.trim();
+    if (S.currentFolder) showFolder(S.currentFolder);
+  }, 240);
+});
+
+// ─── Lightbox ─────────────────────────────────────────
+async function openLightbox(idx) {
+  S.lbIdx = idx;
+  EL.lightbox.classList.add('open');
+  await loadLbImage(idx);
+}
+function closeLightbox() { EL.lightbox.classList.remove('open'); }
+function lbMove(d) {
+  const n = S.currentImages.length;
+  S.lbIdx = (S.lbIdx + d + n) % n;
+  loadLbImage(S.lbIdx);
+}
+async function loadLbImage(idx) {
+  const path = S.currentImages[idx];
+  if (!path) return;
+  const file = S.files.get(path);
+  if (!file) return;
+
+  EL.lbImg.style.opacity = '.3';
+  EL.lbName.textContent = file.name.replace(/\.(png_|rpgmvp)$/i, '.png');
+  EL.lbMeta.textContent = '';
+  EL.lbCounter.textContent = `${idx + 1} / ${S.currentImages.length}`;
+
+  try {
+    const url = await fileToURL(file);
+    EL.lbImg.src = url;
+    EL.lbImg.onload = () => {
+      EL.lbImg.style.opacity = '1';
+      EL.lbMeta.textContent = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px`;
+    };
+  } catch (e) {
+    EL.lbImg.style.opacity = '1';
+    EL.lbMeta.textContent = `⚠ ${e.message}`;
+  }
+}
+
+EL.lbClose.addEventListener('click', closeLightbox);
+EL.lbPrev.addEventListener('click', () => lbMove(-1));
+EL.lbNext.addEventListener('click', () => lbMove(+1));
+EL.lightbox.addEventListener('click', e => { if (e.target === EL.lightbox) closeLightbox(); });
+
+// ─── Keyboard ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (EL.keyModal.classList.contains('open')) return;
+  if (EL.lightbox.classList.contains('open')) {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft'  || e.key === 'a') lbMove(-1);
+    if (e.key === 'ArrowRight' || e.key === 'd') lbMove(+1);
+  }
+});
+</script>
+</body>
+</html>
