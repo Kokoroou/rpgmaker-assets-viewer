@@ -1,3 +1,7 @@
+// ─── Restore persisted sidebar width ──────────────────
+const _sw = localStorage.getItem('sidebarWidth');
+if (_sw) document.documentElement.style.setProperty('--sw', _sw + 'px');
+
 // ─── MV/MZ folder loading ─────────────────────────────
 function loadMVMZFolder(files) {
   clearBlobCache();
@@ -104,6 +108,8 @@ EL.folderInput.addEventListener('change', async () => {
   const files = Array.from(EL.folderInput.files);
   if (files.length) {
     EL.grid.innerHTML = '';
+    EL.folderPath.innerHTML = '';
+    EL.countBadge.textContent = '';
     EL.searchBox.value = '';
     S.query = '';
     await loadGameFolder(files);
@@ -118,6 +124,8 @@ EL.rgssadInput.addEventListener('change', async () => {
   if (!f) return;
   EL.rgssadInput.value = '';
   EL.grid.innerHTML = '';
+  EL.folderPath.innerHTML = '';
+  EL.countBadge.textContent = '';
   EL.searchBox.value = '';
   S.query = '';
   await loadRGSSAD(f);
@@ -145,10 +153,40 @@ EL.sizeSlider.addEventListener('input', () =>
 
 // ─── Events: Keyboard ─────────────────────────────────
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if ($('about-modal').classList.contains('open')) { $('about-modal').classList.remove('open'); return; }
+    if (EL.lightbox.classList.contains('open'))      closeLightbox();
+  }
   if (EL.lightbox.classList.contains('open')) {
-    if (e.key === 'Escape')                      closeLightbox();
     if (e.key === 'ArrowLeft'  || e.key === 'a') lbMove(-1);
     if (e.key === 'ArrowRight' || e.key === 'd') lbMove(+1);
   }
+});
+
+// ─── Events: About modal ───────────────────────────────
+$('about-btn').addEventListener('click',   () => $('about-modal').classList.add('open'));
+$('about-close').addEventListener('click', () => $('about-modal').classList.remove('open'));
+$('about-modal').addEventListener('click', e => { if (e.target === $('about-modal')) $('about-modal').classList.remove('open'); });
+
+// ─── Events: Sidebar resize ───────────────────────────
+let _resizing = false;
+$('sidebar-resizer').addEventListener('mousedown', () => {
+  _resizing = true;
+  $('sidebar-resizer').classList.add('dragging');
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+document.addEventListener('mousemove', e => {
+  if (!_resizing) return;
+  const w = Math.max(120, Math.min(400, e.clientX - $('layout').getBoundingClientRect().left));
+  document.documentElement.style.setProperty('--sw', w + 'px');
+  localStorage.setItem('sidebarWidth', w);
+});
+document.addEventListener('mouseup', () => {
+  if (!_resizing) return;
+  _resizing = false;
+  $('sidebar-resizer').classList.remove('dragging');
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
 });
 
