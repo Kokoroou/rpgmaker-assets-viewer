@@ -1,9 +1,6 @@
 # SpriteVault
 
-A browser-based image viewer for RPG Maker MZ games. Runs entirely client-side — no server, no uploads, no data leaves your machine.
-
-> **Current scope:** Viewing and previewing encrypted/unencrypted images inside the `img/` folder of an RPG Maker MZ deployment.  
-> **Planned:** Expanded format support and full extraction features drawing on the decryption logic from [RPGMakerDecrypter](https://github.com/uuksu/RPGMakerDecrypter).
+A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and VX Ace**. Runs entirely client-side — no server, no uploads, no data leaves your machine.
 
 ---
 
@@ -11,37 +8,73 @@ A browser-based image viewer for RPG Maker MZ games. Runs entirely client-side �
 
 - **Zero-install** — open `index.html` directly in any modern browser
 - **Local-only processing** — files are read via the browser File API; nothing is uploaded or transmitted
-- **Auto key extraction** — reads `encryptionKey` from `data/System.json` automatically
+- **Auto key extraction** — reads `encryptionKey` from `data/System.json` automatically (MV/MZ)
 - **Manual key entry** — hex key can be typed directly if you already know it
-- **Folder browser** — sidebar groups images by sub-folder (characters, faces, tilesets, …)
-- **Lazy-loaded grid** — renders thumbnails on demand; handles large `img/` directories without freezing
-- **Lightbox viewer** — full-resolution preview with keyboard navigation (`←` / `→` / `Esc`)
+- **RGSSAD archive support** — load `.rgssad` / `.rgss2a` / `.rgss3a` archives directly (XP/VX/VX Ace)
+- **Audio preview** — plays decrypted `.ogg_`, `.m4a_`, `.rpgmvo`, `.rpgmvm` files in-browser
+- **Folder browser** — sidebar groups assets by sub-folder
+- **Lazy-loaded grid** — renders thumbnails on demand; handles large directories without freezing
+- **Lightbox viewer** — full-resolution image preview or audio player with keyboard navigation (`←` / `→` / `Esc`)
+- **Download** — save any decrypted asset to disk directly from the lightbox
 - **Search** — real-time filename filter
 - **Adjustable tile size** — slider from 70 px to 280 px
 
 ## Supported Formats
 
-| Extension | Description |
-|-----------|-------------|
-| `.rpgmvp` / `.png_` | Encrypted PNG (RPG Maker MV/MZ) — decrypted in-browser |
-| `.png`, `.jpg`, `.jpeg` | Standard images — displayed directly |
-| `.gif`, `.webp`, `.bmp` | Standard images — displayed directly |
+### RPG Maker MV / MZ — pick `img/` folder
+
+| Extension | Type | Notes |
+|-----------|------|-------|
+| `.rpgmvp` | Image (MV) | Decrypted in-browser using key from `System.json` |
+| `.png_` | Image (MZ) | Same |
+| `.rpgmvo` | Audio (MV) | OGG, decrypted in-browser |
+| `.rpgmvm` | Audio (MV) | M4A, decrypted in-browser |
+| `.ogg_` | Audio (MZ) | OGG, decrypted in-browser |
+| `.m4a_` | Audio (MZ) | M4A, decrypted in-browser |
+| `.png`, `.jpg`, `.gif`, `.webp`, `.bmp` | Image | Displayed directly |
+| `.ogg`, `.m4a` | Audio | Played directly |
+
+### RPG Maker XP / VX / VX Ace — pick archive file
+
+| File | Engine | Notes |
+|------|--------|-------|
+| `Game.rgssad` | XP | RGSSAD v1, key `0xDEADCAFE` |
+| `Game.rgss2a` | VX | RGSSAD v1, same algorithm |
+| `Game.rgss3a` | VX Ace | RGSSAD v3, per-file keys |
+
+No encryption key needed — keys are embedded in the archive.
 
 ## Getting Started
+
+### RPG Maker MV / MZ
 
 1. Clone or download this repository.
 2. Open `index.html` in a Chromium-based browser (Chrome, Edge, Brave) or Firefox.
 3. In **Step 1**, click **Chọn data/System.json…** and pick `<YourGame>/data/System.json`. The encryption key is read automatically.
 4. In **Step 2**, click **Chọn thư mục img…** and pick the `<YourGame>/img/` folder.
-5. Browse, search, and preview images.
+5. Browse, search, preview, and download assets.
 
-> **Browser compatibility:** The `webkitdirectory` attribute required for folder selection is supported by all major desktop browsers. Mobile browsers may not support it.
+### RPG Maker XP / VX / VX Ace
+
+1. Open `index.html` in a browser.
+2. In the **RPG Maker XP / VX / VX Ace** section, click **Chọn file archive…**
+3. Pick `Game.rgssad`, `Game.rgss2a`, or `Game.rgss3a` from the game folder.
+4. Browse, search, preview, and download assets.
+
+> **Browser compatibility:** Folder selection (`webkitdirectory`) is supported by all major desktop browsers. Mobile browsers may not support it.
 
 ## Project Structure
 
 ```
 rpg-maker-decrypter-ui/
-├── index.html          # Single-file application (HTML + CSS + JS)
+├── index.html          # HTML structure + CSS
+├── js/
+│   ├── constants.js    # Extension regexes, MIME types, EXT_REMAP
+│   ├── state.js        # Global state object S
+│   ├── decrypt-mvmz.js # MV/MZ XOR decryption
+│   ├── decrypt-rgssad.js # RGSSAD v1/v3 archive parser
+│   ├── ui.js           # Rendering, lightbox, download
+│   └── app.js          # Event handlers, loading logic
 ├── LICENSE
 ├── README.md
 └── references/         # Local reference code (not committed — see .gitignore)
@@ -56,20 +89,21 @@ This section exists to be explicit about what this tool does and does not do, an
 
 ### What the tool does (technically)
 
-RPG Maker MZ stores an XOR obfuscation key in **plaintext** inside `data/System.json`, which ships with every game deployment. The "encrypted" image files (`.rpgmvp`, `.png_`) have their first 16 bytes XOR-ed with the key and then prepended with a 16-byte RPG Maker header. This tool:
+**RPG Maker MV/MZ:** The engine stores an XOR obfuscation key in **plaintext** inside `data/System.json`, which ships with every game deployment. Encrypted files (`.rpgmvp`, `.png_`, `.rpgmvo`, `.ogg_`, etc.) have their first 16 bytes XOR-ed with the key and a 16-byte RPG Maker header prepended. This tool reads `System.json` from the user's local filesystem to obtain the key, reverses the XOR entirely inside the browser's memory, and renders the result via a temporary Blob URL.
 
-1. Reads `System.json` from the user's local filesystem to obtain the key.
-2. Uses that key — already present on the user's machine — to reverse the XOR and recover the original image bytes entirely inside the browser's memory.
-3. Renders those bytes as an image using an `<img>` element with a temporary Blob URL.
-4. **Never uploads, stores, or transmits any file or key to a remote server.**
+**RPG Maker XP/VX/VX Ace:** Assets are packed into a single archive file (`.rgssad`, `.rgss2a`, `.rgss3a`). The decryption key is **embedded in the archive itself** — not distributed separately. This tool parses the archive binary, decrypts each file using the embedded key, and renders the result in-browser.
 
-Because the key is co-located with the content it "protects", this obfuscation is not considered effective access control under most legal interpretations, and is substantially different from true DRM systems (e.g., commercial encryption schemes where the key is not distributed with the content).
+In both cases, the tool:
+- **Reads only files the user explicitly selects** from their local filesystem.
+- **Never uploads, stores, or transmits any file or key to a remote server.**
+
+Because the keys are co-located with (or embedded in) the content they "protect", this obfuscation is not considered effective access control under most legal interpretations, and is substantially different from true DRM systems (e.g., commercial encryption schemes where the key is not distributed with the content).
 
 ### Intended use
 
 This tool is intended for:
 
-- **Game developers** working on their own RPG Maker MZ projects who need to inspect or recover their own assets.
+- **Game developers** working on their own RPG Maker projects who need to inspect or recover their own assets.
 - **Artists and contributors** who created assets for a game and need to review or retrieve their own work.
 - **Modders** operating under explicit permission from the game's copyright holder.
 - **Researchers and educators** studying file formats or game development workflows.
@@ -102,12 +136,13 @@ If you are a rights holder and believe this tool is being used to infringe your 
 
 ## Roadmap
 
-- [ ] Export / save decrypted images to disk (via `<a download>`)
-- [ ] Batch export (ZIP via JSZip or streaming)
-- [ ] Support RPG Maker MV (same format, already partially compatible)
-- [ ] Support RPG Maker XP / VX / VX Ace (`.rgssad` archives) — planned with WebAssembly or a companion native helper, referencing RPGMakerDecrypter logic
-- [ ] Audio preview (`.ogg_`, `.m4a_`)
-- [ ] Drag-and-drop folder loading
+- [x] RPG Maker MV image support (`.rpgmvp`)
+- [x] RPG Maker MV/MZ audio preview (`.ogg_`, `.m4a_`, `.rpgmvo`, `.rpgmvm`)
+- [x] RPG Maker XP / VX / VX Ace RGSSAD archive support (`.rgssad`, `.rgss2a`, `.rgss3a`)
+- [x] Download decrypted assets from lightbox
+- [ ] Batch export (ZIP via JSZip or streaming download)
+- [ ] Drag-and-drop folder / archive loading
+- [ ] Audio waveform / duration display in lightbox
 
 ## Acknowledgments
 
