@@ -43,7 +43,6 @@ body {
   flex-direction: column;
 }
 
-/* subtle dot-grid texture */
 body::before {
   content: '';
   position: fixed;
@@ -76,7 +75,6 @@ body::before {
   flex-shrink: 0;
 }
 
-/* amber left-edge accent */
 #header::before {
   content: '';
   position: absolute;
@@ -272,6 +270,7 @@ body::before {
   align-items: center;
   justify-content: center;
   padding: 32px 24px;
+  overflow-y: auto;
 }
 
 #setup-inner {
@@ -279,18 +278,36 @@ body::before {
   max-width: 580px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .setup-title {
   font-size: 18px;
   font-weight: 700;
   color: var(--t);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .setup-sub {
   font-size: 12px;
   color: var(--t2);
+}
+
+.setup-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--t3);
+  padding: 8px 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.setup-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--bd);
 }
 
 .setup-step {
@@ -336,7 +353,6 @@ body::before {
 
 .step-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
 
-/* file tree */
 .file-tree {
   background: var(--bg);
   border: 1px solid var(--bd);
@@ -466,7 +482,6 @@ body::before {
   border-top: 1px solid var(--bd);
 }
 
-/* loading/error states */
 .card.loading .card-img::after {
   content: '';
   width: 18px; height: 18px;
@@ -483,7 +498,19 @@ body::before {
   opacity: .6;
 }
 
-/* ── Empty state (inside grid area) ─────────────────── */
+/* ── Audio card ──────────────────────────────────────── */
+.audio-thumb {
+  background: linear-gradient(135deg, var(--s3) 0%, var(--s2) 100%) !important;
+}
+.audio-icon {
+  font-size: 36px;
+  color: var(--a);
+  opacity: .45;
+  user-select: none;
+}
+.audio-card:hover .audio-icon { opacity: .7; }
+
+/* ── Empty state ─────────────────────────────────────── */
 #empty-search {
   display: none;
   flex-direction: column;
@@ -526,6 +553,14 @@ body::before {
   display: block;
 }
 
+#lb-audio {
+  display: none;
+  width: 380px;
+  max-width: 90vw;
+  accent-color: var(--a);
+  border-radius: var(--r);
+}
+
 #lb-bar {
   margin-top: 14px;
   display: flex;
@@ -566,6 +601,19 @@ body::before {
   transition: color .12s, background .12s;
 }
 #lb-close:hover { color: var(--t); background: var(--s2); }
+
+#lb-download {
+  position: fixed;
+  top: 14px; right: 58px;
+  font-size: 14px;
+  color: var(--t2);
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r);
+  transition: color .12s, background .12s;
+  title: "Tải về";
+}
+#lb-download:hover { color: var(--t); background: var(--s2); }
 
 #lb-counter {
   position: fixed;
@@ -651,15 +699,12 @@ body::before {
   padding: 5px 10px;
   border-radius: var(--r);
 }
-#modal-status.ok   { color: var(--ok);  background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.2); }
-#modal-status.err  { color: var(--err); background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2); }
-#modal-status.warn { color: var(--warn);background: rgba(251,191,36,.08);  border: 1px solid rgba(251,191,36,.2); }
 #modal-status:empty { display: none; }
 
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; padding: 0 20px 20px; }
 
 /* ── Hidden inputs ───────────────────────────────────── */
-#folder-input, #sys-json-input, #sys-json-modal-input { display: none; }
+#folder-input, #sys-json-input, #sys-json-modal-input, #rgssad-input { display: none; }
 
 /* ── Focus ───────────────────────────────────────────── */
 :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
@@ -681,7 +726,7 @@ body::before {
 
   <div id="search-wrap">
     <span id="search-icon">⌕</span>
-    <input type="text" id="search-box" placeholder="Tìm kiếm ảnh…" autocomplete="off" spellcheck="false">
+    <input type="text" id="search-box" placeholder="Tìm kiếm…" autocomplete="off" spellcheck="false">
   </div>
 
   <div id="header-right">
@@ -705,19 +750,21 @@ body::before {
   <!-- ── Sidebar ── -->
   <div id="sidebar">
     <div id="sidebar-header">Thư mục</div>
-    <!-- injected by JS -->
   </div>
 
   <!-- ── Main ── -->
   <div id="main">
 
-    <!-- Setup Wizard (hiện khi chưa mở folder) -->
+    <!-- Setup Wizard -->
     <div id="setup">
       <div id="setup-inner">
         <div>
           <div class="setup-title">Bắt đầu xem ảnh</div>
-          <div class="setup-sub">Làm theo 2 bước dưới đây để mở game RPG Maker MZ bất kỳ</div>
+          <div class="setup-sub">Chọn luồng phù hợp với phiên bản game</div>
         </div>
+
+        <!-- ── Path A: RPG Maker MV / MZ ── -->
+        <div class="setup-section-label">RPG Maker MV / MZ</div>
 
         <!-- Step 1: Key -->
         <div class="setup-step" id="step1-card">
@@ -725,7 +772,7 @@ body::before {
             <div class="step-num" id="step1-num">1</div>
             <div>
               <div class="step-title">Lấy Encryption Key</div>
-              <div class="step-desc">Key dùng để giải mã ảnh trong game</div>
+              <div class="step-desc">Key dùng để giải mã ảnh &amp; audio trong game</div>
             </div>
             <span class="step-status pending" id="step1-status">Chưa có</span>
           </div>
@@ -752,7 +799,7 @@ body::before {
 
             <div class="key-manual-input">
               <input type="text" id="manual-key-input"
-                placeholder="game-secret-key-hex-string"
+                placeholder="2d81b9a7ec6e2db234052181221f8999"
                 spellcheck="false" autocomplete="off" maxlength="64">
               <button class="btn-ghost" id="manual-key-save">Lưu</button>
             </div>
@@ -777,10 +824,42 @@ body::before {
           </div>
         </div>
 
+        <!-- ── Path B: RPG Maker XP / VX / VX Ace ── -->
+        <div class="setup-section-label">RPG Maker XP / VX / VX Ace</div>
+
+        <div class="setup-step" id="step-rgssad">
+          <div class="step-head">
+            <div class="step-num">📦</div>
+            <div>
+              <div class="step-title">Mở archive RGSSAD</div>
+              <div class="step-desc">Chọn file <code style="font-family:monospace;color:var(--a)">.rgssad</code> / <code style="font-family:monospace;color:var(--a)">.rgss2a</code> / <code style="font-family:monospace;color:var(--a)">.rgss3a</code> trong thư mục game</div>
+            </div>
+          </div>
+          <div class="step-body">
+
+            <div class="file-tree">
+              <span class="hl-dim">📂 </span><span>TênGame/</span><br>
+              <span class="hl-dim">│  ├── 📄 Game.exe</span><br>
+              <span class="hl-dim">│  └── 📄 </span><span class="hl-key">Game.rgssad</span>
+              <span class="hl-dim">  ← mở file này (XP)</span><br>
+              <span class="hl-dim">       hoặc </span><span class="hl-key">Game.rgss2a</span><span class="hl-dim"> (VX)</span><br>
+              <span class="hl-dim">       hoặc </span><span class="hl-key">Game.rgss3a</span><span class="hl-dim"> (VX Ace)</span>
+            </div>
+
+            <div class="step-actions">
+              <button class="btn-ghost" id="load-rgssad-btn">
+                📦 Chọn file archive…
+              </button>
+              <span id="rgssad-feedback" class="step-feedback"></span>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- Toolbar + Grid (hiện khi có ảnh) -->
+    <!-- Toolbar + Grid -->
     <div id="toolbar">
       <span id="folder-path"></span>
       <div class="size-control">
@@ -795,7 +874,7 @@ body::before {
     <div id="grid-wrap" style="display:none">
       <div id="empty-search">
         <div class="e-icon">⌕</div>
-        <div>Không tìm thấy ảnh nào</div>
+        <div>Không tìm thấy mục nào</div>
         <div style="font-size:11px;color:var(--t3)">Thử từ khoá khác</div>
       </div>
       <div id="grid"></div>
@@ -807,9 +886,13 @@ body::before {
 <!-- ╔════ LIGHTBOX ════╗ -->
 <div id="lightbox" role="dialog" aria-modal="true">
   <button id="lb-close" title="Đóng (Esc)">✕</button>
+  <button id="lb-download" title="Tải về">⬇</button>
   <span id="lb-counter"></span>
   <button class="lb-nav" id="lb-prev" title="Trước (←)">‹</button>
-  <img id="lb-img" src="" alt="">
+  <div id="lb-img-wrap">
+    <img id="lb-img" src="" alt="">
+    <audio id="lb-audio" controls></audio>
+  </div>
   <button class="lb-nav" id="lb-next" title="Sau (→)">›</button>
   <div id="lb-bar">
     <div id="lb-name"></div>
@@ -851,436 +934,13 @@ body::before {
 <input type="file" id="folder-input" webkitdirectory multiple>
 <input type="file" id="sys-json-input" accept=".json">
 <input type="file" id="sys-json-modal-input" accept=".json">
+<input type="file" id="rgssad-input" accept=".rgssad,.rgss2a,.rgss3a">
 
-<script>
-// ─── Constants ────────────────────────────────────────
-const RPG_HEADER   = [0x52,0x50,0x47,0x4d,0x56,0,0,0,0,3,1,0,0,0,0,0];
-const IMAGE_EXT    = /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp)$/i;
-const ENCRYPTED_EXT = /\.(png_|rpgmvp)$/i;
-
-// ─── State ────────────────────────────────────────────
-const S = {
-  key:           localStorage.getItem('rpg_enc_key') || '',
-  files:         new Map(),
-  folders:       new Map(),
-  currentFolder: null,
-  currentImages: [],
-  lbIdx:         0,
-  blobCache:     new Map(),
-  query:         '',
-};
-
-// ─── Elements ─────────────────────────────────────────
-const q   = id => document.getElementById(id);
-const EL  = {
-  openBtn:      q('open-btn'),
-  openBtnSetup: q('open-btn-setup'),
-  folderInput:  q('folder-input'),
-  sysJsonInput: q('sys-json-input'),
-  sysJsonModalInput: q('sys-json-modal-input'),
-  sidebar:      q('sidebar'),
-  setup:        q('setup'),
-  step1Card:    q('step1-card'),
-  step1Num:     q('step1-num'),
-  step1Status:  q('step1-status'),
-  step1Feedback:q('step1-feedback'),
-  step2Status:  q('step2-status'),
-  toolbar:      q('toolbar'),
-  folderPath:   q('folder-path'),
-  gridWrap:     q('grid-wrap'),
-  grid:         q('grid'),
-  emptySearch:  q('empty-search'),
-  searchBox:    q('search-box'),
-  sizeSlider:   q('size-slider'),
-  countBadge:   q('count-badge'),
-  keyChip:      q('key-chip'),
-  keyLabel:     q('key-label'),
-  // setup step 1
-  loadSysBtn:   q('load-sys-btn'),
-  manualKeyInput: q('manual-key-input'),
-  manualKeySave:  q('manual-key-save'),
-  // lightbox
-  lightbox:     q('lightbox'),
-  lbImg:        q('lb-img'),
-  lbName:       q('lb-name'),
-  lbMeta:       q('lb-meta'),
-  lbClose:      q('lb-close'),
-  lbPrev:       q('lb-prev'),
-  lbNext:       q('lb-next'),
-  lbCounter:    q('lb-counter'),
-  // key modal
-  keyModal:     q('key-modal'),
-  modalLoadSysBtn: q('modal-load-sys-btn'),
-  modalKeyInput:   q('modal-key-input'),
-  modalStatus:     q('modal-status'),
-  modalCloseBtn:   q('modal-close-btn'),
-  modalCancelBtn:  q('modal-cancel-btn'),
-  modalSaveBtn:    q('modal-save-btn'),
-};
-
-// ─── Key management ───────────────────────────────────
-function applyKey(key) {
-  S.key = key;
-  localStorage.setItem('rpg_enc_key', key);
-  updateKeyUI();
-  clearBlobCache();
-  if (S.currentFolder) showFolder(S.currentFolder);
-}
-
-function updateKeyUI() {
-  const k = S.key;
-  EL.keyChip.classList.toggle('has-key', !!k);
-  EL.keyLabel.textContent = k ? k.slice(0,8) + '…' + k.slice(-4) : 'Chưa có key';
-  EL.keyChip.title = k ? `Key: ${k}\nClick để đổi` : 'Click để nhập key';
-
-  // Update setup step 1
-  if (k) {
-    EL.step1Card.classList.add('done');
-    EL.step1Num.textContent = '✓';
-    EL.step1Status.textContent = 'Đã có key';
-    EL.step1Status.className = 'step-status ok';
-    EL.step2Status.textContent = 'Sẵn sàng';
-    EL.step2Status.className = 'step-status ok';
-  } else {
-    EL.step1Card.classList.remove('done');
-    EL.step1Num.textContent = '1';
-    EL.step1Status.textContent = 'Chưa có';
-    EL.step1Status.className = 'step-status pending';
-    EL.step2Status.textContent = 'Chờ bước 1';
-    EL.step2Status.className = 'step-status pending';
-  }
-}
-updateKeyUI();
-
-// ─── Read System.json ─────────────────────────────────
-async function readSystemJson(file, feedbackEl, onSuccess) {
-  try {
-    const txt  = await file.text();
-    const json = JSON.parse(txt);
-    const key  = json.encryptionKey;
-    const hasImg = json.hasEncryptedImages;
-
-    if (!key) {
-      setFeedback(feedbackEl, 'err', '✕ Không tìm thấy encryptionKey trong file này');
-      return;
-    }
-    if (hasImg === false) {
-      setFeedback(feedbackEl, 'warn',
-        `⚠ Key: ${key.slice(0,12)}…  (game này không mã hóa ảnh)`);
-    } else {
-      setFeedback(feedbackEl, 'ok', `✓ Đọc được key từ "${json.gameTitle || file.name}"`);
-    }
-    onSuccess(key);
-  } catch (e) {
-    setFeedback(feedbackEl, 'err', `✕ Lỗi: ${e.message}`);
-  }
-}
-
-function setFeedback(el, type, msg) {
-  el.textContent = msg;
-  el.className = `step-feedback ${type}`;
-}
-
-// ─── Setup step 1 events ──────────────────────────────
-EL.loadSysBtn.addEventListener('click', () => EL.sysJsonInput.click());
-EL.sysJsonInput.addEventListener('change', async () => {
-  const file = EL.sysJsonInput.files[0];
-  if (!file) return;
-  EL.sysJsonInput.value = '';
-  await readSystemJson(file, EL.step1Feedback, key => {
-    EL.manualKeyInput.value = key;
-    applyKey(key);
-  });
-});
-
-EL.manualKeySave.addEventListener('click', () => {
-  const k = EL.manualKeyInput.value.trim().toLowerCase();
-  if (!k) { setFeedback(EL.step1Feedback, 'err', '✕ Key không được để trống'); return; }
-  if (!/^[0-9a-f]{32}$/.test(k)) {
-    setFeedback(EL.step1Feedback, 'warn', '⚠ Key thường là chuỗi hex 32 ký tự — kiểm tra lại');
-    return;
-  }
-  applyKey(k);
-  setFeedback(EL.step1Feedback, 'ok', `✓ Đã lưu key`);
-});
-
-// ─── Key modal ────────────────────────────────────────
-EL.keyChip.addEventListener('click', () => {
-  EL.modalKeyInput.value = S.key;
-  EL.modalStatus.textContent = '';
-  EL.modalStatus.className = '';
-  EL.keyModal.classList.add('open');
-  EL.modalKeyInput.focus();
-});
-EL.modalCloseBtn.addEventListener('click',  () => EL.keyModal.classList.remove('open'));
-EL.modalCancelBtn.addEventListener('click', () => EL.keyModal.classList.remove('open'));
-EL.keyModal.addEventListener('click', e => { if (e.target === EL.keyModal) EL.keyModal.classList.remove('open'); });
-
-EL.modalLoadSysBtn.addEventListener('click', () => EL.sysJsonModalInput.click());
-EL.sysJsonModalInput.addEventListener('change', async () => {
-  const file = EL.sysJsonModalInput.files[0];
-  if (!file) return;
-  EL.sysJsonModalInput.value = '';
-  try {
-    const json = JSON.parse(await file.text());
-    const key  = json.encryptionKey;
-    if (!key) { showModalStatus('err', '✕ Không tìm thấy encryptionKey trong file này'); return; }
-    EL.modalKeyInput.value = key;
-    showModalStatus(json.hasEncryptedImages === false ? 'warn' : 'ok',
-      json.hasEncryptedImages === false
-        ? '⚠ Key đọc được nhưng game này không mã hóa ảnh'
-        : `✓ Đọc được key từ "${json.gameTitle || file.name}"`);
-  } catch (e) {
-    showModalStatus('err', `✕ Lỗi đọc file: ${e.message}`);
-  }
-});
-
-EL.modalSaveBtn.addEventListener('click', () => {
-  const k = EL.modalKeyInput.value.trim().toLowerCase();
-  if (!k) { showModalStatus('err', '✕ Key không được để trống'); return; }
-  applyKey(k);
-  EL.keyModal.classList.remove('open');
-});
-
-function showModalStatus(type, msg) {
-  const colors = {
-    ok:   'color:var(--ok);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2)',
-    err:  'color:var(--err);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2)',
-    warn: 'color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)',
-  };
-  EL.modalStatus.textContent = msg;
-  EL.modalStatus.style.cssText = `padding:5px 10px;border-radius:3px;font-size:11px;${colors[type]}`;
-}
-
-// ─── Decryption ───────────────────────────────────────
-function decrypt(buffer, key) {
-  const hdr = new Uint8Array(buffer, 0, 16);
-  for (let i = 0; i < 16; i++)
-    if (hdr[i] !== RPG_HEADER[i]) throw new Error('Header không hợp lệ — sai key hoặc không phải file RPG Maker');
-  const body = buffer.slice(16);
-  const view = new DataView(body);
-  const bytes = key.match(/.{2}/g);
-  if (!bytes || bytes.length < 16) throw new Error('Key quá ngắn (cần 32 ký tự hex)');
-  for (let i = 0; i < 16; i++)
-    view.setUint8(i, view.getUint8(i) ^ parseInt(bytes[i], 16));
-  return body;
-}
-
-async function fileToURL(file) {
-  const path = file.webkitRelativePath || file.name;
-  if (S.blobCache.has(path)) return S.blobCache.get(path);
-  let url;
-  if (ENCRYPTED_EXT.test(file.name)) {
-    if (!S.key) throw new Error('Chưa có encryption key');
-    const buf = await file.arrayBuffer();
-    const dec = decrypt(buf, S.key);
-    url = URL.createObjectURL(new Blob([dec], { type: 'image/png' }));
-  } else {
-    url = URL.createObjectURL(file);
-  }
-  S.blobCache.set(path, url);
-  return url;
-}
-
-function clearBlobCache() {
-  for (const u of S.blobCache.values()) URL.revokeObjectURL(u);
-  S.blobCache.clear();
-}
-
-// ─── Folder loading ───────────────────────────────────
-[EL.openBtn, EL.openBtnSetup].forEach(b => b.addEventListener('click', () => EL.folderInput.click()));
-
-EL.folderInput.addEventListener('change', () => {
-  const files = Array.from(EL.folderInput.files);
-  if (!files.length) return;
-  clearBlobCache();
-  S.files.clear();
-  S.folders.clear();
-
-  for (const f of files) {
-    if (!IMAGE_EXT.test(f.name)) continue;
-    const rel   = f.webkitRelativePath;
-    const parts = rel.split('/');
-    const folder = parts.length >= 3 ? parts.slice(1, -1).join('/') : '__root__';
-    S.files.set(rel, f);
-    if (!S.folders.has(folder)) S.folders.set(folder, []);
-    S.folders.get(folder).push(rel);
-  }
-
-  const total = S.files.size;
-  EL.countBadge.textContent = total ? `${total} ảnh` : '';
-  renderSidebar();
-
-  const first = S.folders.keys().next().value;
-  if (first) {
-    EL.setup.style.display   = 'none';
-    EL.toolbar.classList.add('show');
-    EL.gridWrap.style.display = 'block';
-    showFolder(first);
-  }
-  EL.folderInput.value = '';
-});
-
-// ─── Sidebar ──────────────────────────────────────────
-function renderSidebar() {
-  // keep header
-  const hdr = EL.sidebar.querySelector('#sidebar-header');
-  EL.sidebar.innerHTML = '';
-  if (hdr) EL.sidebar.appendChild(hdr);
-  else {
-    const h = document.createElement('div');
-    h.id = 'sidebar-header';
-    h.textContent = 'Thư mục';
-    EL.sidebar.appendChild(h);
-  }
-
-  const sorted = [...S.folders.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  for (const [key, paths] of sorted) {
-    const label = key === '__root__' ? '(root)' : key.split('/').pop();
-    const el = document.createElement('div');
-    el.className = 'folder-item';
-    el.dataset.folder = key;
-    el.title = key;
-    el.innerHTML = `
-      <span class="f-icon">📁</span>
-      <span class="f-name">${label}</span>
-      <span class="f-count">${paths.length}</span>`;
-    el.addEventListener('click', () => showFolder(key));
-    EL.sidebar.appendChild(el);
-  }
-}
-
-function setActiveFolder(key) {
-  for (const el of EL.sidebar.querySelectorAll('.folder-item'))
-    el.classList.toggle('active', el.dataset.folder === key);
-}
-
-// ─── Grid ─────────────────────────────────────────────
-function showFolder(key) {
-  S.currentFolder = key;
-  setActiveFolder(key);
-  const all      = S.folders.get(key) || [];
-  const q2       = S.query.toLowerCase();
-  const filtered = q2 ? all.filter(p => p.toLowerCase().includes(q2)) : all;
-  S.currentImages = filtered;
-
-  const label = key === '__root__' ? 'root' : key;
-  EL.folderPath.innerHTML = `<strong>${label}</strong> &ensp;·&ensp; ${filtered.length} ảnh`;
-
-  EL.grid.innerHTML = '';
-  EL.emptySearch.style.display = filtered.length ? 'none' : 'flex';
-
-  for (let i = 0; i < filtered.length; i++) {
-    const path = filtered[i];
-    const file = S.files.get(path);
-    if (file) EL.grid.appendChild(makeCard(file, path, i));
-  }
-}
-
-// ─── Lazy load ────────────────────────────────────────
-const obs = new IntersectionObserver(entries => {
-  for (const e of entries) {
-    if (e.isIntersecting && e.target._load) {
-      e.target._load();
-      delete e.target._load;
-      obs.unobserve(e.target);
-    }
-  }
-}, { rootMargin: '200px' });
-
-function makeCard(file, path, idx) {
-  const card = document.createElement('div');
-  card.className = 'card loading';
-  const name = file.name.replace(/\.(png_|rpgmvp)$/i, '.png');
-  card.innerHTML = `
-    <div class="card-img"></div>
-    <div class="card-name" title="${name}">${name}</div>`;
-
-  const wrap = card.querySelector('.card-img');
-  card._load = async () => {
-    try {
-      const url = await fileToURL(file);
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = name;
-      img.addEventListener('load',  () => card.classList.remove('loading', 'error'));
-      img.addEventListener('error', () => { card.classList.remove('loading'); card.classList.add('error'); });
-      wrap.appendChild(img);
-    } catch {
-      card.classList.remove('loading');
-      card.classList.add('error');
-    }
-  };
-  obs.observe(card);
-  card.addEventListener('click', () => openLightbox(idx));
-  return card;
-}
-
-// ─── Size slider ──────────────────────────────────────
-EL.sizeSlider.addEventListener('input', () => {
-  EL.grid.style.setProperty('--ts', EL.sizeSlider.value + 'px');
-});
-
-// ─── Search ───────────────────────────────────────────
-let searchTimer;
-EL.searchBox.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    S.query = EL.searchBox.value.trim();
-    if (S.currentFolder) showFolder(S.currentFolder);
-  }, 240);
-});
-
-// ─── Lightbox ─────────────────────────────────────────
-async function openLightbox(idx) {
-  S.lbIdx = idx;
-  EL.lightbox.classList.add('open');
-  await loadLbImage(idx);
-}
-function closeLightbox() { EL.lightbox.classList.remove('open'); }
-function lbMove(d) {
-  const n = S.currentImages.length;
-  S.lbIdx = (S.lbIdx + d + n) % n;
-  loadLbImage(S.lbIdx);
-}
-async function loadLbImage(idx) {
-  const path = S.currentImages[idx];
-  if (!path) return;
-  const file = S.files.get(path);
-  if (!file) return;
-
-  EL.lbImg.style.opacity = '.3';
-  EL.lbName.textContent = file.name.replace(/\.(png_|rpgmvp)$/i, '.png');
-  EL.lbMeta.textContent = '';
-  EL.lbCounter.textContent = `${idx + 1} / ${S.currentImages.length}`;
-
-  try {
-    const url = await fileToURL(file);
-    EL.lbImg.src = url;
-    EL.lbImg.onload = () => {
-      EL.lbImg.style.opacity = '1';
-      EL.lbMeta.textContent = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px`;
-    };
-  } catch (e) {
-    EL.lbImg.style.opacity = '1';
-    EL.lbMeta.textContent = `⚠ ${e.message}`;
-  }
-}
-
-EL.lbClose.addEventListener('click', closeLightbox);
-EL.lbPrev.addEventListener('click', () => lbMove(-1));
-EL.lbNext.addEventListener('click', () => lbMove(+1));
-EL.lightbox.addEventListener('click', e => { if (e.target === EL.lightbox) closeLightbox(); });
-
-// ─── Keyboard ─────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (EL.keyModal.classList.contains('open')) return;
-  if (EL.lightbox.classList.contains('open')) {
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft'  || e.key === 'a') lbMove(-1);
-    if (e.key === 'ArrowRight' || e.key === 'd') lbMove(+1);
-  }
-});
-</script>
+<script src="js/constants.js"></script>
+<script src="js/state.js"></script>
+<script src="js/decrypt-mvmz.js"></script>
+<script src="js/decrypt-rgssad.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

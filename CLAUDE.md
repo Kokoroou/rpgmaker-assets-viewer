@@ -17,30 +17,60 @@ The app uses the browser File API (`webkitdirectory`, `arrayBuffer`, `Blob URL`)
 
 ## Architecture
 
-Everything lives in `index.html` as a single self-contained file: HTML structure, CSS custom-property design tokens, and vanilla JS state management — all inline.
+`index.html` contains the HTML structure and all CSS. Logic is split into six JS files loaded in order:
+
+```
+js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
+js/state.js          — global S object
+js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
+js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
+js/ui.js             — DOM refs (EL), rendering, lightbox, entryToURL()
+js/app.js            — event handlers, loadMVMZFolder(), loadRGSSAD(), init
+```
+
+All files share a single global scope — no modules.
 
 **State object `S`** (global, in-memory):
 - `S.key` — hex encryption key, persisted to `localStorage`
-- `S.files` — `Map<relativePath, File>` for all image files from the picked folder
-- `S.folders` — `Map<folderName, relativePath[]>` grouping for the sidebar
-- `S.currentImages` — filtered subset currently shown in the grid
-- `S.blobCache` — `Map<relativePath, objectURL>` to avoid re-decrypting on every render
+- `S.files` — `Map<path, entry>` for all media entries
+- `S.folders` — `Map<folderKey, path[]>` grouping for the sidebar
+- `S.currentFolder` / `S.currentMedia` — active folder key and filtered path list
+- `S.blobCache` — `Map<path, objectURL>` to avoid re-decrypting on every render
 
-**Data flow:**
-1. User picks `data/System.json` → `readSystemJson()` extracts `encryptionKey` → `applyKey()` stores it and re-renders current folder
-2. User picks `img/` folder → `folderInput` change handler flattens all files into `S.files` / `S.folders` → `renderSidebar()` + `showFolder()`
-3. `showFolder(key)` filters `S.folders.get(key)` by `S.query`, sets `S.currentImages`, builds cards via `makeCard()`
-4. `makeCard()` creates a card in `loading` state and registers it with `IntersectionObserver`; on intersection, `fileToURL(file)` decrypts (if `.rpgmvp`/`.png_`) or creates a plain Blob URL
+**Entry model** (unified for both MV/MZ and RGSSAD):
+```js
+// From MV/MZ folder picker
+{ name, path, isAudio, isImage, _file: File }
 
-**Decryption** (`decrypt()` function):
-- Validates the 16-byte RPG Maker header (`RPG_HEADER` constant)
-- Slices off the header, XORs the next 16 bytes with the key bytes
-- Returns the recovered image bytes as an `ArrayBuffer`
+// From RGSSAD archive
+{ name, path, isAudio, isImage, _getData: () => ArrayBuffer }
+```
+
+`entryToURL(entry)` in `ui.js` handles both types with blob cache.
+
+**Two loading flows:**
+1. **MV/MZ** — `readSystemJson()` → `applyKey()` → `loadMVMZFolder(files)`
+2. **RGSSAD** — `loadRGSSAD(file)` → `parseRGSSAD(buffer)` → populate S → `showGrid()`
+
+**Supported formats:**
+
+| Engine | Extensions | Decryption |
+|--------|-----------|------------|
+| MZ images | `.png_` | 16-byte header + XOR 16 bytes with key |
+| MV images | `.rpgmvp` | same as above |
+| MZ audio | `.ogg_`, `.m4a_` | same as above |
+| MV audio | `.rpgmvo`, `.rpgmvm` | same as above |
+| XP/VX | `.rgssad`, `.rgss2a` | RGSSAD v1: key `0xDEADCAFE`, cycles per entry |
+| VX Ace | `.rgss3a` | RGSSAD v3: master key from archive header |
+
+**RGSSAD algorithms** (documented from `references/RPGMakerDecrypter`):
+- v1 key evolution per name byte and per int: `key = (key * 7 + 3) >>> 0`
+- v3 master key: `((uint32(header[8..11]) * 9) + 3) >>> 0`; file keys stored in directory
+- Data decryption (both versions): XOR with key bytes, key advances every 4 bytes
 
 **Key constants:**
 - `RPG_HEADER` — `[0x52,0x50,0x47,0x4d,0x56,0,0,0,0,3,1,0,0,0,0,0]`
-- `IMAGE_EXT` — regex matching all supported extensions
-- `ENCRYPTED_EXT` — regex matching `.png_` and `.rpgmvp` (the ones that need decryption)
+- `EXT_REMAP` — maps encrypted extensions to real ones (e.g. `png_` → `png`)
 
 ## References directory
 
@@ -50,4 +80,4 @@ Everything lives in `index.html` as a single self-contained file: HTML structure
 
 - **Do not add server-side upload functionality.** All processing must stay client-side (File API only). This is a hard constraint for DMCA safety — the tool must never receive or store user game files on a server.
 - **Do not distribute or embed actual game assets** (images, audio, scripts from any RPG Maker game) in this repository, even as test fixtures, without explicit rights.
-- When extending decryption to new formats (e.g. `.rgssad` for XP/VX), document the format source (spec, reference implementation) in a code comment.
+- When extending decryption to new formats, document the format source (spec, reference implementation) in a code comment.
