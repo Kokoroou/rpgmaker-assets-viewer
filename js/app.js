@@ -88,12 +88,26 @@ function showGrid() {
   }
 }
 
+// ─── Events: Theme toggle ─────────────────────────────
+EL.themeToggle.addEventListener('click', () => {
+  const html = document.documentElement;
+  const goLight = html.dataset.theme !== 'light';
+  if (goLight) html.dataset.theme = 'light';
+  else delete html.dataset.theme;
+  localStorage.setItem('theme', goLight ? 'light' : 'dark');
+});
+
 // ─── Events: Folder picker ────────────────────────────
 EL.openBtn.addEventListener('click', () => EL.folderInput.click());
 $('open-game-btn').addEventListener('click', () => EL.folderInput.click());
 EL.folderInput.addEventListener('change', async () => {
   const files = Array.from(EL.folderInput.files);
-  if (files.length) await loadGameFolder(files);
+  if (files.length) {
+    EL.grid.innerHTML = '';
+    EL.searchBox.value = '';
+    S.query = '';
+    await loadGameFolder(files);
+  }
   EL.folderInput.value = '';
 });
 
@@ -103,6 +117,9 @@ EL.rgssadInput.addEventListener('change', async () => {
   const f = EL.rgssadInput.files[0];
   if (!f) return;
   EL.rgssadInput.value = '';
+  EL.grid.innerHTML = '';
+  EL.searchBox.value = '';
+  S.query = '';
   await loadRGSSAD(f);
 });
 
@@ -128,7 +145,6 @@ EL.sizeSlider.addEventListener('input', () =>
 
 // ─── Events: Keyboard ─────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (EL.keyModal.classList.contains('open')) return;
   if (EL.lightbox.classList.contains('open')) {
     if (e.key === 'Escape')                      closeLightbox();
     if (e.key === 'ArrowLeft'  || e.key === 'a') lbMove(-1);

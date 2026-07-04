@@ -1,0 +1,39 @@
+/* ── Reset ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+input  { font: inherit; }
+
+/* ── Body ────────────────────────────────────────────── */
+body {
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--t);
+  display: flex;
+  flex-direction: column;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Scrollbars ──────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: var(--bd2) transparent; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 9px; }
+::-webkit-scrollbar-thumb:hover { background: var(--t3); }
+
+/* ── Hidden file inputs ──────────────────────────────── */
+#folder-input, #sys-json-modal-input, #rgssad-input { display: none; }
+
+/* ── Focus ───────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }

@@ -1,0 +1,95 @@
+/* ── Lightbox overlay ────────────────────────────────── */
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4,5,9,.94);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#lightbox.open { display: flex; }
+
+/* ── Media area ──────────────────────────────────────── */
+#lb-img-wrap { position: relative; max-width: 90vw; max-height: 80vh; }
+
+#lb-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--r);
+  background: repeating-conic-gradient(var(--c1) 0% 25%, var(--c2) 0% 50%) 0 0 / 14px 14px;
+  transition: opacity .2s;
+  display: block;
+}
+
+#lb-audio {
+  display: none;
+  width: 380px;
+  max-width: 90vw;
+  accent-color: var(--a);
+  border-radius: var(--r);
+}
+
+/* ── Info bar ────────────────────────────────────────── */
+#lb-bar { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+#lb-name { font-size: 13px; color: var(--t); font-weight: 500; }
+#lb-meta { font-size: 11px; color: var(--t2); display: flex; gap: 14px; }
+
+/* ── Navigation arrows ───────────────────────────────── */
+.lb-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px;
+  background: var(--s2);
+  border: 1px solid var(--bd2);
+  color: var(--t);
+  font-size: 20px;
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s, border-color .12s;
+}
+.lb-nav:hover { background: var(--s3); border-color: var(--a); }
+#lb-prev { left: 14px; }
+#lb-next { right: 14px; }
+
+/* ── Top-right controls ──────────────────────────────── */
+#lb-close {
+  position: fixed;
+  top: 14px; right: 18px;
+  font-size: 20px;
+  color: var(--t2);
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r);
+  transition: color .12s, background .12s;
+}
+#lb-close:hover { color: var(--t); background: var(--s2); }
+
+#lb-download {
+  position: fixed;
+  top: 14px; right: 58px;
+  color: var(--t2);
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r);
+  transition: color .12s, background .12s;
+}
+#lb-download:hover { color: var(--t); background: var(--s2); }
+
+#lb-counter {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--t2);
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 99px;
+  padding: 3px 12px;
+  font-variant-numeric: tabular-nums;
+}

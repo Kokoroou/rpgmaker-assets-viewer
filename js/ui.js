@@ -3,6 +3,7 @@ const $ = id => document.getElementById(id);
 
 const EL = {
   openBtn:          $('open-btn'),
+  themeToggle:      $('theme-toggle'),
   folderInput:      $('folder-input'),
   rgssadInput:      $('rgssad-input'),
   sidebar:          $('sidebar'),
