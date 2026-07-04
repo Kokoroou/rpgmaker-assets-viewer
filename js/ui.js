@@ -3,18 +3,11 @@ const $ = id => document.getElementById(id);
 
 const EL = {
   openBtn:          $('open-btn'),
-  openBtnSetup:     $('open-btn-setup'),
   folderInput:      $('folder-input'),
   rgssadInput:      $('rgssad-input'),
-  sysJsonInput:     $('sys-json-input'),
-  sysJsonModalInput:$('sys-json-modal-input'),
   sidebar:          $('sidebar'),
   setup:            $('setup'),
-  step1Card:        $('step1-card'),
-  step1Num:         $('step1-num'),
-  step1Status:      $('step1-status'),
-  step1Feedback:    $('step1-feedback'),
-  step2Status:      $('step2-status'),
+  setupStatus:      $('setup-status'),
   toolbar:          $('toolbar'),
   folderPath:       $('folder-path'),
   gridWrap:         $('grid-wrap'),
@@ -23,11 +16,6 @@ const EL = {
   searchBox:        $('search-box'),
   sizeSlider:       $('size-slider'),
   countBadge:       $('count-badge'),
-  keyChip:          $('key-chip'),
-  keyLabel:         $('key-label'),
-  loadSysBtn:       $('load-sys-btn'),
-  manualKeyInput:   $('manual-key-input'),
-  manualKeySave:    $('manual-key-save'),
   lightbox:         $('lightbox'),
   lbImg:            $('lb-img'),
   lbAudio:          $('lb-audio'),
@@ -38,13 +26,6 @@ const EL = {
   lbNext:           $('lb-next'),
   lbCounter:        $('lb-counter'),
   lbDownload:       $('lb-download'),
-  keyModal:         $('key-modal'),
-  modalLoadSysBtn:  $('modal-load-sys-btn'),
-  modalKeyInput:    $('modal-key-input'),
-  modalStatus:      $('modal-status'),
-  modalCloseBtn:    $('modal-close-btn'),
-  modalCancelBtn:   $('modal-cancel-btn'),
-  modalSaveBtn:     $('modal-save-btn'),
 };
 
 // ─── Intersection Observer (lazy image loading) ───────
@@ -81,51 +62,11 @@ function clearBlobCache() {
   S.blobCache.clear();
 }
 
-// ─── Key UI ───────────────────────────────────────────
-function updateKeyUI() {
-  const k = S.key;
-  EL.keyChip.classList.toggle('has-key', !!k);
-  EL.keyLabel.textContent = k ? k.slice(0, 8) + '…' + k.slice(-4) : 'Chưa có key';
-  EL.keyChip.title = k ? `Key: ${k}\nClick để đổi` : 'Click để nhập key';
-  if (k) {
-    EL.step1Card.classList.add('done');
-    EL.step1Num.textContent    = '✓';
-    EL.step1Status.textContent = 'Đã có key';
-    EL.step1Status.className   = 'step-status ok';
-    EL.step2Status.textContent = 'Sẵn sàng';
-    EL.step2Status.className   = 'step-status ok';
-  } else {
-    EL.step1Card.classList.remove('done');
-    EL.step1Num.textContent    = '1';
-    EL.step1Status.textContent = 'Chưa có';
-    EL.step1Status.className   = 'step-status pending';
-    EL.step2Status.textContent = 'Chờ bước 1';
-    EL.step2Status.className   = 'step-status pending';
-  }
-}
-
+// ─── Key ──────────────────────────────────────────────
 function applyKey(key) {
   S.key = key;
-  localStorage.setItem('rpg_enc_key', key);
-  updateKeyUI();
   clearBlobCache();
   if (S.currentFolder) showFolder(S.currentFolder);
-}
-
-// ─── Feedback helpers ─────────────────────────────────
-function setFeedback(el, type, msg) {
-  el.textContent = msg;
-  el.className   = `step-feedback ${type}`;
-}
-
-function showModalStatus(type, msg) {
-  const s = {
-    ok:   'color:var(--ok);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2)',
-    err:  'color:var(--err);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2)',
-    warn: 'color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)',
-  };
-  EL.modalStatus.textContent = msg;
-  EL.modalStatus.style.cssText = `padding:5px 10px;border-radius:3px;font-size:11px;${s[type]}`;
 }
 
 // ─── Sidebar ──────────────────────────────────────────

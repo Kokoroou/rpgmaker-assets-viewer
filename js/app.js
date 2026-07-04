@@ -1,19 +1,3 @@
-// ─── System.json reader ───────────────────────────────
-async function readSystemJson(file, feedbackEl, onSuccess) {
-  try {
-    const json = JSON.parse(await file.text());
-    const key  = json.encryptionKey;
-    if (!key) { setFeedback(feedbackEl, 'err', '✕ Không tìm thấy encryptionKey trong file này'); return; }
-    if (json.hasEncryptedImages === false)
-      setFeedback(feedbackEl, 'warn', `⚠ Key: ${key.slice(0, 12)}…  (game này không mã hóa ảnh)`);
-    else
-      setFeedback(feedbackEl, 'ok', `✓ Đọc được key từ "${json.gameTitle || file.name}"`);
-    onSuccess(key);
-  } catch (e) {
-    setFeedback(feedbackEl, 'err', `✕ Lỗi: ${e.message}`);
-  }
-}
-
 // ─── MV/MZ folder loading ─────────────────────────────
 function loadMVMZFolder(files) {
   clearBlobCache();
@@ -36,8 +20,8 @@ function loadMVMZFolder(files) {
 
 // ─── RGSSAD archive loading ───────────────────────────
 async function loadRGSSAD(file) {
-  const fb = $('rgssad-feedback');
-  setFeedback(fb, 'warn', '⟳ Đang đọc archive…');
+  const st = EL.setupStatus;
+  if (st) { st.textContent = '⟳ Đang đọc archive…'; st.className = 'info'; }
   try {
     const buf    = await file.arrayBuffer();
     const parsed = parseRGSSAD(buf);
@@ -60,11 +44,35 @@ async function loadRGSSAD(file) {
       S.folders.get(folder).push(item.name);
     }
 
-    setFeedback(fb, 'ok', `✓ Đọc được ${S.files.size} mục từ "${file.name}"`);
+    if (st) { st.textContent = `✓ Đọc được ${S.files.size} mục từ "${file.name}"`; st.className = 'ok'; }
     showGrid();
   } catch (e) {
-    setFeedback(fb, 'err', `✕ ${e.message}`);
+    if (st) { st.textContent = `✕ ${e.message}`; st.className = 'err'; }
   }
+}
+
+// ─── Auto-detect game folder ──────────────────────────
+async function loadGameFolder(allFiles) {
+  const st = EL.setupStatus;
+  if (st) { st.textContent = '⟳ Đang phân tích thư mục…'; st.className = 'info'; }
+
+  const rgssadFile = allFiles.find(f => /\.(rgssad|rgss2a|rgss3a)$/i.test(f.name));
+  if (rgssadFile) {
+    await loadRGSSAD(rgssadFile);
+    return;
+  }
+
+  const sysJson = allFiles.find(f =>
+    f.name === 'System.json' && f.webkitRelativePath.toLowerCase().includes('/data/')
+  );
+  if (sysJson) {
+    try {
+      const json = JSON.parse(await sysJson.text());
+      if (json.encryptionKey) applyKey(json.encryptionKey);
+    } catch {}
+  }
+
+  loadMVMZFolder(allFiles);
 }
 
 // ─── Grid activation ──────────────────────────────────
@@ -80,34 +88,12 @@ function showGrid() {
   }
 }
 
-// ─── Events: Setup Step 1 (key) ───────────────────────
-EL.loadSysBtn.addEventListener('click', () => EL.sysJsonInput.click());
-EL.sysJsonInput.addEventListener('change', async () => {
-  const f = EL.sysJsonInput.files[0];
-  if (!f) return;
-  EL.sysJsonInput.value = '';
-  await readSystemJson(f, EL.step1Feedback, k => {
-    EL.manualKeyInput.value = k;
-    applyKey(k);
-  });
-});
-
-EL.manualKeySave.addEventListener('click', () => {
-  const k = EL.manualKeyInput.value.trim().toLowerCase();
-  if (!k) { setFeedback(EL.step1Feedback, 'err', '✕ Key không được để trống'); return; }
-  if (!/^[0-9a-f]{32}$/.test(k)) {
-    setFeedback(EL.step1Feedback, 'warn', '⚠ Key thường là chuỗi hex 32 ký tự — kiểm tra lại');
-    return;
-  }
-  applyKey(k);
-  setFeedback(EL.step1Feedback, 'ok', '✓ Đã lưu key');
-});
-
-// ─── Events: MV/MZ folder ─────────────────────────────
-[EL.openBtn, EL.openBtnSetup].forEach(b => b.addEventListener('click', () => EL.folderInput.click()));
-EL.folderInput.addEventListener('change', () => {
+// ─── Events: Folder picker ────────────────────────────
+EL.openBtn.addEventListener('click', () => EL.folderInput.click());
+$('open-game-btn').addEventListener('click', () => EL.folderInput.click());
+EL.folderInput.addEventListener('change', async () => {
   const files = Array.from(EL.folderInput.files);
-  if (files.length) loadMVMZFolder(files);
+  if (files.length) await loadGameFolder(files);
   EL.folderInput.value = '';
 });
 
@@ -118,44 +104,6 @@ EL.rgssadInput.addEventListener('change', async () => {
   if (!f) return;
   EL.rgssadInput.value = '';
   await loadRGSSAD(f);
-});
-
-// ─── Events: Key modal ────────────────────────────────
-EL.keyChip.addEventListener('click', () => {
-  EL.modalKeyInput.value       = S.key;
-  EL.modalStatus.textContent   = '';
-  EL.modalStatus.style.cssText = '';
-  EL.keyModal.classList.add('open');
-  EL.modalKeyInput.focus();
-});
-EL.modalCloseBtn.addEventListener('click',  () => EL.keyModal.classList.remove('open'));
-EL.modalCancelBtn.addEventListener('click', () => EL.keyModal.classList.remove('open'));
-EL.keyModal.addEventListener('click', e => { if (e.target === EL.keyModal) EL.keyModal.classList.remove('open'); });
-
-EL.modalLoadSysBtn.addEventListener('click', () => EL.sysJsonModalInput.click());
-EL.sysJsonModalInput.addEventListener('change', async () => {
-  const f = EL.sysJsonModalInput.files[0];
-  if (!f) return;
-  EL.sysJsonModalInput.value = '';
-  try {
-    const json = JSON.parse(await f.text());
-    const key  = json.encryptionKey;
-    if (!key) { showModalStatus('err', '✕ Không tìm thấy encryptionKey'); return; }
-    EL.modalKeyInput.value = key;
-    showModalStatus(json.hasEncryptedImages === false ? 'warn' : 'ok',
-      json.hasEncryptedImages === false
-        ? '⚠ Key đọc được nhưng game không mã hóa ảnh'
-        : `✓ Đọc được key từ "${json.gameTitle || f.name}"`);
-  } catch (e) {
-    showModalStatus('err', `✕ Lỗi: ${e.message}`);
-  }
-});
-
-EL.modalSaveBtn.addEventListener('click', () => {
-  const k = EL.modalKeyInput.value.trim().toLowerCase();
-  if (!k) { showModalStatus('err', '✕ Key không được để trống'); return; }
-  applyKey(k);
-  EL.keyModal.classList.remove('open');
 });
 
 // ─── Events: Lightbox ─────────────────────────────────
@@ -188,5 +136,3 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ─── Init ─────────────────────────────────────────────
-updateKeyUI();

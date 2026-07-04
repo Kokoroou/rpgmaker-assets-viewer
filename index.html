@@ -127,35 +127,6 @@ body::before {
 
 #header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
-#key-chip {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: var(--s2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  font-size: 11px;
-  color: var(--t2);
-  cursor: pointer;
-  transition: border-color .15s, color .15s;
-  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-#key-chip:hover { border-color: var(--a); color: var(--t); }
-#key-chip .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--t3);
-  flex-shrink: 0;
-  transition: background .2s, box-shadow .2s;
-}
-#key-chip.has-key .dot { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
-#key-chip.has-key { color: var(--t); }
-
 #count-badge { font-size: 11px; color: var(--t2); white-space: nowrap; }
 
 .btn-primary {
@@ -629,82 +600,36 @@ body::before {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Key Modal ───────────────────────────────────────── */
-#key-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(4,5,9,.8);
-  backdrop-filter: blur(6px);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-#key-modal.open { display: flex; }
 
-#key-modal-box {
+/* ── Drop Zone ───────────────────────────────────────── */
+#drop-zone {
   background: var(--s1);
-  border: 1px solid var(--bd2);
-  border-radius: var(--r);
-  width: 420px;
-  max-width: 100%;
-  box-shadow: 0 24px 80px rgba(0,0,0,.6);
-}
-.modal-head {
-  padding: 16px 20px 14px;
-  border-bottom: 1px solid var(--bd);
-  font-size: 14px;
-  font-weight: 700;
+  border: 1.5px dashed var(--bd2);
+  border-radius: 6px;
+  padding: 44px 32px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
+  text-align: center;
+  transition: border-color .2s;
 }
-.modal-close {
-  font-size: 18px;
-  color: var(--t2);
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--r);
-  transition: color .12s, background .12s;
-}
-.modal-close:hover { color: var(--t); background: var(--s3); }
-.modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
-.modal-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--t3);
-  margin-bottom: 4px;
-}
-#modal-key-input {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 8px 11px;
-  color: var(--t);
-  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+#drop-zone:hover { border-color: var(--a40); }
+.dz-icon  { font-size: 48px; line-height: 1; }
+.dz-label { font-size: 12px; color: var(--t2); }
+#setup-status {
   font-size: 12px;
-  outline: none;
-  transition: border-color .15s;
-}
-#modal-key-input:focus { border-color: var(--a); }
-#modal-key-input::placeholder { color: var(--t3); }
-
-#modal-status {
-  font-size: 11px;
-  min-height: 20px;
-  padding: 5px 10px;
+  padding: 5px 12px;
   border-radius: var(--r);
 }
-#modal-status:empty { display: none; }
-
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; padding: 0 20px 20px; }
+#setup-status:empty { display: none; }
+#setup-status.ok   { color: var(--ok);  background: rgba(52,211,153,.08); }
+#setup-status.err  { color: var(--err); background: rgba(248,113,113,.08); }
+#setup-status.warn { color: var(--warn);background: rgba(251,191,36,.08); }
+#setup-status.info { color: var(--t2);  background: var(--s2); }
 
 /* ── Hidden inputs ───────────────────────────────────── */
-#folder-input, #sys-json-input, #sys-json-modal-input, #rgssad-input { display: none; }
+#folder-input, #sys-json-modal-input, #rgssad-input { display: none; }
 
 /* ── Focus ───────────────────────────────────────────── */
 :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
@@ -731,15 +656,11 @@ body::before {
 
   <div id="header-right">
     <span id="count-badge"></span>
-    <div id="key-chip" title="Click để đổi key">
-      <span class="dot"></span>
-      <span id="key-label">Chưa có key</span>
-    </div>
     <button class="btn-primary" id="open-btn">
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
         <path d="M1 3.5A1.5 1.5 0 012.5 2H5l1.5 2H11A1.5 1.5 0 0112.5 5.5v5A1.5 1.5 0 0111 12H2.5A1.5 1.5 0 011 10.5V3.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
       </svg>
-      Mở thư mục img
+      Mở thư mục game
     </button>
   </div>
 </div>
@@ -755,107 +676,30 @@ body::before {
   <!-- ── Main ── -->
   <div id="main">
 
-    <!-- Setup Wizard -->
+    <!-- Setup -->
     <div id="setup">
       <div id="setup-inner">
         <div>
-          <div class="setup-title">Bắt đầu xem ảnh</div>
-          <div class="setup-sub">Chọn luồng phù hợp với phiên bản game</div>
+          <div class="setup-title">Sprite<span style="color:var(--a)">Vault</span></div>
+          <div class="setup-sub">Xem &amp; trích xuất ảnh, âm thanh từ game RPG Maker</div>
         </div>
 
-        <!-- ── Path A: RPG Maker MV / MZ ── -->
-        <div class="setup-section-label">RPG Maker MV / MZ</div>
-
-        <!-- Step 1: Key -->
-        <div class="setup-step" id="step1-card">
-          <div class="step-head">
-            <div class="step-num" id="step1-num">1</div>
-            <div>
-              <div class="step-title">Lấy Encryption Key</div>
-              <div class="step-desc">Key dùng để giải mã ảnh &amp; audio trong game</div>
-            </div>
-            <span class="step-status pending" id="step1-status">Chưa có</span>
-          </div>
-          <div class="step-body">
-
-            <div class="file-tree">
-              <span class="hl-dim">📂 </span><span>TênGame/</span><br>
-              <span class="hl-dim">│  ├── 📄 Game.exe</span><br>
-              <span class="hl-dim">│  ├── 📂 </span><span class="hl-key">data/</span><br>
-              <span class="hl-dim">│  │   └── 📄 </span><span class="hl-key">System.json</span>
-              <span class="hl-dim">  ← mở file này</span><br>
-              <span class="hl-dim">│  └── 📂 </span><span class="hl-img">img/</span>
-              <span class="hl-dim">        ← bước 2</span>
-            </div>
-
-            <div class="step-actions">
-              <button class="btn-ghost" id="load-sys-btn">
-                📄 Chọn data/System.json…
-              </button>
-              <span id="step1-feedback" class="step-feedback"></span>
-            </div>
-
-            <div class="or-divider">hoặc nhập key thủ công</div>
-
-            <div class="key-manual-input">
-              <input type="text" id="manual-key-input"
-                placeholder="2d81b9a7ec6e2db234052181221f8999"
-                spellcheck="false" autocomplete="off" maxlength="64">
-              <button class="btn-ghost" id="manual-key-save">Lưu</button>
-            </div>
-
-          </div>
+        <div id="drop-zone">
+          <div class="dz-icon">📂</div>
+          <div class="dz-label">Hỗ trợ RPG Maker MV · MZ · XP · VX · VX Ace</div>
+          <button class="btn-primary" id="open-game-btn" style="font-size:14px;padding:10px 28px">
+            Chọn thư mục game
+          </button>
+          <div id="setup-status"></div>
         </div>
 
-        <!-- Step 2: Open folder -->
-        <div class="setup-step" id="step2-card">
-          <div class="step-head">
-            <div class="step-num" id="step2-num">2</div>
-            <div>
-              <div class="step-title">Mở thư mục img</div>
-              <div class="step-desc">Chọn thư mục <code style="font-family:monospace;color:var(--a)">img</code> trong thư mục game</div>
-            </div>
-            <span class="step-status pending" id="step2-status">Chờ bước 1</span>
-          </div>
-          <div class="step-body">
-            <button class="btn-primary" id="open-btn-setup" style="width:fit-content">
-              📂 Chọn thư mục img…
-            </button>
-          </div>
+        <div class="or-divider">hoặc</div>
+
+        <div style="display:flex;justify-content:center">
+          <button class="btn-ghost" id="load-rgssad-btn">
+            📦 Chọn file archive (.rgssad / .rgss2a / .rgss3a)…
+          </button>
         </div>
-
-        <!-- ── Path B: RPG Maker XP / VX / VX Ace ── -->
-        <div class="setup-section-label">RPG Maker XP / VX / VX Ace</div>
-
-        <div class="setup-step" id="step-rgssad">
-          <div class="step-head">
-            <div class="step-num">📦</div>
-            <div>
-              <div class="step-title">Mở archive RGSSAD</div>
-              <div class="step-desc">Chọn file <code style="font-family:monospace;color:var(--a)">.rgssad</code> / <code style="font-family:monospace;color:var(--a)">.rgss2a</code> / <code style="font-family:monospace;color:var(--a)">.rgss3a</code> trong thư mục game</div>
-            </div>
-          </div>
-          <div class="step-body">
-
-            <div class="file-tree">
-              <span class="hl-dim">📂 </span><span>TênGame/</span><br>
-              <span class="hl-dim">│  ├── 📄 Game.exe</span><br>
-              <span class="hl-dim">│  └── 📄 </span><span class="hl-key">Game.rgssad</span>
-              <span class="hl-dim">  ← mở file này (XP)</span><br>
-              <span class="hl-dim">       hoặc </span><span class="hl-key">Game.rgss2a</span><span class="hl-dim"> (VX)</span><br>
-              <span class="hl-dim">       hoặc </span><span class="hl-key">Game.rgss3a</span><span class="hl-dim"> (VX Ace)</span>
-            </div>
-
-            <div class="step-actions">
-              <button class="btn-ghost" id="load-rgssad-btn">
-                📦 Chọn file archive…
-              </button>
-              <span id="rgssad-feedback" class="step-feedback"></span>
-            </div>
-
-          </div>
-        </div>
-
       </div>
     </div>
 
@@ -900,40 +744,8 @@ body::before {
   </div>
 </div>
 
-<!-- ╔════ KEY MODAL ════╗ -->
-<div id="key-modal" role="dialog" aria-modal="true">
-  <div id="key-modal-box">
-    <div class="modal-head">
-      <span>🔑 Đổi Encryption Key</span>
-      <button class="modal-close" id="modal-close-btn">✕</button>
-    </div>
-    <div class="modal-body">
-      <div>
-        <div class="modal-label">Tự động từ file</div>
-        <button class="btn-ghost" id="modal-load-sys-btn" style="width:100%;justify-content:flex-start">
-          📄 Chọn data/System.json để đọc key tự động…
-        </button>
-      </div>
-      <div class="or-divider">hoặc nhập tay</div>
-      <div>
-        <div class="modal-label">Encryption Key</div>
-        <input type="text" id="modal-key-input"
-          placeholder="2d81b9a7ec6e2db234052181221f8999"
-          spellcheck="false" autocomplete="off" maxlength="64">
-      </div>
-      <div id="modal-status"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="modal-cancel-btn">Huỷ</button>
-      <button class="btn-primary" id="modal-save-btn">Lưu key</button>
-    </div>
-  </div>
-</div>
-
 <!-- Hidden file inputs -->
 <input type="file" id="folder-input" webkitdirectory multiple>
-<input type="file" id="sys-json-input" accept=".json">
-<input type="file" id="sys-json-modal-input" accept=".json">
 <input type="file" id="rgssad-input" accept=".rgssad,.rgss2a,.rgss3a">
 
 <script src="js/constants.js"></script>

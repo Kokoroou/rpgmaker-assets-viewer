@@ -1,5 +1,5 @@
 const S = {
-  key:           localStorage.getItem('rpg_enc_key') || '',
+  key:           '',
   files:         new Map(),  // path → entry {name, path, isAudio, isImage, _file? | _getData?}
   folders:       new Map(),  // folderKey → [path]
   currentFolder: null,
