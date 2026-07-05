@@ -21,7 +21,7 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and
 
 ## Demo
 
-<video src="https://github.com/user-attachments/assets/7052b8a7-eaa2-4967-b902-c6f60342d6c5" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/aa643c3b-81a1-4a13-936a-ebf4ea69e886" controls width="100%"></video>
 
 ---
 
