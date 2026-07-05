@@ -268,6 +268,23 @@ document.addEventListener('mouseup', () => {
 });
 
 // ─── Drag & drop ──────────────────────────────────────
+
+// Modern path: File System Access API (getAsFileSystemHandle)
+async function traverseHandle(handle, pathPrefix, files, onProgress) {
+  const entryPath = pathPrefix ? pathPrefix + '/' + handle.name : handle.name;
+  if (handle.kind === 'file') {
+    const file = await handle.getFile();
+    file._dragPath = entryPath;
+    files.push(file);
+    if (files.length % 500 === 0) onProgress?.(files.length);
+  } else if (handle.kind === 'directory') {
+    for await (const [, child] of handle.entries()) {
+      await traverseHandle(child, entryPath, files, onProgress);
+    }
+  }
+}
+
+// Legacy path: FileSystem Entry API (webkitGetAsEntry)
 async function traverseEntry(entry, pathPrefix, files, onProgress) {
   const entryPath = pathPrefix ? pathPrefix + '/' + entry.name : entry.name;
   if (entry.isFile) {
@@ -288,7 +305,13 @@ async function traverseEntry(entry, pathPrefix, files, onProgress) {
 async function handleDrop(dataTransfer) {
   const overlay = $('drag-overlay');
   const msg     = $('drag-msg');
-  const items   = [...dataTransfer.items];
+
+  // Collect entries synchronously before any await
+  const pairs = [];
+  for (const item of dataTransfer.items) {
+    if (item.kind !== 'file') continue;
+    pairs.push({ item, entry: item.webkitGetAsEntry?.() });
+  }
 
   const resetMsg = () => { msg.textContent = 'Drop game folder or archive here'; };
   const prepareReload = () => {
@@ -296,38 +319,54 @@ async function handleDrop(dataTransfer) {
     EL.countBadge.textContent = ''; EL.searchBox.value = ''; S.query = '';
   };
 
-  for (const item of items) {
-    if (item.kind !== 'file') continue;
-    const entry = item.webkitGetAsEntry?.();
-    if (!entry || !entry.isFile) continue;
-    if (/\.(rgssad|rgss2a|rgss3a)$/i.test(entry.name)) {
-      overlay.classList.add('active');
-      msg.textContent = `Loading ${entry.name}…`;
+  // Handle RGSSAD archive drop
+  for (const { entry } of pairs) {
+    if (!entry?.isFile) continue;
+    if (!/\.(rgssad|rgss2a|rgss3a)$/i.test(entry.name)) continue;
+    overlay.classList.add('active');
+    msg.textContent = `Loading ${entry.name}…`;
+    try {
       const file = await new Promise((res, rej) => entry.file(res, rej));
       prepareReload();
       await loadRGSSAD(file);
+    } finally {
       overlay.classList.remove('active');
       resetMsg();
-      return;
     }
+    return;
   }
 
-  for (const item of items) {
-    if (item.kind !== 'file') continue;
-    const entry = item.webkitGetAsEntry?.();
-    if (!entry || !entry.isDirectory) continue;
-    overlay.classList.add('active');
-    msg.textContent = 'Reading folder…';
+  // Handle folder drop
+  const dirPair = pairs.find(p => p.entry?.isDirectory);
+  if (!dirPair) return;
+
+  overlay.classList.add('active');
+  msg.textContent = 'Reading folder…';
+  try {
     const files = [];
-    await traverseEntry(entry, '', files, count => {
-      msg.textContent = `Reading folder… ${count} files`;
-    });
+    const progress = count => { msg.textContent = `Reading folder… ${count} files`; };
+
+    // Modern File System Access API — respects file permissions correctly
+    if (typeof dirPair.item.getAsFileSystemHandle === 'function') {
+      try {
+        const handle = await dirPair.item.getAsFileSystemHandle();
+        if (handle?.kind === 'directory') {
+          await traverseHandle(handle, '', files, progress);
+        }
+      } catch (_) { /* fall through to legacy */ }
+    }
+
+    // Legacy FileSystem Entry API fallback
+    if (files.length === 0 && dirPair.entry) {
+      await traverseEntry(dirPair.entry, '', files, progress);
+    }
+
     msg.textContent = `Indexing ${files.length} files…`;
     prepareReload();
     await loadGameFolder(files);
+  } finally {
     overlay.classList.remove('active');
     resetMsg();
-    return;
   }
 }
 
