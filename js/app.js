@@ -1,6 +1,9 @@
 // ─── Restore persisted sidebar width ──────────────────
 const _sw = localStorage.getItem('sidebarWidth');
-if (_sw) document.documentElement.style.setProperty('--sw', _sw + 'px');
+if (_sw) {
+  const maxW = window.innerWidth <= 600 ? 120 : Infinity;
+  document.documentElement.style.setProperty('--sw', Math.min(parseInt(_sw), maxW) + 'px');
+}
 
 // ─── Status helper ────────────────────────────────────
 function setStatus(el, cls, text) {
@@ -18,6 +21,7 @@ async function loadMVMZFolder(files) {
   clearBlobCache();
   S.files.clear();
   S.folders.clear();
+  S.sidebarPath = null;
 
   const st = EL.setupStatus;
   for (let i = 0; i < files.length; i++) {
@@ -51,6 +55,7 @@ async function loadRGSSAD(file) {
     clearBlobCache();
     S.files.clear();
     S.folders.clear();
+    S.sidebarPath = null;
 
     for (const item of parsed) {
       if (!MEDIA_EXT.test(item.name)) continue;
@@ -192,9 +197,29 @@ EL.searchBox.addEventListener('input', () => {
 EL.sizeSlider.addEventListener('input', () =>
   EL.grid.style.setProperty('--ts', EL.sizeSlider.value + 'px'));
 
+// ─── Events: Mobile search overlay ────────────────────
+const _searchOverlay = $('search-overlay');
+const _overlayInput  = $('overlay-search-input');
+
+$('mobile-search-btn').addEventListener('click', () => {
+  _overlayInput.value = EL.searchBox.value;
+  _searchOverlay.classList.add('open');
+  setTimeout(() => _overlayInput.focus(), 50);
+});
+
+function closeMobileSearch() { _searchOverlay.classList.remove('open'); }
+
+$('search-overlay-close').addEventListener('click', closeMobileSearch);
+_searchOverlay.addEventListener('click', e => { if (e.target === _searchOverlay) closeMobileSearch(); });
+_overlayInput.addEventListener('input', () => {
+  EL.searchBox.value = _overlayInput.value;
+  EL.searchBox.dispatchEvent(new Event('input'));
+});
+
 // ─── Events: Keyboard ─────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (_searchOverlay.classList.contains('open'))   { closeMobileSearch(); return; }
     if ($('about-modal').classList.contains('open')) { $('about-modal').classList.remove('open'); return; }
     if (EL.lightbox.classList.contains('open'))      closeLightbox();
   }
@@ -396,13 +421,11 @@ async function downloadFolder() {
   const paths = S.folders.get(key) || [];
   if (!paths.length) return;
 
-  const btn   = $('dl-folder-btn');
-  const label = btn.querySelector('span');
+  const btn = $('dl-folder-btn');
   btn.disabled = true;
 
   try {
     const items = [];
-    let done = 0;
     for (const path of paths) {
       const entry = S.files.get(path);
       if (!entry) continue;
@@ -418,7 +441,6 @@ async function downloadFolder() {
         }
         items.push({ name: canonicalExt(entry.name.split('/').pop()), data });
       } catch {}
-      label.textContent = `${++done} / ${paths.length}…`;
     }
 
     const zip = buildZip(items);
@@ -432,7 +454,6 @@ async function downloadFolder() {
     alert(`Download failed: ${e.message}`);
   } finally {
     btn.disabled = false;
-    label.textContent = 'Download folder';
   }
 }
 

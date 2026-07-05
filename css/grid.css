@@ -1,6 +1,8 @@
 /* ── Toolbar ─────────────────────────────────────────── */
-.btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+.btn-ghost:disabled,
+.btn-icon:disabled  { opacity: .4; cursor: not-allowed; }
 .btn-ghost:disabled:hover { border-color: var(--bd); color: var(--t2); }
+.btn-icon:disabled:hover  { border-color: var(--bd); color: var(--t2); background: var(--s2); }
 
 #toolbar {
   display: none;

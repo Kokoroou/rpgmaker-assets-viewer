@@ -91,90 +91,105 @@ function applyKey(key) {
   if (S.currentFolder) showFolder(S.currentFolder);
 }
 
-// ─── Sidebar tree ─────────────────────────────────────
-const expandedNodes = new Set();
-
-function buildFolderTree() {
-  const root = { children: new Map() };
-  const sorted = [...S.folders.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  const rootIdx = sorted.findIndex(([k]) => k === '__root__');
-  if (rootIdx > 0) { const [e] = sorted.splice(rootIdx, 1); sorted.unshift(e); }
-
-  for (const [folderKey, paths] of sorted) {
-    if (folderKey === '__root__') {
-      root.children.set('__root__', {
-        label: '(root)', key: '__root__', count: paths.length,
-        children: new Map(), vpath: '__root__'
-      });
-      continue;
+// ─── Sidebar drill-down ───────────────────────────────
+function _sbChildren(sPath) {
+  const seen = new Set();
+  if (!sPath) {
+    if (S.folders.has('__root__')) seen.add('__root__');
+    for (const k of S.folders.keys()) {
+      if (k === '__root__') continue;
+      seen.add(k.split('/')[0]); // first segment = top-level child
     }
-    const parts = folderKey.split('/');
-    let node = root;
-    for (let d = 0; d < parts.length; d++) {
-      const part = parts[d];
-      const vpath = parts.slice(0, d + 1).join('/');
-      if (!node.children.has(part)) {
-        node.children.set(part, { label: part, key: null, count: 0, children: new Map(), vpath });
-      }
-      if (d === parts.length - 1) {
-        const leaf = node.children.get(part);
-        leaf.key = folderKey;
-        leaf.count = paths.length;
-      }
-      node = node.children.get(part);
+  } else if (sPath !== '__root__') {
+    const prefix = sPath + '/';
+    for (const k of S.folders.keys()) {
+      if (!k.startsWith(prefix)) continue;
+      const child = k.slice(prefix.length).split('/')[0]; // immediate child segment
+      seen.add(sPath + '/' + child);
     }
   }
-  return root;
+  return [...seen].sort((a, b) => {
+    if (a === '__root__') return -1;
+    if (b === '__root__') return 1;
+    return a.localeCompare(b);
+  });
 }
 
-function renderTreeNode(parentEl, childMap, depth) {
-  for (const [, node] of childMap) {
-    const hasChildren = node.children.size > 0;
-    const isExpanded  = expandedNodes.has(node.vpath);
+function _sbParent(sPath) {
+  if (!sPath || sPath === '__root__') return null;
+  const parts = sPath.split('/');
+  return parts.length === 1 ? null : parts.slice(0, -1).join('/');
+}
 
-    const item = document.createElement('div');
-    item.className = 'folder-item';
-    item.style.paddingLeft = (12 + depth * 16) + 'px';
-    if (node.key) { item.dataset.folder = node.key; item.title = node.key; }
-
-    item.innerHTML = `
-      ${hasChildren
-        ? `<button class="tree-toggle${isExpanded ? ' expanded' : ''}" aria-label="Toggle">▶</button>`
-        : `<span class="tree-spacer"></span>`}
-      <span class="f-icon">📁</span>
-      <span class="f-name">${node.label}</span>
-      ${node.count ? `<span class="f-count">${node.count}</span>` : ''}`;
-    parentEl.appendChild(item);
-
-    if (hasChildren) {
-      const childrenEl = document.createElement('div');
-      childrenEl.className = 'tree-children' + (isExpanded ? ' open' : '');
-      renderTreeNode(childrenEl, node.children, depth + 1);
-      parentEl.appendChild(childrenEl);
-
-      item.addEventListener('click', e => {
-        const onToggle = e.target.closest('.tree-toggle');
-        if (onToggle || !node.key) {
-          const nowOpen = childrenEl.classList.toggle('open');
-          item.querySelector('.tree-toggle').classList.toggle('expanded', nowOpen);
-          if (nowOpen) expandedNodes.add(node.vpath);
-          else expandedNodes.delete(node.vpath);
-          return;
-        }
-        if (node.key) showFolder(node.key);
-      });
-    } else if (node.key) {
-      item.addEventListener('click', () => showFolder(node.key));
-    }
-  }
+function _sbHasKids(key) {
+  if (key === '__root__') return false;
+  const prefix = key + '/';
+  for (const k of S.folders.keys()) if (k.startsWith(prefix)) return true;
+  return false;
 }
 
 function renderSidebar() {
-  expandedNodes.clear();
-  const tree = buildFolderTree();
+  const sPath    = S.sidebarPath;
+  const children = _sbChildren(sPath);
+  const parent   = _sbParent(sPath);
 
-  EL.sidebar.innerHTML = '<div id="sidebar-header">Folders</div>';
-  renderTreeNode(EL.sidebar, tree.children, 0);
+  EL.sidebar.innerHTML = '';
+
+  // Header / back button
+  const hdr = document.createElement('div');
+  hdr.id = 'sidebar-header';
+  if (parent !== null || sPath) {
+    const backLabel = parent ? parent.split('/').pop() : 'Folders';
+    hdr.innerHTML = `<button id="sb-back"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7 2L3.5 5.5 7 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${backLabel}</button>`;
+    hdr.querySelector('#sb-back').addEventListener('click', () => {
+      S.sidebarPath = parent;
+      renderSidebar();
+    });
+  } else {
+    hdr.textContent = 'Folders';
+  }
+  EL.sidebar.appendChild(hdr);
+
+  // Current folder row (when drilled in)
+  if (sPath) {
+    const cur  = document.createElement('div');
+    const lbl  = sPath === '__root__' ? '(root)' : sPath.split('/').pop();
+    const cnt  = (S.folders.get(sPath) || []).length;
+    cur.className = 'folder-item folder-current';
+    cur.dataset.folder = sPath;
+    cur.innerHTML = `<span class="f-icon">📂</span><span class="f-name">${lbl}</span>${cnt ? `<span class="f-count">${cnt}</span>` : ''}`;
+    cur.addEventListener('click', () => showFolder(sPath));
+    if (S.currentFolder === sPath) cur.classList.add('active');
+    EL.sidebar.appendChild(cur);
+
+    if (children.length) {
+      const div = document.createElement('div');
+      div.className = 'sb-divider';
+      EL.sidebar.appendChild(div);
+    }
+  }
+
+  // Child folders
+  for (const key of children) {
+    const hasKids = _sbHasKids(key);
+    const lbl     = key === '__root__' ? '(root)' : key.split('/').pop();
+    const cnt     = (S.folders.get(key) || []).length;
+
+    const item = document.createElement('div');
+    item.className = 'folder-item';
+    item.dataset.folder = key;
+    item.innerHTML = `
+      <span class="f-icon">📁</span>
+      <span class="f-name">${lbl}</span>
+      ${cnt ? `<span class="f-count">${cnt}</span>` : ''}
+      ${hasKids ? `<svg class="f-drill" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 2l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}`;
+    item.addEventListener('click', () => {
+      showFolder(key);
+      if (hasKids) { S.sidebarPath = key; renderSidebar(); }
+    });
+    if (S.currentFolder === key) item.classList.add('active');
+    EL.sidebar.appendChild(item);
+  }
 }
 
 function setActiveFolder(key) {

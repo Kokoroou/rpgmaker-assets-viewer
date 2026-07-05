@@ -24,6 +24,10 @@
   --header-bg: rgba(7,8,13,.85);
 }
 
+@media (max-width: 600px) {
+  :root { --sw: 120px; }
+}
+
 html[data-theme="light"] {
   --bg:   #f4f5fb;
   --s1:   #ecedf6;
