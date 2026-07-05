@@ -21,7 +21,7 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and
 
 ## Demo
 
-<video src="screenshots/instruction.mp4" controls width="100%"></video>
+<video src="https://raw.githubusercontent.com/Kokoroou/rpgmaker-assets-viewer/main/screenshots/instruction.mp4" controls width="100%"></video>
 
 ---
 
