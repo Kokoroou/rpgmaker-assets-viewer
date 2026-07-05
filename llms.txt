@@ -1,0 +1,33 @@
+# MakerLens
+
+> Free, browser-based RPG Maker asset viewer and extractor. Runs 100% offline — no server, no uploads.
+
+## What it does
+
+MakerLens lets you open encrypted RPG Maker game files directly in your browser and preview or download the images and audio inside.
+
+- **RPG Maker MV / MZ**: open the game folder; the encryption key is auto-read from `data/System.json`. Supports `.rpgmvp`, `.png_` (images) and `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_` (audio).
+- **RPG Maker XP / VX / VX Ace**: open a `.rgssad`, `.rgss2a`, or `.rgss3a` archive directly. No key needed — it's embedded in the archive.
+
+## Key features
+
+- Zero install — open `index.html` in any modern browser
+- Auto key detection from `System.json`
+- Audio preview with duration display
+- Lightbox image viewer with keyboard navigation
+- Download individual files or export whole folders as ZIP
+- Drag-and-drop support
+- Light/dark theme
+
+## Privacy
+
+All processing happens inside your browser. No files or keys are ever uploaded or sent to any server.
+
+## Supported formats
+
+`.rpgmvp`, `.png_`, `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_`, `.rgssad`, `.rgss2a`, `.rgss3a`, `.png`, `.jpg`, `.gif`, `.webp`, `.bmp`, `.ogg`, `.m4a`
+
+## Source
+
+https://github.com/Kokoroou/rpgmaker-assets-viewer
+License: MIT

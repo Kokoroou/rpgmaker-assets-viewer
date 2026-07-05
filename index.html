@@ -3,7 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maker Lens</title>
+<title>MakerLens — RPG Maker Asset Viewer &amp; Extractor (MV, MZ, XP, VX, VX Ace)</title>
+<meta name="description" content="Free browser-based tool to view, preview and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Supports .rpgmvp, .png_, .rpgmvo, .ogg_, .rgssad, .rgss2a, .rgss3a. 100% offline — nothing uploaded.">
+<meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker MV MZ XP VX asset viewer">
+<link rel="canonical" href="https://kokoroou.github.io/rpgmaker-assets-viewer/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kokoroou.github.io/rpgmaker-assets-viewer/">
+<meta property="og:title" content="MakerLens — RPG Maker Asset Viewer &amp; Extractor">
+<meta property="og:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. 100% offline — no server, no uploads.">
+<meta property="og:image" content="https://kokoroou.github.io/rpgmaker-assets-viewer/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MakerLens — RPG Maker Asset Viewer &amp; Extractor">
+<meta name="twitter:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Free, browser-based, 100% offline.">
+<meta name="twitter:image" content="https://kokoroou.github.io/rpgmaker-assets-viewer/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MakerLens",
+  "description": "Browser-based tool to view, preview, and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX, and VX Ace games. Supports .rpgmvp, .png_, .rpgmvo, .ogg_, RGSSAD archives. 100% offline.",
+  "url": "https://kokoroou.github.io/rpgmaker-assets-viewer/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web Browser",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "View and extract RPG Maker MV/MZ encrypted assets (.rpgmvp, .png_, .rpgmvo, .ogg_)",
+    "Open RGSSAD archives (.rgssad, .rgss2a, .rgss3a) for XP, VX, VX Ace",
+    "Audio preview in browser",
+    "Download individual assets or entire folders as ZIP",
+    "100% client-side — no uploads, no server"
+  ],
+  "author": {
+    "@type": "Person",
+    "name": "Trương Tuấn Anh",
+    "url": "https://github.com/Kokoroou"
+  },
+  "license": "https://opensource.org/licenses/MIT"
+}
+</script>
 <link rel="stylesheet" href="css/style.css">
 <script>(function(){var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}());</script>
 </head>
@@ -76,8 +113,8 @@
     <div id="setup">
       <div id="setup-inner">
         <div>
-          <div class="setup-title">Maker<span style="color:var(--a)">Lens</span></div>
-          <div class="setup-sub">View &amp; extract images and audio from RPG Maker games</div>
+          <h1 class="setup-title">Maker<span style="color:var(--a)">Lens</span></h1>
+          <p class="setup-sub">View &amp; extract images and audio from RPG Maker games</p>
         </div>
 
         <div id="drop-zone">
