@@ -34,7 +34,7 @@
   flex-shrink: 0;
   padding-left: 6px;
 }
-#logo span { color: var(--a); }
+#logo span span { color: var(--a); }
 .logo-abbr { display: none; }
 
 #search-wrap {

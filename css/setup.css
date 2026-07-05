@@ -16,8 +16,7 @@
   gap: 12px;
 }
 
-.setup-title { font-size: 18px; font-weight: 700; color: var(--t); margin-bottom: 2px; }
-.setup-sub   { font-size: 12px; color: var(--t2); }
+.setup-sub { font-size: 12px; color: var(--t2); }
 
 .setup-section-label {
   font-size: 10px;
