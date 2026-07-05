@@ -38,6 +38,8 @@ const EL = {
 let _lbZ = 1, _lbTx = 0, _lbTy = 0;
 let _lbPanning = false, _lbPx = 0, _lbPy = 0;
 let _lbMdx = 0, _lbMdy = 0;
+let _lbGeneration = 0;
+const _preloadPool = new Map(); // path → Image, keeps decoded bitmaps alive
 
 function _lbApply() {
   EL.lbImg.style.transform = `translate(${_lbTx}px,${_lbTy}px) scale(${_lbZ})`;
@@ -82,6 +84,7 @@ async function entryToURL(entry) {
 function clearBlobCache() {
   S.blobCache.forEach(u => URL.revokeObjectURL(u));
   S.blobCache.clear();
+  _preloadPool.clear();
 }
 
 // ─── Key ──────────────────────────────────────────────
@@ -290,7 +293,28 @@ function lbMove(d) {
   loadLbEntry(S.lbIdx);
 }
 
+async function preloadAround(idx) {
+  const n = S.currentMedia.length;
+  for (let d = 1; d <= 3; d++) {
+    for (const sign of [-1, 1]) {
+      const i = (idx + d * sign + n) % n;
+      const path = S.currentMedia[i];
+      if (_preloadPool.has(path)) continue;
+      const entry = S.files.get(path);
+      if (!entry || entry.isAudio) continue;
+      try {
+        const url = await entryToURL(entry);
+        const img = new Image();
+        img.src = url;
+        img.decode().catch(() => {});
+        _preloadPool.set(path, img);
+      } catch (_) {}
+    }
+  }
+}
+
 async function loadLbEntry(idx) {
+  const gen = ++_lbGeneration;
   const path  = S.currentMedia[idx];
   if (!path) return;
   const entry = S.files.get(path);
@@ -323,19 +347,23 @@ async function loadLbEntry(idx) {
     EL.lbAudio.pause();
     EL.lbAudio.style.display = 'none';
     EL.lbImg.style.display   = 'block';
-    EL.lbImg.style.opacity   = '.3';
+    EL.lbImg.style.opacity   = '0';
     try {
       const url = await entryToURL(entry);
+      if (gen !== _lbGeneration) return;
       EL.lbImg.src = url;
-      EL.lbImg.onload = () => {
-        EL.lbImg.style.opacity = '1';
-        EL.lbMeta.textContent  = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px`;
-      };
+      await EL.lbImg.decode();
+      if (gen !== _lbGeneration) return;
+      EL.lbImg.style.opacity = '1';
+      EL.lbMeta.textContent  = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px`;
     } catch (e) {
+      if (gen !== _lbGeneration) return;
       EL.lbImg.style.opacity = '1';
       EL.lbMeta.textContent  = `⚠ ${e.message}`;
     }
   }
+
+  preloadAround(idx);
 }
 
 // ─── Lightbox zoom (wheel + drag) ────────────────────
