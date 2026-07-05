@@ -1,4 +1,4 @@
-# SpriteVault
+# MakerLens
 
 A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and VX Ace**. Runs entirely client-side — no server, no uploads, no data leaves your machine.
 
