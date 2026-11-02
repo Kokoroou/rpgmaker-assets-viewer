@@ -12,7 +12,7 @@
 // The Content-Security-Policy in index.html only allows this host,
 // so the page cannot send data anywhere else.
 (function () {
-  var GC_ENDPOINT = 'https://makerlens.goatcounter.com/count';
+  var GC_ENDPOINT = 'https://kokoroou.goatcounter.com/count';
   // Query params GoatCounter reads as traffic source / campaign.
   // Anything else in the URL is not sent.
   var SOURCE_PARAMS = ['utm_source', 'ref', 'src', 'source', 'utm_campaign', 'campaign'];
