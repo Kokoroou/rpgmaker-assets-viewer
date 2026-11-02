@@ -89,7 +89,7 @@ No encryption key needed — keys are embedded in the archive. Select the game f
 
 The public site counts anonymous page visits with [GoatCounter](https://www.goatcounter.com) to understand how many people use the tool and where they come from. See [`js/analytics.js`](js/analytics.js) — it is the only code that sends anything over the network.
 
-- **Sent:** page path and referring site (e.g. `google.com`, `chatgpt.com`).
+- **Sent:** page path, referring site (e.g. `google.com`), and traffic-source URL parameters such as `?utm_source=chatgpt.com` (other URL parameters are dropped).
 - **Never sent:** file names, folder names, game titles, keys, or file contents.
 - No cookies, no `localStorage`, no IP storage. Do Not Track / Global Privacy Control are respected.
 - Not active when you open `index.html` locally.
