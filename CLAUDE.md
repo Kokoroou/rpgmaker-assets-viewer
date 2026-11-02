@@ -26,7 +26,7 @@ js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
 js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryToURL(), showEmptyState()
 js/app.js            — event handlers, loadMVMZFolder(), loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
-js/analytics.js      — anonymous GoatCounter page-view ping (path + referrer only)
+js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params)
 ```
 
 All files share a single global scope — no modules.
