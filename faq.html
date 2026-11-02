@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Same policy as index.html: scripts only from this site plus the theme snippet
+     (same hash), and the anonymous page counter (js/analytics.js) as the only other host. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' https://kokoroou.goatcounter.com; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>FAQ — Open .rpgmvp, .png_ and .rgss3a files | MakerLens</title>
+<meta name="description" content="How to open and extract RPG Maker MV, MZ, XP, VX and VX Ace assets: .rpgmvp, .png_, .rpgmvo, .ogg_, .rgssad, .rgss2a, .rgss3a. Where the key is, ZIP export, privacy and legal notes.">
+<link rel="canonical" href="https://kokoroou.github.io/rpgmaker-assets-viewer/faq.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kokoroou.github.io/rpgmaker-assets-viewer/faq.html">
+<meta property="og:title" content="MakerLens FAQ — Open RPG Maker encrypted assets">
+<meta property="og:description" content="How to open .rpgmvp, .png_, .rpgmvo and .rgss3a files in your browser, where the key comes from, and why your files are never uploaded.">
+<meta property="og:image" content="https://kokoroou.github.io/rpgmaker-assets-viewer/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="MakerLens — view and extract RPG Maker assets in your browser">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I open .rpgmvp, .rpgmvo or .png_ files?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Open MakerLens, click Open Folder and select the game's root folder. MakerLens reads the encryption key from data/System.json automatically, then decrypts .rpgmvp and .png_ images and .rpgmvo, .rpgmvm, .ogg_ and .m4a_ audio so you can preview and download them." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I extract a .rgss3a, .rgss2a or .rgssad archive?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Click Select archive and choose the archive file, usually Game.rgss3a (VX Ace), Game.rgss2a (VX) or Game.rgssad (XP). The key is derived from the archive itself, so nothing else is needed. Selecting the game folder also works; MakerLens finds the archive inside it." }
+    },
+    {
+      "@type": "Question",
+      "name": "Where is the encryption key? Do I need to enter it?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. RPG Maker MV and MZ store the key as encryptionKey in data/System.json, and MakerLens reads it from there. If images or audio fail to open, make sure you selected the game's root folder rather than a subfolder such as img." }
+    },
+    {
+      "@type": "Question",
+      "name": "Are my game files uploaded anywhere?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Files are read and decrypted inside your browser; files, file names and keys never leave your device. The page's Content-Security-Policy blocks requests to any server except an anonymous page-view counter, which receives only the page address and referrer." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I download all files at once?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Open a folder in the sidebar and use the Download folder button to save every asset in it as a single ZIP file. Individual files can be downloaded from the preview." }
+    },
+    {
+      "@type": "Question",
+      "name": "Which RPG Maker versions are supported?",
+      "acceptedAnswer": { "@type": "Answer", "text": "RPG Maker MZ, MV, VX Ace, VX and XP. RPG Maker 2000 and 2003 are not supported. Unencrypted .png, .jpg, .gif, .webp, .bmp, .ogg and .m4a files inside a game folder are shown as well." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to install anything? Does it work offline?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No installation is needed: MakerLens runs in modern desktop browsers such as Chrome, Edge and Firefox. Once the page has loaded, opening, previewing and downloading work without an internet connection. You can also download the source code and open index.html locally." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it legal to extract RPG Maker game assets?",
+      "acceptedAnswer": { "@type": "Answer", "text": "MakerLens is intended for personal use only, to access assets from games you own. Redistributing extracted assets may violate the game's license or copyright, so check the game's terms before reusing anything." }
+    }
+  ]
+}
+</script>
+<link rel="stylesheet" href="css/tokens.css">
+<script>(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
+<style>
+  body { margin: 0; background: var(--bg); color: var(--t); font: 16px/1.7 var(--font); -webkit-font-smoothing: antialiased; }
+  main { max-width: 680px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 2rem; letter-spacing: -.02em; line-height: 1.2; margin: 0 0 12px; }
+  p, li { color: var(--t2); }
+  strong { color: var(--t); }
+  ul { padding-left: 20px; }
+  a { color: var(--a); text-underline-offset: 2px; }
+  code { font-family: var(--mono); background: var(--s2); border: 1px solid var(--bd); border-radius: 4px; padding: 1px 5px; font-size: .85em; color: var(--t); }
+  .back { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; margin-bottom: 28px; border: 1px solid var(--bd2); border-radius: var(--r); background: var(--s1); color: var(--t); text-decoration: none; font-size: 14px; font-weight: 500; transition: background .15s, border-color .15s; }
+  .back:hover { border-color: var(--a40); background: var(--a10); }
+  .faq { margin-top: 28px; border-top: 1px solid var(--bd); }
+  details { border-bottom: 1px solid var(--bd); }
+  summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; }
+  summary::-webkit-details-marker { display: none; }
+  summary h2 { font-size: 1.05rem; line-height: 1.4; margin: 0; font-weight: 600; }
+  summary::after { content: "+"; flex: none; font-size: 1.4rem; line-height: 1; color: var(--t3); transition: transform .15s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details > :not(summary) { margin: 0 0 16px; }
+  .cta { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; margin-top: 32px; border-radius: var(--r); background: var(--a-bg); color: var(--a-on); text-decoration: none; font-weight: 600; }
+  .cta:hover { filter: brightness(1.08); }
+  :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← Back to MakerLens</a>
+  <h1>Frequently asked questions</h1>
+  <p>MakerLens opens encrypted RPG Maker game files in your browser so you can preview and download the images and audio inside. <strong>Your files never leave your device.</strong></p>
+
+  <div class="faq">
+    <details open>
+      <summary><h2>How do I open .rpgmvp, .rpgmvo or .png_ files?</h2></summary>
+      <p>Click <strong>Open Folder</strong> and select the game's root folder — the one that contains <code>www/</code> (MV) or <code>data/</code> and <code>img/</code> (MZ). MakerLens reads the encryption key from <code>data/System.json</code> automatically, then decrypts <code>.rpgmvp</code> / <code>.png_</code> images and <code>.rpgmvo</code> / <code>.rpgmvm</code> / <code>.ogg_</code> / <code>.m4a_</code> audio so you can preview and download them.</p>
+    </details>
+
+    <details>
+      <summary><h2>How do I extract a .rgss3a, .rgss2a or .rgssad archive?</h2></summary>
+      <p>Click <strong>Select archive</strong> and choose the archive file, usually named <code>Game.rgss3a</code> (VX Ace), <code>Game.rgss2a</code> (VX) or <code>Game.rgssad</code> (XP). The key is derived from the archive itself, so nothing else is needed. Selecting the game folder also works; MakerLens finds the archive inside it.</p>
+    </details>
+
+    <details>
+      <summary><h2>Where is the encryption key? Do I need to enter it?</h2></summary>
+      <p>No. RPG Maker MV and MZ store the key as <code>encryptionKey</code> in <code>data/System.json</code>, and MakerLens reads it from there. If images or audio fail to open, make sure you selected the game's root folder, not a subfolder such as <code>img/</code>.</p>
+    </details>
+
+    <details>
+      <summary><h2>Are my game files uploaded anywhere?</h2></summary>
+      <p>No. Files are read and decrypted inside your browser; files, file names and keys never leave your device. The page's Content-Security-Policy blocks requests to any server except an anonymous page-view counter, which receives only the page address and referrer. Details: <a href="privacy.html">Privacy &amp; analytics</a>.</p>
+    </details>
+
+    <details>
+      <summary><h2>Can I download all files at once?</h2></summary>
+      <p>Yes. Open a folder in the sidebar and use the <strong>Download folder</strong> button to save every asset in it as a single ZIP file. Individual files can be downloaded from the preview.</p>
+    </details>
+
+    <details>
+      <summary><h2>Which RPG Maker versions are supported?</h2></summary>
+      <p>RPG Maker MZ, MV, VX Ace, VX and XP. RPG Maker 2000 / 2003 are not supported. Unencrypted <code>.png</code>, <code>.jpg</code>, <code>.gif</code>, <code>.webp</code>, <code>.bmp</code>, <code>.ogg</code> and <code>.m4a</code> files inside a game folder are shown as well.</p>
+    </details>
+
+    <details>
+      <summary><h2>Do I need to install anything? Does it work offline?</h2></summary>
+      <p>No installation is needed: MakerLens runs in modern desktop browsers such as Chrome, Edge and Firefox. Once the page has loaded, opening, previewing and downloading work without an internet connection. You can also download the <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer">source code</a> and open <code>index.html</code> locally.</p>
+    </details>
+
+    <details>
+      <summary><h2>Is it legal to extract RPG Maker game assets?</h2></summary>
+      <p>MakerLens is intended for personal use only, to access assets from games you own. Redistributing extracted assets may violate the game's license or copyright, so check the game's terms before reusing anything.</p>
+    </details>
+  </div>
+
+  <a class="cta" href="./">Open MakerLens</a>
+</main>
+<script src="js/analytics.js"></script>
+</body>
+</html>

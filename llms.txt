@@ -16,8 +16,13 @@ MakerLens lets you open encrypted RPG Maker game files directly in your browser 
 - Audio preview with duration display
 - Lightbox image viewer with keyboard navigation
 - Download individual files or export whole folders as ZIP
+- Search files by name
 - Drag-and-drop support
-- Light/dark theme
+- Light/dark theme (follows your system setting by default)
+
+## FAQ
+
+How to open .rpgmvp / .png_ / .rgss3a files, where the key comes from, ZIP export, supported versions and legal notes: https://kokoroou.github.io/rpgmaker-assets-viewer/faq.html
 
 ## Privacy
 
