@@ -87,6 +87,8 @@ No encryption key needed — keys are embedded in the archive. Select the game f
 
 ## Privacy & analytics
 
+Full details: [privacy.html](https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html).
+
 The public site counts anonymous page visits with [GoatCounter](https://www.goatcounter.com) to understand how many people use the tool and where they come from. See [`js/analytics.js`](js/analytics.js) — it is the only code that sends anything over the network.
 
 - **Sent:** page path, referring site (e.g. `google.com`), and traffic-source URL parameters such as `?utm_source=chatgpt.com` (other URL parameters are dropped).

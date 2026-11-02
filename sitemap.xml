@@ -6,4 +6,8 @@
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html</loc>
+    <lastmod>2026-11-02</lastmod>
+  </url>
 </urlset>

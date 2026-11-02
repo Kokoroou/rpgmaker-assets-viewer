@@ -143,24 +143,51 @@ EL.themeToggle.addEventListener('click', () => {
 });
 
 // ─── Events: Folder picker ────────────────────────────
-EL.openBtn.addEventListener('click', () => EL.folderInput.click());
-$('open-game-btn').addEventListener('click', () => EL.folderInput.click());
-EL.folderInput.addEventListener('change', async () => {
-  const files = Array.from(EL.folderInput.files);
-  if (files.length) {
-    const orig = EL.openBtn.innerHTML;
-    EL.openBtn.disabled = true;
-    EL.openBtn.innerHTML = '<span class="status-spinner"></span>Loading…';
-    EL.grid.innerHTML = '';
-    EL.folderPath.innerHTML = '';
-    EL.countBadge.textContent = '';
-    EL.searchBox.value = '';
-    S.query = '';
-    await loadGameFolder(files);
+async function openFolderFiles(getFiles) {
+  const orig = EL.openBtn.innerHTML;
+  EL.openBtn.disabled = true;
+  EL.openBtn.innerHTML = '<span class="status-spinner"></span>Loading…';
+  try {
+    const files = await getFiles();
+    if (files.length) {
+      EL.grid.innerHTML = '';
+      EL.folderPath.innerHTML = '';
+      EL.countBadge.textContent = '';
+      EL.searchBox.value = '';
+      S.query = '';
+      await loadGameFolder(files);
+    }
+  } finally {
     EL.openBtn.disabled = false;
     EL.openBtn.innerHTML = orig;
   }
+}
+
+// Prefer the File System Access API (Chrome/Edge): its permission prompt says
+// "view files", whereas <input webkitdirectory> makes Chrome ask to "upload"
+// files — misleading, since nothing is ever sent. Other browsers fall back.
+async function pickFolder() {
+  if (!window.showDirectoryPicker) return EL.folderInput.click();
+  let dir;
+  try {
+    dir = await window.showDirectoryPicker({ id: 'game-folder', mode: 'read' });
+  } catch (e) {
+    if (e.name !== 'AbortError') EL.folderInput.click();
+    return;
+  }
+  await openFolderFiles(async () => {
+    const files = [];
+    await traverseHandle(dir, '', files);
+    return files;
+  });
+}
+
+EL.openBtn.addEventListener('click', pickFolder);
+$('open-game-btn').addEventListener('click', pickFolder);
+EL.folderInput.addEventListener('change', async () => {
+  const files = Array.from(EL.folderInput.files);
   EL.folderInput.value = '';
+  if (files.length) await openFolderFiles(async () => files);
 });
 
 // ─── Events: RGSSAD archive ───────────────────────────
