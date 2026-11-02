@@ -1,6 +1,6 @@
 # MakerLens
 
-A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and VX Ace**. Runs entirely client-side — no server, no uploads, no data leaves your machine.
+A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and VX Ace**. Runs entirely client-side — no server, no uploads; your game files and keys never leave your machine.
 
 **[Try it live →](https://kokoroou.github.io/rpgmaker-assets-viewer/)**
 
@@ -28,7 +28,7 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and
 ## Features
 
 - **Zero-install** — open `index.html` directly in any modern browser
-- **Local-only processing** — files are read via the browser File API; nothing is uploaded or transmitted
+- **Local-only processing** — files are read via the browser File API; no file or key is ever uploaded or transmitted
 - **Auto key extraction** — reads `encryptionKey` from `data/System.json` automatically (MV/MZ)
 - **RGSSAD archive support** — load `.rgssad` / `.rgss2a` / `.rgss3a` archives directly (XP/VX/VX Ace)
 - **Audio preview** — plays decrypted `.ogg_`, `.m4a_`, `.rpgmvo`, `.rpgmvm` files in-browser
@@ -85,11 +85,25 @@ No encryption key needed — keys are embedded in the archive. Select the game f
 
 ---
 
+## Privacy & analytics
+
+Full details: [privacy.html](https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html).
+
+The public site counts anonymous page visits with [GoatCounter](https://www.goatcounter.com) to understand how many people use the tool and where they come from. See [`js/analytics.js`](js/analytics.js) — it is the only code that sends anything over the network.
+
+- **Sent:** page path, referring site (e.g. `google.com`), and traffic-source URL parameters such as `?utm_source=chatgpt.com` (other URL parameters are dropped).
+- **Never sent:** file names, folder names, game titles, keys, or file contents.
+- No cookies, no `localStorage`, no IP storage. Do Not Track / Global Privacy Control are respected.
+- Not active when you open `index.html` locally.
+- A Content-Security-Policy in `index.html` blocks requests to any other host, so this is enforced by the browser, not just promised.
+
+---
+
 ## Legal Notice
 
 See [LEGAL.md](LEGAL.md) for full details on intended use, user responsibility, and DMCA/takedown policy.
 
-**Summary:** This tool reads only files you explicitly select from your local machine. No data is uploaded or stored. It is intended for developers, artists, and researchers working with their own assets or with explicit permission.
+**Summary:** This tool reads only files you explicitly select from your local machine. No file or key is uploaded or stored. It is intended for developers, artists, and researchers working with their own assets or with explicit permission.
 
 ---
 

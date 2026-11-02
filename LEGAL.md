@@ -11,6 +11,7 @@ This section exists to be explicit about what this tool does and does not do, an
 In both cases, the tool:
 - **Reads only files the user explicitly selects** from their local filesystem.
 - **Never uploads, stores, or transmits any file or key to a remote server.**
+- Collects no information about which files or games are opened. The only network request is an anonymous page-view count (page path and referrer) — see "Analytics" in the README.
 
 Because the keys are co-located with (or embedded in) the content they "protect", this obfuscation is not considered effective access control under most legal interpretations, and is substantially different from true DRM systems (e.g., commercial encryption schemes where the key is not distributed with the content).
 

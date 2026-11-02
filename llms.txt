@@ -1,6 +1,6 @@
 # MakerLens
 
-> Free, browser-based RPG Maker asset viewer and extractor. Runs 100% offline — no server, no uploads.
+> Free, browser-based RPG Maker asset viewer and extractor. Runs 100% client-side — files are never uploaded.
 
 ## What it does
 
@@ -21,7 +21,7 @@ MakerLens lets you open encrypted RPG Maker game files directly in your browser 
 
 ## Privacy
 
-All processing happens inside your browser. No files or keys are ever uploaded or sent to any server.
+All processing happens inside your browser. No files or keys are ever uploaded or sent to any server. The public site counts anonymous page visits (page path and referrer only, no cookies) with GoatCounter. Details: https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html
 
 ## Supported formats
 
