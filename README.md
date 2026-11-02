@@ -40,7 +40,7 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and
 - **Search** — real-time filename filter
 - **Adjustable tile size** — slider from 70 px to 280 px
 - **Resizable sidebar** — drag the sidebar edge; preference persisted to `localStorage`
-- **Light / dark theme** — toggle in the header; preference persisted
+- **Light / dark theme** — follows your system setting by default; toggle in the header to override (persisted)
 
 ---
 
