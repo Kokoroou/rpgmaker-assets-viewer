@@ -454,6 +454,11 @@
 /* ── Mobile search button (hidden on desktop) ────────── */
 #mobile-search-btn { display: none; }
 
+/* ── Search hidden until a folder/archive with media is loaded ── */
+body:not(.has-files) #search-wrap,
+body:not(.has-files) #mobile-search-btn { display: none !important; }
+body:not(.has-files) #header-right       { margin-left: auto !important; }
+
 /* ── Mobile search overlay ───────────────────────────── */
 #search-overlay {
   display: none;

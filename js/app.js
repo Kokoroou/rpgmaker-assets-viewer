@@ -112,6 +112,8 @@ async function loadGameFolder(allFiles) {
 function showGrid() {
   EL.countBadge.textContent = S.files.size ? `${S.files.size} items` : '';
   renderSidebar();
+  // Search is only useful once there is something to search
+  document.body.classList.toggle('has-files', S.files.size > 0);
   const sidebarHidden = localStorage.getItem('sidebarHidden') === '1';
   EL.sidebar.classList.toggle('hidden', sidebarHidden);
   $('sidebar-resizer').classList.toggle('hidden', sidebarHidden);
