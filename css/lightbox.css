@@ -1,103 +1,104 @@
 /* ── Lightbox overlay ────────────────────────────────── */
+/* The lightbox stays dark in both themes — media viewers read best on a dark
+   stage — so its controls use fixed light-on-dark colours, not theme tokens. */
 #lightbox {
+  --lb-fg:   #f8fafc;
+  --lb-fg2:  #cbd5e1;
+  --lb-ctl:  rgba(255,255,255,.08);
+  --lb-ctl2: rgba(255,255,255,.16);
+  --lb-bd:   rgba(255,255,255,.14);
+
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(4,5,9,.94);
-  backdrop-filter: blur(8px);
+  background: var(--lb-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 100;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  color: var(--lb-fg);
 }
-#lightbox.open { display: flex; }
+#lightbox.open { display: flex; animation: fade-in .15s var(--ease); }
 
 /* ── Media area ──────────────────────────────────────── */
-#lb-img-wrap { position: relative; max-width: 90vw; max-height: 80vh; }
+#lb-img-wrap { position: relative; max-width: 86vw; max-height: 78vh; }
 
 #lb-img {
-  max-width: 90vw;
-  max-height: 80vh;
+  max-width: 86vw;
+  max-height: 78vh;
   object-fit: contain;
   border-radius: var(--r);
-  background: repeating-conic-gradient(var(--c1) 0% 25%, var(--c2) 0% 50%) 0 0 / 14px 14px;
-  transition: opacity .2s;
+  background: repeating-conic-gradient(#1b2336 0% 25%, #111827 0% 50%) 0 0 / 14px 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  transition: opacity .2s var(--ease);
   display: block;
   cursor: zoom-in;
   transform-origin: center center;
   user-select: none;
 }
-#lb-img.zoomed { cursor: grab; }
+#lb-img.zoomed { cursor: grab; image-rendering: pixelated; }
 #lb-img.grabbing { cursor: grabbing; }
 
 #lb-audio {
   display: none;
-  width: 380px;
+  width: 420px;
   max-width: 90vw;
-  accent-color: var(--a);
-  border-radius: var(--r);
+  accent-color: #22c55e;
+  color-scheme: dark;
 }
 
 /* ── Info bar ────────────────────────────────────────── */
-#lb-bar { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-#lb-name { font-size: 13px; color: var(--t); font-weight: 500; }
-#lb-meta { font-size: 11px; color: var(--t2); display: flex; gap: 14px; }
+#lb-bar {
+  margin-top: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  max-width: 90vw;
+  text-align: center;
+}
+#lb-name { font-size: 14px; color: var(--lb-fg); font-weight: 600; font-family: var(--mono); word-break: break-all; }
+#lb-meta { font-size: 12px; color: var(--lb-fg2); display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-variant-numeric: tabular-nums; }
 
-/* ── Navigation arrows ───────────────────────────────── */
+/* ── Controls ────────────────────────────────────────── */
+.lb-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
+  color: var(--lb-fg);
+  background: var(--lb-ctl);
+  border: 1px solid var(--lb-bd);
+  border-radius: 50%;
+  transition: background .15s var(--ease), border-color .15s var(--ease), transform .1s var(--ease);
+}
+.lb-btn:hover  { background: var(--lb-ctl2); border-color: rgba(255,255,255,.28); }
+.lb-btn:active { transform: scale(.96); }
+.lb-btn:focus-visible { outline-color: #4ade80; border-radius: 50%; }
+
 .lb-nav {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px; height: 40px;
-  background: var(--s2);
-  border: 1px solid var(--bd2);
-  color: var(--t);
-  font-size: 20px;
-  border-radius: var(--r);
-  display: flex; align-items: center; justify-content: center;
-  transition: background .12s, border-color .12s;
+  width: 48px; height: 48px;
 }
-.lb-nav:hover { background: var(--s3); border-color: var(--a); }
-#lb-prev { left: 14px; }
-#lb-next { right: 14px; }
+.lb-nav:active { transform: translateY(-50%) scale(.96); }
+#lb-prev { left: 16px; }
+#lb-next { right: 16px; }
 
 /* ── Top-bar wrapper (transparent on desktop) ────────── */
 #lb-top-bar { display: contents; }
 
-/* ── Top-right controls ──────────────────────────────── */
-#lb-close {
-  position: fixed;
-  top: 14px; right: 18px;
-  font-size: 20px;
-  color: var(--t2);
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--r);
-  transition: color .12s, background .12s;
-}
-#lb-close:hover { color: var(--t); background: var(--s2); }
-
-#lb-download {
-  position: fixed;
-  top: 14px; right: 58px;
-  color: var(--t2);
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--r);
-  transition: color .12s, background .12s;
-}
-#lb-download:hover { color: var(--t); background: var(--s2); }
+#lb-close    { position: fixed; top: 16px; right: 16px; }
+#lb-download { position: fixed; top: 16px; right: 68px; }
 
 #lb-counter {
   position: fixed;
-  top: 16px;
+  top: 24px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 11px;
-  color: var(--t2);
-  background: var(--s2);
-  border: 1px solid var(--bd);
+  font-size: 12px;
+  color: var(--lb-fg2);
+  background: var(--lb-ctl);
+  border: 1px solid var(--lb-bd);
   border-radius: 99px;
   padding: 3px 12px;
   font-variant-numeric: tabular-nums;
@@ -114,19 +115,20 @@
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 10px 14px;
+    padding: 8px 12px;
+    padding-top: max(8px, env(safe-area-inset-top));
     flex-shrink: 0;
-    gap: 4px;
+    gap: 8px;
     position: sticky;
     top: 0;
-    background: rgba(4,5,9,.92);
+    background: rgba(2,6,23,.9);
     z-index: 10;
+    margin-bottom: 12px;
   }
 
   #lb-close, #lb-download {
     position: static;
     top: auto; right: auto;
-    width: 40px; height: 40px;
   }
 
   #lb-counter {
@@ -150,13 +152,11 @@
     margin: 0 auto;
     flex-shrink: 0;
   }
-  #lb-img  { max-height: 58vh; max-width: 100vw; }
+  #lb-img  { max-height: 58vh; max-width: 100vw; border-radius: 0; }
 
-  .lb-nav {
-    top: 50%;
-    width: 44px; height: 44px;
-    z-index: 5;
-  }
+  .lb-nav { top: 50%; z-index: 5; }
+  #lb-prev { left: 8px; }
+  #lb-next { right: 8px; }
 
-  #lb-bar { margin-top: 12px; padding-bottom: 24px; }
+  #lb-bar { margin-top: 14px; padding: 0 16px max(24px, env(safe-area-inset-bottom)); }
 }

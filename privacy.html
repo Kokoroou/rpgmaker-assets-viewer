@@ -4,22 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- No scripts except the theme snippet (same hash as index.html); no network requests. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-19/i/Np6HfKjqXZ/w9RCsGV5jxroQA807f2ccUpUjf4='; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Privacy — MakerLens</title>
 <meta name="description" content="How MakerLens handles your files and what anonymous usage data it counts.">
 <link rel="canonical" href="https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html">
 <link rel="stylesheet" href="css/tokens.css">
-<script>(function(){var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}());</script>
+<script>(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
 <style>
-  body { margin: 0; background: var(--bg); color: var(--t); font: 15px/1.65 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  body { margin: 0; background: var(--bg); color: var(--t); font: 16px/1.7 var(--font); -webkit-font-smoothing: antialiased; }
   main { max-width: 680px; margin: 0 auto; padding: 40px 16px 64px; }
-  h1 { font-size: 1.6rem; margin: 0 0 8px; }
-  h2 { font-size: 1.1rem; margin: 32px 0 8px; }
-  p, li { color: var(--t); opacity: .9; }
+  h1 { font-size: 2rem; letter-spacing: -.02em; line-height: 1.2; margin: 0 0 12px; }
+  h2 { font-size: 1.15rem; margin: 36px 0 8px; padding-top: 20px; border-top: 1px solid var(--bd); }
+  p, li { color: var(--t2); }
+  strong { color: var(--t); }
   ul { padding-left: 20px; }
-  a { color: var(--a); }
-  code { background: var(--s2); border: 1px solid var(--bd); border-radius: var(--r); padding: 1px 5px; font-size: .9em; }
-  .back { display: inline-block; margin-bottom: 24px; text-decoration: none; }
+  li + li { margin-top: 4px; }
+  a { color: var(--a); text-underline-offset: 2px; }
+  code { font-family: var(--mono); background: var(--s2); border: 1px solid var(--bd); border-radius: 4px; padding: 1px 5px; font-size: .85em; color: var(--t); }
+  .back { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; margin-bottom: 28px; border: 1px solid var(--bd2); border-radius: var(--r); background: var(--s1); color: var(--t); text-decoration: none; font-size: 14px; font-weight: 500; transition: background .15s, border-color .15s; }
+  .back:hover { border-color: var(--a40); background: var(--a10); }
+  :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -49,7 +53,7 @@
   <p>The code is short and public: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/analytics.js" rel="noopener">js/analytics.js</a>.</p>
 
   <h2>Preferences</h2>
-  <p>Theme and sidebar layout are stored in your browser's <code>localStorage</code> for convenience. They never leave your device.</p>
+  <p>The theme follows your system setting unless you change it. Your theme choice and sidebar layout are stored in your browser's <code>localStorage</code> for convenience. They never leave your device.</p>
 </main>
 </body>
 </html>

@@ -6,7 +6,7 @@
 <!-- Content-Security-Policy: the page may only send requests to itself and to the
      anonymous page counter (js/analytics.js). Game files and keys cannot leave the browser.
      If you edit the inline theme script below, update its sha256 hash here. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-19/i/Np6HfKjqXZ/w9RCsGV5jxroQA807f2ccUpUjf4='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://kokoroou.goatcounter.com; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://kokoroou.goatcounter.com; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>MakerLens — RPG Maker Asset Viewer &amp; Extractor (MV, MZ, XP, VX, VX Ace)</title>
 <meta name="description" content="Free browser-based tool to view, preview and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Supports .rpgmvp, .png_, .rpgmvo, .ogg_, .rgssad, .rgss2a, .rgss3a. Files never leave your browser.">
 <meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker MV MZ XP VX asset viewer">
@@ -47,155 +47,159 @@
 }
 </script>
 <link rel="stylesheet" href="css/style.css">
-<script>(function(){var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}());</script>
+<script>(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
 </head>
 <body>
 
+<!-- Icon sprite (Lucide-style strokes, inline so the CSP needs no extra host) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M7.5 12.5l2-2.5 1.5 1.8 1-1.3 1.5 2" stroke-width="1.6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17V7.5A2.5 2.5 0 015.5 5H9l2 2.5h6A2.5 2.5 0 0119.5 10v.5"/><path d="M3 17l2.2-5.6A2 2 0 017.1 10H20a1 1 0 01.9 1.4l-2.4 6A2.5 2.5 0 0116.2 19H5a2 2 0 01-2-2z"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 002 2h10a2 2 0 002-2V9M10 13h4"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M4 20h16"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 006 0zM19 7l-3 6a3 3 0 006 0z"/></symbol>
+</svg>
+
 <!-- ╔════ HEADER ════╗ -->
-<div id="header">
+<header id="header">
   <div id="logo">
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="1" y="1" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".9"/>
-      <rect x="10" y="1" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-      <rect x="1" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-      <rect x="10" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".2"/>
-    </svg>
+    <span class="logo-mark"><svg width="18" height="18" aria-hidden="true"><use href="#i-logo"/></svg></span>
     <span class="logo-full">Maker<span>Lens</span></span>
     <span class="logo-abbr">M<span>L</span></span>
   </div>
 
-  <div id="search-wrap">
-    <span id="search-icon">⌕</span>
-    <input type="text" id="search-box" placeholder="Search…" autocomplete="off" spellcheck="false">
+  <div id="search-wrap" role="search">
+    <span id="search-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-search"/></svg></span>
+    <label for="search-box" class="sr-only">Search files</label>
+    <input type="search" id="search-box" placeholder="Search files…" autocomplete="off" spellcheck="false">
   </div>
-  <button class="btn-icon" id="mobile-search-btn" title="Search">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M8.5 8.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-    </svg>
+  <button class="btn-icon" id="mobile-search-btn" title="Search" aria-label="Search">
+    <svg width="20" height="20" aria-hidden="true"><use href="#i-search"/></svg>
   </button>
 
   <div id="header-right">
-    <span id="count-badge"></span>
-    <button class="btn-icon" id="about-btn" title="About">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/>
-        <path d="M7 6.5v3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        <circle cx="7" cy="4.2" r=".75" fill="currentColor"/>
-      </svg>
+    <span id="count-badge" aria-live="polite"></span>
+    <button class="btn-icon" id="about-btn" title="About" aria-label="About">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-info"/></svg>
     </button>
-    <button class="btn-icon" id="theme-toggle" title="Toggle theme">
-      <svg class="icon-sun" width="15" height="15" viewBox="0 0 15 15" fill="none">
-        <circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
-        <path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-      </svg>
-      <svg class="icon-moon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M12 9.5A5.5 5.5 0 014.5 2a5.5 5.5 0 000 10A5.5 5.5 0 0012 9.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <button class="btn-icon" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon-sun" width="20" height="20" aria-hidden="true"><use href="#i-sun"/></svg>
+      <svg class="icon-moon" width="20" height="20" aria-hidden="true"><use href="#i-moon"/></svg>
     </button>
-    <button class="btn-primary" id="open-btn">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-        <path d="M1 3.5A1.5 1.5 0 012.5 2H5l1.5 2H11A1.5 1.5 0 0112.5 5.5v5A1.5 1.5 0 0111 12H2.5A1.5 1.5 0 011 10.5V3.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
-      </svg>
+    <button class="btn-primary" id="open-btn" aria-label="Open game folder">
+      <svg width="18" height="18" aria-hidden="true"><use href="#i-folder"/></svg>
       <span class="btn-label">Open Folder</span>
     </button>
   </div>
-</div>
+</header>
 
 <!-- ╔════ LAYOUT ════╗ -->
 <div id="layout">
 
   <!-- ── Sidebar ── -->
-  <div id="sidebar" class="hidden">
+  <nav id="sidebar" class="hidden" aria-label="Folders">
     <div id="sidebar-header">Folders</div>
-  </div>
+  </nav>
   <div id="sidebar-resizer" class="hidden"></div>
 
   <!-- ── Main ── -->
-  <div id="main">
+  <main id="main">
 
     <!-- Setup -->
     <div id="setup">
       <div id="setup-inner">
-        <p class="setup-sub">View &amp; extract images and audio from RPG Maker games</p>
+        <div class="setup-hero">
+          <h1 class="setup-title">View &amp; extract RPG Maker assets</h1>
+          <p class="setup-sub">Preview encrypted images and audio, then download them — right in your browser.</p>
+        </div>
 
         <div id="drop-zone">
-          <div class="dz-icon">📂</div>
-          <div class="dz-label">Supports RPG Maker MV · MZ · XP · VX · VX Ace</div>
-          <button class="btn-primary" id="open-game-btn" style="font-size:14px;padding:10px 28px">
-            Select Game Folder
-          </button>
+          <div class="dz-icon"><svg width="30" height="30" aria-hidden="true"><use href="#i-folder"/></svg></div>
+          <button class="btn-primary btn-lg" id="open-game-btn">Select Game Folder</button>
           <div class="dz-hint">or drop it anywhere on this page</div>
-          <div id="setup-status"></div>
+          <ul class="engine-chips" aria-label="Supported engines">
+            <li>MV</li><li>MZ</li><li>XP</li><li>VX</li><li>VX Ace</li>
+          </ul>
+          <div id="setup-status" role="status"></div>
         </div>
 
         <div class="or-divider">or</div>
 
-        <div style="display:flex;justify-content:center">
+        <div class="setup-alt">
           <button class="btn-ghost" id="load-rgssad-btn">
-            📦 Select archive (.rgssad / .rgss2a / .rgss3a)…
+            <svg width="18" height="18" aria-hidden="true"><use href="#i-archive"/></svg>
+            Select archive <code>.rgssad · .rgss2a · .rgss3a</code>
           </button>
         </div>
 
         <div class="privacy-note">
-          🔒 <span><strong>Your files never leave your device</strong> · works offline once loaded · <a href="privacy.html">Privacy</a></span>
+          <svg width="16" height="16" aria-hidden="true"><use href="#i-shield"/></svg>
+          <strong>Your files never leave your device</strong>
+          <span class="sep">·</span> works offline once loaded
+          <span class="sep">·</span> <a href="privacy.html">Privacy</a>
         </div>
       </div>
     </div>
 
     <!-- Toolbar + Grid -->
     <div id="toolbar">
-      <button class="btn-icon" id="sidebar-toggle" title="Toggle sidebar">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M2 4h10M2 7h10M2 10h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
+      <button class="btn-icon" id="sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-menu"/></svg>
       </button>
       <span id="folder-path"></span>
-      <button class="btn-icon" id="dl-folder-btn" title="Download all files in this folder as ZIP">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M6.5 1.5v6M4 5.5l2.5 2.5 2.5-2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M1.5 11h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
+      <button class="btn-icon" id="dl-folder-btn" title="Download all files in this folder as ZIP" aria-label="Download folder as ZIP">
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-download"/></svg>
       </button>
-      <div class="size-control">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <rect x="1" y="1" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/>
-          <rect x="7" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/>
-        </svg>
+      <label class="size-control" title="Thumbnail size">
+        <svg width="14" height="14" aria-hidden="true"><use href="#i-grid"/></svg>
+        <span class="sr-only">Thumbnail size</span>
         <input type="range" id="size-slider" min="70" max="280" value="120">
-      </div>
+      </label>
     </div>
 
     <div id="grid-wrap" style="display:none">
       <div id="empty-search">
-        <div class="e-icon" id="empty-icon">⌕</div>
+        <div class="e-icon" id="empty-icon"></div>
         <div id="empty-msg">No items found</div>
-        <div id="empty-sub" style="font-size:11px;color:var(--t3)">Try a different keyword</div>
+        <div id="empty-sub">Try a different keyword</div>
       </div>
       <div id="grid"></div>
     </div>
 
-  </div><!-- /main -->
+  </main><!-- /main -->
 </div><!-- /layout -->
 
 <!-- ╔════ LIGHTBOX ════╗ -->
-<div id="lightbox" role="dialog" aria-modal="true">
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Preview">
   <div id="lb-top-bar">
-    <button id="lb-close" title="Close (Esc)">✕</button>
+    <button id="lb-close" class="lb-btn" title="Close (Esc)" aria-label="Close">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
     <span id="lb-counter"></span>
-    <button id="lb-download" title="Download">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M7 1.5v7M4.5 6l2.5 2.5L9.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M2 11.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
+    <button id="lb-download" class="lb-btn" title="Download" aria-label="Download">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-download"/></svg>
     </button>
   </div>
-  <button class="lb-nav" id="lb-prev" title="Previous (←)">‹</button>
+  <button class="lb-nav lb-btn" id="lb-prev" title="Previous (←)" aria-label="Previous">
+    <svg width="22" height="22" aria-hidden="true"><use href="#i-left"/></svg>
+  </button>
   <div id="lb-img-wrap">
     <img id="lb-img" src="" alt="">
     <audio id="lb-audio" controls></audio>
   </div>
-  <button class="lb-nav" id="lb-next" title="Next (→)">›</button>
+  <button class="lb-nav lb-btn" id="lb-next" title="Next (→)" aria-label="Next">
+    <svg width="22" height="22" aria-hidden="true"><use href="#i-right"/></svg>
+  </button>
   <div id="lb-bar">
     <div id="lb-name"></div>
     <div id="lb-meta"></div>
@@ -203,46 +207,49 @@
 </div>
 
 <!-- ╔════ ABOUT MODAL ════╗ -->
-<div id="about-modal" role="dialog" aria-modal="true">
+<div id="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
   <div id="about-panel">
-    <button id="about-close" title="Close (Esc)">✕</button>
+    <button id="about-close" class="modal-close" title="Close (Esc)" aria-label="Close">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
 
-    <div class="about-logo">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="1" y="1" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".9"/>
-        <rect x="10" y="1" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-        <rect x="1" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-        <rect x="10" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".2"/>
-      </svg>
-      Maker<span>Lens</span>
-    </div>
+    <h2 class="about-logo" id="about-title">
+      <span class="logo-mark"><svg width="18" height="18" aria-hidden="true"><use href="#i-logo"/></svg></span>
+      <span>Maker<span>Lens</span></span>
+    </h2>
     <div class="about-sub">Browser-based viewer &amp; extractor for RPG Maker game assets</div>
 
     <div class="about-section">
-      <div class="about-section-title">Supported Engines</div>
+      <div class="about-section-title">Supported engines</div>
       <table class="about-formats">
-        <thead><tr><th>Engine</th><th>Encrypted Extensions</th></tr></thead>
+        <thead><tr><th>Engine</th><th>Encrypted extensions</th></tr></thead>
         <tbody>
-          <tr><td>RPG Maker MZ</td><td>.png_ &nbsp;·&nbsp; .ogg_ &nbsp;·&nbsp; .m4a_</td></tr>
-          <tr><td>RPG Maker MV</td><td>.rpgmvp &nbsp;·&nbsp; .rpgmvo &nbsp;·&nbsp; .rpgmvm</td></tr>
-          <tr><td>RPG Maker XP / VX</td><td>.rgssad &nbsp;·&nbsp; .rgss2a</td></tr>
+          <tr><td>RPG Maker MZ</td><td>.png_ · .ogg_ · .m4a_</td></tr>
+          <tr><td>RPG Maker MV</td><td>.rpgmvp · .rpgmvo · .rpgmvm</td></tr>
+          <tr><td>RPG Maker XP / VX</td><td>.rgssad · .rgss2a</td></tr>
           <tr><td>RPG Maker VX Ace</td><td>.rgss3a</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="about-section">
-      <div class="about-section-title">How to Use</div>
-      <ul class="about-list">
+      <div class="about-section-title">How to use</div>
+      <ol class="about-list">
         <li>Click <strong>Open Folder</strong> and select the game's root folder.</li>
         <li>Browse folders in the sidebar, click any asset to preview it, then use the download button to save individual files.</li>
         <li>Drag the sidebar edge to resize it. Resize and theme preferences are saved automatically.</li>
-      </ul>
+      </ol>
     </div>
 
     <div class="about-note">
-      🔒 <strong>Your files never leave your device.</strong> <a href="privacy.html">Privacy &amp; analytics</a><br><br>
-      ⚖️ <strong>Legal:</strong> This tool is intended for personal use only, to access assets from games you own. Redistribution of extracted assets may violate the game's license or copyright.
+      <div class="note-row">
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-shield"/></svg>
+        <span><strong>Your files never leave your device.</strong> <a href="privacy.html">Privacy &amp; analytics</a></span>
+      </div>
+      <div class="note-row">
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-scale"/></svg>
+        <span><strong>Legal:</strong> This tool is intended for personal use only, to access assets from games you own. Redistribution of extracted assets may violate the game's license or copyright.</span>
+      </div>
     </div>
   </div>
 </div>
@@ -250,20 +257,21 @@
 <!-- Drag & drop overlay -->
 <div id="drag-overlay">
   <div id="drag-inner">
-    <div class="dz-icon">📂</div>
+    <div class="dz-icon"><svg width="34" height="34" aria-hidden="true"><use href="#i-folder"/></svg></div>
+    <div>Drop to open</div>
     <div id="drag-msg">Drop game folder or archive here</div>
   </div>
 </div>
 
 <!-- Mobile search overlay -->
 <div id="search-overlay">
-  <div id="search-overlay-inner">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M8.5 8.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-    </svg>
-    <input type="text" id="overlay-search-input" placeholder="Search…" autocomplete="off" spellcheck="false">
-    <button id="search-overlay-close">✕</button>
+  <div id="search-overlay-inner" role="search">
+    <svg width="18" height="18" aria-hidden="true"><use href="#i-search"/></svg>
+    <label for="overlay-search-input" class="sr-only">Search files</label>
+    <input type="search" id="overlay-search-input" placeholder="Search files…" autocomplete="off" spellcheck="false">
+    <button id="search-overlay-close" aria-label="Close search">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
   </div>
 </div>
 

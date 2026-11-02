@@ -128,19 +128,36 @@ function showGrid() {
     S.currentFolder = null;
     S.currentMedia  = [];
     if (EL.dlFolderBtn) EL.dlFolderBtn.disabled = true;
-    showEmptyState('📂', 'No supported media files found',
+    showEmptyState('folderOpen', 'No supported media files found',
       'Make sure you selected a valid RPG Maker game folder');
   }
 }
 
 // ─── Events: Theme toggle ─────────────────────────────
+// Default follows the OS (prefers-color-scheme). Clicking flips to the other
+// theme; picking the one the OS already uses clears the override again, so the
+// page goes back to following the system.
+const _darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
+const _sysTheme = () => _darkMQ.matches ? 'dark' : 'light';
+const _curTheme = () => document.documentElement.dataset.theme || _sysTheme();
+
+function _syncThemeLabel() {
+  const next = _curTheme() === 'dark' ? 'light' : 'dark';
+  EL.themeToggle.title = `Switch to ${next} theme`;
+  EL.themeToggle.setAttribute('aria-label', `Switch to ${next} theme`);
+}
+
 EL.themeToggle.addEventListener('click', () => {
   const html = document.documentElement;
-  const goLight = html.dataset.theme !== 'light';
-  if (goLight) html.dataset.theme = 'light';
-  else delete html.dataset.theme;
-  localStorage.setItem('theme', goLight ? 'light' : 'dark');
+  const next = _curTheme() === 'dark' ? 'light' : 'dark';
+  try {
+    if (next === _sysTheme()) { delete html.dataset.theme; localStorage.removeItem('theme'); }
+    else                      { html.dataset.theme = next; localStorage.setItem('theme', next); }
+  } catch { html.dataset.theme = next; }
+  _syncThemeLabel();
 });
+_darkMQ.addEventListener?.('change', _syncThemeLabel);
+_syncThemeLabel();
 
 // ─── Events: Folder picker ────────────────────────────
 async function openFolderFiles(getFiles) {

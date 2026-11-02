@@ -34,6 +34,14 @@ const EL = {
   lbDownload:       $('lb-download'),
 };
 
+// ─── Inline SVG icons (no emoji: consistent rendering across OSes) ──
+const ICONS = {
+  folder:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 015.5 5H9l2 2.5h7.5A2.5 2.5 0 0121 10v7.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 17.5z"/></svg>',
+  folderOpen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V7.5A2.5 2.5 0 015.5 5H9l2 2.5h6A2.5 2.5 0 0119.5 10v.5"/><path d="M3 17l2.2-5.6A2 2 0 017.1 10H20a1 1 0 01.9 1.4l-2.4 6A2.5 2.5 0 0116.2 19H5a2 2 0 01-2-2z"/></svg>',
+  search:     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
+  music:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
+};
+
 // ─── Lightbox zoom state ──────────────────────────────
 let _lbZ = 1, _lbTx = 0, _lbTy = 0;
 let _lbPanning = false, _lbPx = 0, _lbPy = 0;
@@ -160,7 +168,7 @@ function renderSidebar() {
     const cnt  = (S.folders.get(sPath) || []).length;
     cur.className = 'folder-item folder-current';
     cur.dataset.folder = sPath;
-    cur.innerHTML = `<span class="f-icon">📂</span><span class="f-name">${lbl}</span>${cnt ? `<span class="f-count">${cnt}</span>` : ''}`;
+    cur.innerHTML = `<span class="f-icon">${ICONS.folderOpen}</span><span class="f-name">${lbl}</span>${cnt ? `<span class="f-count">${cnt}</span>` : ''}`;
     cur.addEventListener('click', () => showFolder(sPath));
     if (S.currentFolder === sPath) cur.classList.add('active');
     EL.sidebar.appendChild(cur);
@@ -182,7 +190,7 @@ function renderSidebar() {
     item.className = 'folder-item';
     item.dataset.folder = key;
     item.innerHTML = `
-      <span class="f-icon">📁</span>
+      <span class="f-icon">${ICONS.folder}</span>
       <span class="f-name">${lbl}</span>
       ${cnt ? `<span class="f-count">${cnt}</span>` : ''}
       ${hasKids ? `<svg class="f-drill" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 2l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}`;
@@ -203,7 +211,7 @@ function setActiveFolder(key) {
 // ─── Grid ─────────────────────────────────────────────
 function showEmptyState(icon, msg, sub) {
   EL.emptySearch.style.display = 'flex';
-  EL.emptyIcon.textContent = icon;
+  EL.emptyIcon.innerHTML   = ICONS[icon] || ICONS.search;
   EL.emptyMsg.textContent  = msg;
   EL.emptySub.textContent  = sub;
 }
@@ -222,9 +230,9 @@ function showFolder(key) {
 
   if (filtered.length === 0) {
     if (q) {
-      showEmptyState('⌕', 'No items found', 'Try a different keyword');
+      showEmptyState('search', 'No items found', 'Try a different keyword');
     } else {
-      showEmptyState('📂', 'No media files in this folder', 'Only images and audio are shown');
+      showEmptyState('folderOpen', 'No media files in this folder', 'Only images and audio are shown');
     }
   } else {
     EL.emptySearch.style.display = 'none';
@@ -246,7 +254,7 @@ function makeCard(entry, idx) {
   if (entry.isAudio) {
     card.className = 'card audio-card';
     card.innerHTML = `
-      <div class="card-img audio-thumb"><div class="audio-icon">♪</div></div>
+      <div class="card-img audio-thumb"><div class="audio-icon">${ICONS.music}</div></div>
       <div class="card-name" title="${dispName}">${dispName}</div>`;
   } else {
     card.className = 'card loading';
@@ -268,7 +276,13 @@ function makeCard(entry, idx) {
     obs.observe(card);
   }
 
+  card.tabIndex = 0;
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', `Preview ${dispName}`);
   card.addEventListener('click', () => openLightbox(idx));
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(idx); }
+  });
   return card;
 }
 
