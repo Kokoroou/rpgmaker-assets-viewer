@@ -17,7 +17,7 @@ The app uses the browser File API (`webkitdirectory`, `arrayBuffer`, `Blob URL`)
 
 ## Architecture
 
-`index.html` contains the HTML structure. CSS is split into modules under `css/`. Logic is split into six JS files loaded in order:
+`index.html` contains the HTML structure. CSS is split into modules under `css/`. Logic is split into seven JS files loaded in order:
 
 ```
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
@@ -26,6 +26,7 @@ js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
 js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryToURL(), showEmptyState()
 js/app.js            — event handlers, loadMVMZFolder(), loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
+js/analytics.js      — anonymous GoatCounter page-view ping (path + referrer only)
 ```
 
 All files share a single global scope — no modules.
@@ -83,3 +84,5 @@ All files share a single global scope — no modules.
 - **Do not add server-side upload functionality.** All processing must stay client-side (File API only). This is a hard constraint for DMCA safety — the tool must never receive or store user game files on a server.
 - **Do not distribute or embed actual game assets** (images, audio, scripts from any RPG Maker game) in this repository, even as test fixtures, without explicit rights.
 - When extending decryption to new formats, document the format source (spec, reference implementation) in a code comment.
+- **Analytics must never include user file data.** `js/analytics.js` may send only the page path and referrer. Never send file/folder names, game titles, keys, or contents — knowing what users open would undermine the DMCA position in `LEGAL.md`. No cookies or storage-based identifiers (they would require a consent banner).
+- **Content-Security-Policy** is set by a `<meta>` tag in `index.html`. Do not add external hosts to it beyond the GoatCounter endpoint. If you edit the inline theme script in `<head>`, recompute its `sha256` hash in the CSP or the script will be blocked.

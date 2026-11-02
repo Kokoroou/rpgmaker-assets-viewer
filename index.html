@@ -3,19 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Content-Security-Policy: the page may only send requests to itself and to the
+     anonymous page counter (js/analytics.js). Game files and keys cannot leave the browser.
+     If you edit the inline theme script below, update its sha256 hash here. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-19/i/Np6HfKjqXZ/w9RCsGV5jxroQA807f2ccUpUjf4='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://makerlens.goatcounter.com; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>MakerLens — RPG Maker Asset Viewer &amp; Extractor (MV, MZ, XP, VX, VX Ace)</title>
-<meta name="description" content="Free browser-based tool to view, preview and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Supports .rpgmvp, .png_, .rpgmvo, .ogg_, .rgssad, .rgss2a, .rgss3a. 100% offline — nothing uploaded.">
+<meta name="description" content="Free browser-based tool to view, preview and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Supports .rpgmvp, .png_, .rpgmvo, .ogg_, .rgssad, .rgss2a, .rgss3a. Files never leave your browser.">
 <meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker MV MZ XP VX asset viewer">
 <link rel="canonical" href="https://kokoroou.github.io/rpgmaker-assets-viewer/">
 <meta name="google-site-verification" content="D46-YM3xEG9mxpWY-GFgkCDtK37Q7nqxAwHNLEpttl8" />
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kokoroou.github.io/rpgmaker-assets-viewer/">
 <meta property="og:title" content="MakerLens — RPG Maker Asset Viewer &amp; Extractor">
-<meta property="og:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. 100% offline — no server, no uploads.">
+<meta property="og:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Runs in your browser — your files are never uploaded.">
 <meta property="og:image" content="https://kokoroou.github.io/rpgmaker-assets-viewer/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MakerLens — RPG Maker Asset Viewer &amp; Extractor">
-<meta name="twitter:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Free, browser-based, 100% offline.">
+<meta name="twitter:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Free, browser-based, files never uploaded.">
 <meta name="twitter:image" content="https://kokoroou.github.io/rpgmaker-assets-viewer/og-image.png">
 <script type="application/ld+json">
 {
@@ -32,7 +36,7 @@
     "Open RGSSAD archives (.rgssad, .rgss2a, .rgss3a) for XP, VX, VX Ace",
     "Audio preview in browser",
     "Download individual assets or entire folders as ZIP",
-    "100% client-side — no uploads, no server"
+    "100% client-side processing — files are never uploaded"
   ],
   "author": {
     "@type": "Person",
@@ -133,7 +137,7 @@
         </div>
 
         <div class="privacy-note">
-          🔒 <strong>100% offline &amp; private</strong> — all processing happens in your browser, nothing is uploaded.
+          🔒 <strong>Private</strong> — all processing happens in your browser; your files are never uploaded.
         </div>
       </div>
     </div>
@@ -236,7 +240,8 @@
     </div>
 
     <div class="about-note">
-      🔒 <strong>100% Private &amp; Offline:</strong> All decryption happens <strong>entirely in your browser</strong> — <strong>no files are ever uploaded, transmitted, or stored on any server.</strong> Your game data stays on your machine at all times.<br><br>
+      🔒 <strong>Private:</strong> All decryption happens <strong>entirely in your browser</strong> — <strong>no files or keys are ever uploaded, transmitted, or stored on any server.</strong> Your game data stays on your machine at all times.<br><br>
+      📊 <strong>Analytics:</strong> We count anonymous page visits (page path and referring site only) with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a> — no cookies, no IP storage, nothing about your files. Do Not Track is respected.<br><br>
       ⚖️ <strong>Legal:</strong> This tool is intended for personal use only, to access assets from games you own. Redistribution of extracted assets may violate the game's license or copyright.
     </div>
   </div>
@@ -272,5 +277,6 @@
 <script src="js/decrypt-rgssad.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/app.js"></script>
+<script src="js/analytics.js"></script>
 </body>
 </html>
