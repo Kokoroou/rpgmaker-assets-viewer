@@ -32,7 +32,7 @@ js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, t
 All files share a single global scope — no modules.
 
 **State object `S`** (global, in-memory):
-- `S.key` — hex encryption key, persisted to `localStorage`
+- `S.key` — hex encryption key, read from `data/System.json`; in memory only (never persisted)
 - `S.files` — `Map<path, entry>` for all media entries
 - `S.folders` — `Map<folderKey, path[]>` grouping for the sidebar
 - `S.currentFolder` / `S.currentMedia` — active folder key and filtered path list
