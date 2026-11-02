@@ -123,7 +123,7 @@
   text-align: center;
 }
 .privacy-note svg { color: var(--a); }
-.privacy-note a, .about-note a { color: var(--a); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--a40); }
-.privacy-note a:hover, .about-note a:hover { text-decoration-color: currentColor; }
+.privacy-note a, .about-note a, .about-more a { color: var(--a); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--a40); }
+.privacy-note a:hover, .about-note a:hover, .about-more a:hover { text-decoration-color: currentColor; }
 .privacy-note strong { color: var(--t); font-weight: 600; }
 .privacy-note .sep { color: var(--bd2); }

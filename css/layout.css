@@ -422,6 +422,7 @@
   font-size: 12px; font-weight: 700;
 }
 .about-list strong { color: var(--t); font-weight: 600; }
+.about-more { margin-top: 12px; font-size: 14px; color: var(--t2); }
 .about-list code {
   font-family: var(--mono);
   font-size: 12px;
