@@ -8,8 +8,9 @@
 //            Track / Global Privacy Control, on local copies, or when
 //            localStorage is unavailable.
 //   follow — right after the star: an optional one-line comment, Enter sends
-//            it (as kind 'idea' carrying the same stars, so ratings are not
-//            counted twice). Ignored, it closes by itself.
+//            it (as kind 'idea' carrying the same stars, plus the signed `ref`
+//            the inbox returned for the star, so both become ONE entry and the
+//            rating is not counted twice). Ignored, it closes by itself.
 //   report — from About ("Report a bug or idea"): Bug / Idea + message.
 //   thanks — short confirmation, closes by itself.
 //
@@ -24,7 +25,9 @@
 // Sent ONLY when the user taps a star or presses Send, to the developer's feedback inbox
 // (Cloudflare Worker at feedback.kokoroou.workers.dev, which validates exactly
 // these fields and stores no IP or identifier):
-//   { project, kind, rating, comment, lang, meta: { opens (bucket), browser (only if ticked) } }
+//   { project, kind, rating, comment, lang, meta: { opens (bucket), browser (only if ticked) }, ref }
+// `ref` is the opaque signed pointer to the star just sent (it names an entry, not a person);
+// kept in a variable only, never in localStorage, gone when the tab closes.
 // NEVER sent: file or folder names, game titles, engine, keys, contents.
 // Do not add any of those — see "Legal constraints" in CLAUDE.md. The endpoint
 // host is the only one besides GoatCounter in the CSP of index.html.
@@ -78,7 +81,7 @@ const Feedback = (() => {
   }
 
   // ── UI state ──
-  let view = null, rating = 0, sending = false, showTimer = 0, idleTimer = 0, touched = false;
+  let view = null, rating = 0, ratingRef = '', sending = false, showTimer = 0, idleTimer = 0, touched = false;
 
   function setView(v) {
     view = v;
@@ -95,6 +98,7 @@ const Feedback = (() => {
     card.querySelectorAll('form').forEach(f => f.reset());
     card.querySelectorAll('input[name="fb-rating"]').forEach(r => { r.checked = false; });
     rating = 0;
+    ratingRef = '';
     note.style.height = '';
     noteSend.disabled = sendBtn.disabled = true;
     env.setAttribute('aria-pressed', 'true');
@@ -176,6 +180,9 @@ const Feedback = (() => {
     });
     if (res.status === 429) throw new Error('Too many messages from your network. Try again in a minute.');
     if (!res.ok) throw new Error(`Couldn't send (error ${res.status}).`);
+    // A star answers { ref }; everything else answers 204 with no body.
+    if (res.status !== 200) return null;
+    try { return await res.json(); } catch { return null; }
   }
 
   async function run(task, busyEl) {
@@ -201,7 +208,10 @@ const Feedback = (() => {
   // Star tapped → the rating is sent right away.
   async function rate(n) {
     rating = n;
-    const ok = await run(() => post({ kind: 'rating', rating: n, comment: '' }), card.querySelector('.fb-stars'));
+    const ok = await run(async () => {
+      const r = await post({ kind: 'rating', rating: n, comment: '' });
+      ratingRef = typeof r?.ref === 'string' ? r.ref : '';
+    }, card.querySelector('.fb-stars'));
     if (!ok) { card.querySelectorAll('input[name="fb-rating"]').forEach(r => { r.checked = false; }); return; }
     const s = load();
     if (s) { s.done = true; save(s); }
@@ -213,7 +223,7 @@ const Feedback = (() => {
   async function sendNote() {
     const text = note.value.trim();
     if (!text) return;
-    const ok = await run(() => post({ kind: 'idea', rating, comment: text.slice(0, MAX_LEN) }), card.querySelector('.fb-follow'));
+    const ok = await run(() => post({ kind: 'idea', rating, comment: text.slice(0, MAX_LEN), ...(ratingRef && { ref: ratingRef }) }), card.querySelector('.fb-follow'));
     if (ok) { $f('fb-thanks-text').textContent = 'Thanks!'; setView('thanks'); }
   }
 
