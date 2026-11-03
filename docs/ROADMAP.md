@@ -24,7 +24,7 @@ Tác động lớn, công sức nhỏ, nằm trong phạm vi hiện tại.
 
 | # | Việc | Vì sao | Công sức |
 |---|------|--------|----------|
-| 1 ✅ | **Suy key từ header PNG đã biết** khi `System.json` thiếu, hỏng hoặc bị sửa | Header ảnh `.rpgmvp`/`.png_` sau 16 byte đầu là 16 byte PNG đã biết (signature + chunk IHDR), nên XOR ngược ra key. Hiện app thất bại nếu thiếu `System.json`. Key vẫn chỉ nằm trong bộ nhớ | S |
+| 1 ✅ | **Suy key từ header PNG đã biết** khi `System.json` thiếu, hỏng hoặc bị sửa | Header ảnh `.rpgmvp`/`.png_` sau 16 byte đầu là 16 byte PNG đã biết (signature + chunk IHDR), nên XOR ngược ra key. Đã làm: `deriveKeyFromPNG()` (chỉ ảnh; audio dùng chung key đã suy). Key vẫn chỉ nằm trong bộ nhớ | S |
 | 2 | **Mở file lẻ** (kéo thả vài `.rpgmvp`/`.png_`/`.rpgmvo`...) | Cần có mục 1 để dùng được khi không có `System.json`. Với âm thanh có thể thử key đã suy từ ảnh, hoặc từ header OggS đã biết | S–M |
 | 3 | **Báo lỗi theo từng file, không dừng cả lần mở** (archive hỏng, file cắt cụt, header sai) | Hiện lỗi dễ làm hỏng cả luồng. Nên liệt kê phần đọc được, đánh dấu file lỗi và lý do | S–M |
 | 4 ✅ | **Test thêm cho đầu vào xấu**: header RGSSAD sai, offset/size vượt file, tên file có `..` hoặc ký tự lạ, vòng lặp dài | Tăng độ tin cậy, đồng thời chặn path traversal khi xuất ZIP. Fixture vẫn dựng trong test, không dùng asset thật | S |
@@ -79,7 +79,7 @@ Hợp lý nhưng cần xác nhận có người dùng thật, hoặc mở rộng
 
 ## Thứ tự đề xuất
 
-1. Mục 1 → 5 (độ bền: suy key, file lẻ, lỗi theo file, test đầu vào xấu, làm sạch tên ZIP).
+1. Mục 1 → 5 (độ bền). Đã xong: 1, 4, 5. Còn lại: 2 (file lẻ) và 3 (lỗi theo file; hiện `downloadFolder()` còn nuốt lỗi file hỏng).
 2. Mục 6 và 7 (sprite và loop point: điểm khác biệt dễ thấy nhất).
 3. Mục 9 (tài liệu `.ksy`) làm song song, độc lập với code.
 4. Mục 11 (RPG Maker 2000/2003) nếu có người dùng yêu cầu.
