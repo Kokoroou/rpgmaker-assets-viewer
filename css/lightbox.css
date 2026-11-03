@@ -163,3 +163,10 @@
 
 #lb-loop { font-size: 12px; color: var(--lb-fg2); display: flex; align-items: center; gap: 6px; cursor: pointer; font-variant-numeric: tabular-nums; }
 #lb-loop input { accent-color: #22c55e; }
+
+#lb-sprite-cv { image-rendering: pixelated; border-radius: var(--r); background: repeating-conic-gradient(#1b2336 0% 25%, #111827 0% 50%) 0 0 / 14px 14px; }
+#lb-sprite { font-size: 12px; color: var(--lb-fg2); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+#lb-sprite label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+#lb-sprite input { accent-color: #22c55e; }
+#lb-sprite select { font: inherit; color: var(--lb-fg); background: transparent; border: 1px solid var(--lb-fg2); border-radius: 4px; padding: 2px 4px; }
+#lb-sprite select option { color: #000; }
