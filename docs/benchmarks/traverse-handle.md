@@ -2,6 +2,8 @@
 
 Date: 2026-11-03 · PR #9 · Script: [`traverse-handle.bench.js`](traverse-handle.bench.js)
 
+> **Superseded.** `traverseHandle` has been replaced by the lazy background scan in `js/scan.js`: only the root is read before the first folder appears, and `getFile()` runs in the background (same pool size, 16), folder on screen first. The script now benchmarks the eager walk from commit `5cc077a`.
+
 ## Question
 
 How do the two ways of opening a game folder compare in speed and user bandwidth?
