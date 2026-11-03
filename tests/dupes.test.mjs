@@ -59,3 +59,16 @@ test('Dupes counts every path that has a copy', () => {
   assert.deepEqual(plain(d.copiesOf('audio/se/x.ogg')), ['audio/bgs/x.ogg']);
   assert.equal(d.list().length, 5);
 });
+
+test('start() spawns a fixed number of workers even when they exit at once', () => {
+  // A worker with nothing to do returns synchronously; start() used to respawn it forever.
+  ctx.S = { files: new Map([['a.png', {}]]), folders: new Map(), currentFolder: null };
+  let calls = 0;
+  js.Dupes._changed = () => {};
+  js.Dupes._work = function () {
+    if (++calls > 50) throw new Error('respawn loop');
+    this.workers--;
+  };
+  js.Dupes.start();
+  assert.equal(calls, 2);
+});

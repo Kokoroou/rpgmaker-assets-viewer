@@ -43,6 +43,7 @@ function commitLibrary(files, folders, key, scan = null) {
   S.sidebarPath = null;
   S.hiddenCopies = 0;
   Dupes.reset();   // hashes belong to the old library; restarts if "Unique only" is on
+  Filter.reset();  // sizes/lengths too; the filter itself stays set
   EL.grid.innerHTML = '';
   EL.folderPath.innerHTML = '';
   EL.countBadge.textContent = '';
@@ -667,9 +668,10 @@ function failureReport(failed) {
 async function downloadFolder() {
   const key = S.currentFolder;
   if (!key) return;
-  // With "Unique only" on, the ZIP gets one file per content, like the grid.
+  // With "Unique only" on, the ZIP gets one file per content, like the grid;
+  // with a filter set, only the files that passed it (name search is not applied).
   const all   = folderPaths(key);
-  const paths = Dupes.on ? uniquePaths(all, Dupes.hashes) : all;
+  const paths = Filter.apply(Dupes.on ? uniquePaths(all, Dupes.hashes) : all).paths;
   if (!paths.length) return;
 
   const btn = $('dl-folder-btn');

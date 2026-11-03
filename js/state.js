@@ -7,6 +7,8 @@ const S = {
   sidebarPath:   null,       // folder key currently shown in sidebar (null = root level)
   currentMedia:  [],         // paths of visible entries (images + audio)
   hiddenCopies:  0,          // entries of the folder hidden by "Unique only" (js/dupes.js)
+  filterPending: 0,          // entries of the folder whose size/length is still being read (js/filters.js)
+  filterUnreadable: 0,       // entries hidden by a size/length bound because their header was not understood
   lbIdx:         0,
   blobCache:     new Map(),  // path → objectURL
   query:         '',

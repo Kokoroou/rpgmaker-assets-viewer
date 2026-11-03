@@ -164,6 +164,7 @@ function applyKey(key) {
   S.key = key;
   clearBlobCache();
   Dupes.reset();   // encrypted files hash differently once decrypted with the right key
+  Filter.reset();
   if (S.currentFolder) showFolder(S.currentFolder);
 }
 
@@ -354,9 +355,14 @@ function showFolder(key) {
   const all      = folderPaths(key);
   const q        = S.query.toLowerCase();
   const matched  = q ? all.filter(p => p.toLowerCase().includes(q)) : all;
-  const filtered = Dupes.on ? uniquePaths(matched, Dupes.hashes) : matched;
+  const unique   = Dupes.on ? uniquePaths(matched, Dupes.hashes) : matched;
+  S.hiddenCopies = matched.length - unique.length;
+  Filter.start();   // reads sizes / lengths of this folder if a bound is set
+  const fr       = Filter.apply(unique);
+  const filtered = fr.paths;
   S.currentMedia = filtered;
-  S.hiddenCopies = matched.length - filtered.length;
+  S.filterPending = fr.pending;
+  S.filterUnreadable = fr.unreadable;
 
   updateFolderPath();
   EL.grid.innerHTML = '';
@@ -366,7 +372,11 @@ function showFolder(key) {
   Thumbs.ends.clear();
 
   if (filtered.length === 0) {
-    if (q) {
+    if (Filter.active && fr.pending) {
+      showEmptyState('search', 'Reading sizes and lengths…', 'Matching files appear as they are checked');
+    } else if (Filter.active && unique.length) {
+      showEmptyState('search', 'No files match the filter', q ? 'Try a different keyword or widen the filter' : 'Widen the ranges or clear the filter');
+    } else if (q) {
       showEmptyState('search', 'No items found', 'Try a different keyword');
     } else if (key === DUPES_KEY) {
       showEmptyState('folderOpen', Dupes.running ? 'Checking for duplicates…' : 'No duplicates found',
@@ -386,6 +396,8 @@ function showFolder(key) {
   });
   Dupes.noteShown();
   Dupes.decorate();
+  Filter.noteShown();
+  Filter.decorate();
 }
 
 // Paths of a sidebar folder; the virtual Duplicates folder is computed.
@@ -402,6 +414,8 @@ function updateFolderPath() {
   if (S.hiddenCopies) parts.push(`${fmtNum(S.hiddenCopies)} cop${S.hiddenCopies === 1 ? 'y' : 'ies'} hidden`);
   const st = Dupes.status();
   if (st) parts.push(st);
+  const ft = Filter.status(S.filterPending, S.filterUnreadable);
+  if (ft) parts.push(escapeHtml(ft));
   EL.folderPath.innerHTML = `<strong>${escapeHtml(label)}</strong> &ensp;·&ensp; ${parts.join(' &ensp;·&ensp; ')}`;
 }
 
@@ -430,6 +444,7 @@ function makeCard(entry, idx) {
       Thumbs.requested++;
       const settle = ok => {
         end();
+        if (ok) { const im = wrap.querySelector('img'); if (im) Filter.note(entry.path, { w: im.naturalWidth, h: im.naturalHeight }); }
         Thumbs.ends.delete(end);
         card.classList.remove('loading');
         card.classList.toggle('error', !ok);
@@ -473,6 +488,7 @@ function closeLightbox() {
   EL.lightbox.classList.remove('open');
   _lbReset();
   Dupes.refresh();   // a grid rebuild may have waited for the lightbox to close
+  Filter.refresh();
 }
 
 function lbMove(d) {
@@ -542,6 +558,7 @@ async function _loadLbEntry(idx) {
         const m = Math.floor(d / 60);
         const s = Math.floor(d % 60);
         EL.lbMeta.textContent = `${m}:${s.toString().padStart(2, '0')}` + copyNote(copies);
+        Filter.note(path, { dur: d });
       }, { once: true });
     } catch (e) {
       EL.lbMeta.textContent = `⚠ ${e.message}`;
@@ -561,6 +578,7 @@ async function _loadLbEntry(idx) {
       if (gen !== _lbGeneration) return;
       EL.lbImg.style.opacity = '1';
       EL.lbMeta.textContent  = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px` + copyNote(copies);
+      Filter.note(path, { w: EL.lbImg.naturalWidth, h: EL.lbImg.naturalHeight });
       _spriteOffer(entry);
     } catch (e) {
       if (gen !== _lbGeneration) return;

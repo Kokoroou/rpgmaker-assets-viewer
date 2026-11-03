@@ -41,7 +41,7 @@ Features RPG Maker users actually need, following the engine's own conventions.
 | 7 ✅ | **Show audio loop points** (`LOOPSTART`, `LOOPLENGTH` in the OGG Vorbis comment) and loop at the right point | RPG Maker MV/MZ uses these tags. Only the OGG comment packet needs reading, no separate decoder. Done: `parseOggLoop()` in `js/audio-loop.js`; the lightbox shows the loop and a "loop at points" toggle (rAF-based seek, so accurate to a frame, not sample-exact) | M |
 | 8 ✅ | **Group files with identical content** (SHA-256 via `crypto.subtle`) and an "unique only" filter | Useful for games that duplicate assets. Hash after decryption, in the background, without disturbing the user's read priority (`Fg.active`). Done: `js/dupes.js`; the toolbar "Unique only" toggle starts hashing (folder on screen first, paused while `Fg.active`), hides later copies in each folder and in the ZIP, badges copies `×N` and adds a virtual "Duplicates" sidebar folder | M |
 | 9 ✅ | **Document the formats with Kaitai Struct (`.ksy`)** for `.rpgmvp` and RGSSAD v1/v3 in `docs/formats/` | Adds no dependency to the app. Lets others verify and reuse, and matches the "record the format source" rule. Done: `docs/formats/*.ksy` (illustrative, not compiled in CI) | S–M |
-| 10 | **Better search**: filter by type, image size, audio length | The data is already in the thumbnails and audio metadata | S–M |
+| 10 ✅ | **Better search**: filter by type, image size, audio length | The data is already in the thumbnails and audio metadata. Done: `js/filters.js`; the toolbar filter panel (All / Images / Audio, width and height ranges with common RPG Maker size presets, length range in seconds or m:ss) reads only file headers (PNG/GIF/BMP/JPEG/WebP size, Ogg last granule, MP4 `mvhd`) for the folder on screen, paused while `Fg.active`; cards get a size/length badge and the ZIP follows the filter | S–M |
 
 ## 3. Maybe (weigh against real demand)
 
@@ -80,7 +80,7 @@ Against the project's ground rules, legally risky, or not worth the benefit.
 
 ## Suggested order
 
-1. Items 1 → 5 (robustness). Done: 1–5 (loose files: drop `.rpgmvp` / `.png_` / `.rpgmvo`... onto the page, the key is derived from the first image; `downloadFolder()` lists skipped files and why). Also done: 6, 7, 8 and 9. Next: item 10.
+1. Items 1 → 5 (robustness). Done: 1–5 (loose files: drop `.rpgmvp` / `.png_` / `.rpgmvo`... onto the page, the key is derived from the first image; `downloadFolder()` lists skipped files and why). Also done: 6, 7, 8, 9 and 10. Next: re-evaluate section 3 (item 11 if users ask for it).
 2. Items 6 and 7 (sprites and loop points: the most visible differentiators).
 3. Item 9 (`.ksy` documentation) in parallel, independent of the code.
 4. Item 11 (RPG Maker 2000/2003) if users ask for it.
