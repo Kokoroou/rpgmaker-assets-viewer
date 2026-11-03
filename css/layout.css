@@ -241,6 +241,25 @@
 
 .folder-current .f-name { color: var(--t); font-weight: 600; }
 
+/* Virtual "Duplicates" folder (js/dupes.js); stands out while "Unique only" is on */
+.folder-dupes .f-sub {
+  display: block;
+  font-size: 11px; font-weight: 400;
+  color: var(--t3);
+  overflow: hidden; text-overflow: ellipsis;
+}
+.folder-dupes.on {
+  border: 1px dashed var(--a40);
+  background: var(--a10);
+}
+.folder-dupes.on .f-icon,
+.folder-dupes.on .f-name,
+.folder-dupes.on:hover .f-name { color: var(--a); font-weight: 600; }
+.folder-dupes.on .f-count { background: var(--a20); border-color: transparent; color: var(--a); }
+.folder-dupes.on:hover { background: var(--a20); }
+.folder-dupes.on.active { border-style: solid; }
+.folder-dupes .status-spinner { flex-shrink: 0; width: 12px; height: 12px; color: var(--a); margin-right: 4px; }
+
 .sb-divider {
   height: 1px;
   background: var(--bd);

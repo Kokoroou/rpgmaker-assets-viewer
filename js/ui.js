@@ -239,7 +239,7 @@ function _sidebarSig() {
   const sPath = S.sidebarPath;
   const keys  = _sbChildren(sPath);
   if (sPath) keys.unshift(sPath);
-  return sPath + '|' + (sPath ? '' : Dupes.copies ? 'd|' : '') + keys.map(k => `${k}:${(S.folders.get(k) || []).length}:${_sbHasKids(k) ? 1 : 0}`).join(',');
+  return sPath + '|' + (sPath ? '' : Dupes.sidebarSig()) + '|' + keys.map(k => `${k}:${(S.folders.get(k) || []).length}:${_sbHasKids(k) ? 1 : 0}`).join(',');
 }
 
 function refreshSidebar() {
@@ -289,16 +289,25 @@ function renderSidebar() {
     }
   }
 
-  // Virtual "Duplicates" folder, once hashing found copies (js/dupes.js)
-  if (!sPath && Dupes.copies) {
+  // Virtual "Duplicates" folder (js/dupes.js): shown once copies are found,
+  // and from the moment "Unique only" is on, highlighted and set apart from
+  // the real folders so the toggle's result is easy to find.
+  if (!sPath && (Dupes.on || Dupes.copies)) {
     const item = document.createElement('div');
-    item.className = 'folder-item folder-dupes';
+    item.className = 'folder-item folder-dupes' + (Dupes.on ? ' on' : '');
     item.dataset.folder = DUPES_KEY;
-    item.innerHTML = `<span class="f-icon">${ICONS.copies}</span><span class="f-name">Duplicates</span><span class="f-count">${fmtNum(Dupes.copies)}</span>`;
+    const sub   = Dupes.on ? Dupes.sidebarNote() : '';
+    const count = Dupes.running && !Dupes.copies ? '<span class="status-spinner" aria-hidden="true"></span>'
+                : `<span class="f-count">${fmtNum(Dupes.copies)}</span>`;
+    item.innerHTML = `<span class="f-icon">${ICONS.copies}</span>`
+      + `<span class="f-name">Duplicates${sub ? `<span class="f-sub">${escapeHtml(sub)}</span>` : ''}</span>${count}`;
     item.title = 'Files whose content also exists at another path';
     item.addEventListener('click', () => showFolder(DUPES_KEY));
     if (S.currentFolder === DUPES_KEY) item.classList.add('active');
     EL.sidebar.appendChild(item);
+    const div = document.createElement('div');
+    div.className = 'sb-divider';
+    EL.sidebar.appendChild(div);
   }
 
   // Child folders
@@ -359,6 +368,9 @@ function showFolder(key) {
   if (filtered.length === 0) {
     if (q) {
       showEmptyState('search', 'No items found', 'Try a different keyword');
+    } else if (key === DUPES_KEY) {
+      showEmptyState('folderOpen', Dupes.running ? 'Checking for duplicates…' : 'No duplicates found',
+        Dupes.running ? 'Files with identical content will appear here' : 'Every file in this game has unique content');
     } else {
       showEmptyState('folderOpen', 'No media files in this folder', 'Only images and audio are shown');
     }

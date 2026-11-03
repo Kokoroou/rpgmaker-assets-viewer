@@ -92,6 +92,7 @@ const Dupes = {
     this.on = on;
     EL.dupeBtn?.setAttribute('aria-pressed', on ? 'true' : 'false');
     if (on) this.start();
+    renderSidebar();
     if (S.currentFolder) showFolder(S.currentFolder);
   },
 
@@ -204,11 +205,20 @@ const Dupes = {
     }
   },
 
+  // Sidebar row: re-rendered when any of these change.
+  sidebarSig() {
+    return `${this.on ? 1 : 0}${this.running ? 1 : 0}:${this.copies}:${this.on && this.running ? this.percent() : ''}`;
+  },
+  percent() { return Math.floor(this.settled / Math.max(1, S.files.size) * 100); },
+  sidebarNote() {
+    if (this.running) return `Checking ${this.percent()}%`;
+    return this.copies ? 'Unique only on' : 'None found';
+  },
+
   // Short status for the toolbar path.
   status() {
     if (!this.on && !this.settled) return '';
-    const total = S.files.size;
-    if (this.running) return `checking duplicates ${Math.floor(this.settled / Math.max(1, total) * 100)}%`;
+    if (this.running) return `checking duplicates ${this.percent()}%`;
     if (!this.settled) return '';
     return this.copies ? `${fmtNum(this.copies)} files have a copy` : 'no duplicates';
   },
