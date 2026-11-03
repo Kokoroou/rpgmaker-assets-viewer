@@ -113,7 +113,9 @@ const Dupes = {
   start() {
     if (!S.files.size) return;
     this.running = true;
-    while (this.workers < HASH_WORKERS) { this.workers++; this._work(this.gen); }
+    // Fixed count: a worker with nothing to do exits synchronously, so a
+    // `while (workers < N)` loop would respawn it forever.
+    for (let n = HASH_WORKERS - this.workers; n > 0; n--) { this.workers++; this._work(this.gen); }
     this._changed();
   },
 

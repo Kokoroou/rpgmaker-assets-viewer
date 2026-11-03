@@ -81,6 +81,14 @@
     },
     {
       "@type": "Question",
+      "name": "Can I filter by image size or audio length?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Press the Filter button in the toolbar. Choose Images or Audio, set a width and height range in pixels (or pick a preset such as 48×48 tiles or 576×288 face sheets) and a length range in seconds or m:ss. MakerLens reads only the header of each file in the folder on screen, in your browser, to learn its size or length; nothing is decoded or uploaded. Each card then shows its size or length, and Download folder saves only the files that pass the filter."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "Which RPG Maker versions are supported?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -172,6 +180,11 @@
     <details>
       <summary><h2>Can it find duplicate files?</h2></summary>
       <p>Yes. Press the <strong>Unique only</strong> button in the toolbar. MakerLens then compares the content of every file in your browser (a SHA-256 hash of the decrypted bytes), hides identical copies, marks each copied file with how many copies exist, and lists them all in a <strong>Duplicates</strong> folder in the sidebar. With Unique only on, <strong>Download folder</strong> saves one file per content.</p>
+    </details>
+
+    <details>
+      <summary><h2>Can I filter by image size or audio length?</h2></summary>
+      <p>Yes. Press the <strong>Filter</strong> button in the toolbar. Choose Images or Audio, set a width and height range in pixels (or pick a preset such as 48×48 tiles or 576×288 face sheets) and a length range in seconds or m:ss. MakerLens reads only the header of each file in the folder on screen, in your browser, to learn its size or length; nothing is decoded or uploaded. Each card then shows its size or length, and <strong>Download folder</strong> saves only the files that pass the filter.</p>
     </details>
 
     <details>

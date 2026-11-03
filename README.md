@@ -16,7 +16,8 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX and 
 - **Image and audio preview** — grid, lightbox with keyboard navigation, in-browser audio player
 - **Export** — download one asset, or the whole current folder as a `.zip` (files that cannot be read are listed, not silently dropped)
 - **Duplicate finder** — "Unique only" hides files with identical content (SHA-256 of the decrypted bytes, computed in the browser); copies are badged and grouped in a Duplicates folder
-- **Search, adjustable tiles, light/dark theme**
+- **Search and filters** — by name, by type (images / audio), image width and height (with presets such as 48×48 tiles), and audio length; sizes and lengths are read from file headers only
+- **Adjustable tiles, light/dark theme**
 
 ## Supported formats
 

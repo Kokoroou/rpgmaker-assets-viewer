@@ -16,7 +16,7 @@ MakerLens lets you open encrypted RPG Maker game files directly in your browser 
 - Audio preview with duration display
 - Lightbox image viewer with keyboard navigation
 - Download individual files or export whole folders as ZIP
-- Search files by name
+- Search files by name; filter by type, image size and audio length
 - Drag-and-drop support
 - Light/dark theme (follows your system setting by default)
 
