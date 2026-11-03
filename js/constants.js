@@ -27,3 +27,10 @@ function getMimeType(filename) {
   };
   return MAP[real] || 'application/octet-stream';
 }
+
+// File and folder names come from the opened game, so they are untrusted: escape them
+// before putting them into innerHTML (text or a quoted attribute).
+const HTML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => HTML_ESC[c]);
+}

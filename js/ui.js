@@ -225,7 +225,7 @@ function renderSidebar() {
   hdr.id = 'sidebar-header';
   if (parent !== null || sPath) {
     const backLabel = parent ? parent.split('/').pop() : 'Folders';
-    hdr.innerHTML = `<button id="sb-back"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7 2L3.5 5.5 7 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${backLabel}</button>`;
+    hdr.innerHTML = `<button id="sb-back"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7 2L3.5 5.5 7 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${escapeHtml(backLabel)}</button>`;
     hdr.querySelector('#sb-back').addEventListener('click', () => {
       S.sidebarPath = parent;
       renderSidebar();
@@ -242,7 +242,7 @@ function renderSidebar() {
     const cnt  = (S.folders.get(sPath) || []).length;
     cur.className = 'folder-item folder-current';
     cur.dataset.folder = sPath;
-    cur.innerHTML = `<span class="f-icon">${ICONS.folderOpen}</span><span class="f-name">${lbl}</span>${cnt ? `<span class="f-count">${cnt}</span>` : ''}`;
+    cur.innerHTML = `<span class="f-icon">${ICONS.folderOpen}</span><span class="f-name">${escapeHtml(lbl)}</span>${cnt ? `<span class="f-count">${cnt}</span>` : ''}`;
     cur.addEventListener('click', () => showFolder(sPath));
     if (S.currentFolder === sPath) cur.classList.add('active');
     EL.sidebar.appendChild(cur);
@@ -265,7 +265,7 @@ function renderSidebar() {
     item.dataset.folder = key;
     item.innerHTML = `
       <span class="f-icon">${ICONS.folder}</span>
-      <span class="f-name">${lbl}</span>
+      <span class="f-name">${escapeHtml(lbl)}</span>
       ${cnt ? `<span class="f-count">${cnt}</span>` : ''}
       ${hasKids ? `<svg class="f-drill" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 2l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}`;
     item.addEventListener('click', () => {
@@ -301,7 +301,7 @@ function showFolder(key) {
   S.currentMedia = filtered;
 
   const label = key === '__root__' ? 'root' : key;
-  EL.folderPath.innerHTML = `<strong>${label}</strong> &ensp;·&ensp; ${filtered.length} items`;
+  EL.folderPath.innerHTML = `<strong>${escapeHtml(label)}</strong> &ensp;·&ensp; ${filtered.length} items`;
   EL.grid.innerHTML = '';
   Thumbs.gen++;
   Thumbs.requested = Thumbs.done = 0;
@@ -330,17 +330,18 @@ function makeCard(entry, idx) {
   const card     = document.createElement('div');
   const baseName = entry.name.split('/').pop();
   const dispName = canonicalExt(baseName);
+  const safeName = escapeHtml(dispName);
 
   if (entry.isAudio) {
     card.className = 'card audio-card';
     card.innerHTML = `
       <div class="card-img audio-thumb"><div class="audio-icon">${ICONS.music}</div></div>
-      <div class="card-name" title="${dispName}">${dispName}</div>`;
+      <div class="card-name" title="${safeName}">${safeName}</div>`;
   } else {
     card.className = 'card loading';
     card.innerHTML = `
       <div class="card-img"></div>
-      <div class="card-name" title="${dispName}">${dispName}</div>`;
+      <div class="card-name" title="${safeName}">${safeName}</div>`;
     const wrap = card.querySelector('.card-img');
     const gen = Thumbs.gen;
     card._load = async () => {

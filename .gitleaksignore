@@ -1,0 +1,5 @@
+# Known false positives (one fingerprint per line: commit:file:rule:line).
+# The synthetic MV/MZ test key '00112233…ff' in tests/decrypt.test.mjs, committed
+# before the test built it at runtime. It is not a secret.
+e923ad61e6e95dbc39170645a4529c2f0d80877d:tests/decrypt.test.mjs:generic-api-key:46
+595fed340da20efdc3b70554106596afd39b3263:tests/decrypt.test.mjs:generic-api-key:46

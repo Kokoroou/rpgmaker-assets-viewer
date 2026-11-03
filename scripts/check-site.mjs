@@ -49,7 +49,7 @@ for (const page of PAGES) {
     if (/\bsrc=/.test(attrs) || /type="application\/ld\+json"/.test(attrs)) continue;
     const hash = createHash('sha256').update(m[2], 'utf8').digest('base64');
     if (!allowedHashes.has(hash)) {
-      fail(page, `inline <script> hash 'sha256-${hash}' is not in the CSP script-src (recompute it in all pages)`);
+      fail(page, `an inline script's hash 'sha256-${hash}' is not in the CSP script-src (recompute it in all pages)`);
     }
   }
 

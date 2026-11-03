@@ -35,7 +35,7 @@ const page = `<!doctype html><title>b</title><script>
 window.__v = {}; window.Loader = { check() {} };
 ${Object.entries(VARIANTS).map(([k, src]) => `window.__v[${JSON.stringify(k)}] = (function(){ ${src}; return traverseHandle; })();`).join('\n')}
 </script>`;
-const srv = http.createServer((q, r) => { r.setHeader('content-type', 'text/html'); r.end(page); }).listen(8766);
+const srv = http.createServer((q, r) => { r.setHeader('content-type', 'text/html'); r.end(page); }).listen(8766, '127.0.0.1'); // nosemgrep: problem-based-packs.insecure-transport.js-node.using-http-server.using-http-server -- local benchmark page only
 const median = a => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
 (async () => {
   const browser = await chromium.launch({ args: ['--enable-precise-memory-info', '--js-flags=--expose-gc'] });
@@ -43,7 +43,7 @@ const median = a => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
   for (const prof of PROFILES) {
     const ctx = await browser.newContext(prof.dev ? { ...devices[prof.dev] } : {});
     const pg = await ctx.newPage();
-    await pg.goto('http://localhost:8766/');
+    await pg.goto('http://127.0.0.1:8766/');
     const cdp = await ctx.newCDPSession(pg);
     for (const N of SIZES) {
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
