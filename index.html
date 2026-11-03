@@ -274,7 +274,29 @@
   <div id="drag-inner">
     <div class="dz-icon"><svg width="34" height="34" aria-hidden="true"><use href="#i-folder"/></svg></div>
     <div>Drop to open</div>
-    <div id="drag-msg">Drop game folder or archive here</div>
+    <div id="drag-msg">Game folder or .rgssad / .rgss2a / .rgss3a archive</div>
+  </div>
+</div>
+
+<!-- Loading overlay (shown while a folder or archive is being opened) -->
+<div id="loader" role="dialog" aria-modal="true" aria-labelledby="loader-title" aria-describedby="loader-live">
+  <div id="loader-card">
+    <div class="loader-head">
+      <div class="loader-icon"><svg width="22" height="22" aria-hidden="true"><use id="loader-icon-use" href="#i-folder"/></svg></div>
+      <div class="loader-titles">
+        <div id="loader-title">Opening game folder</div>
+        <div id="loader-name"></div>
+      </div>
+      <div id="loader-pct" aria-hidden="true"></div>
+    </div>
+    <div id="loader-bar" role="progressbar" aria-labelledby="loader-title" aria-valuemin="0" aria-valuemax="100"><div id="loader-fill"></div></div>
+    <ol id="loader-steps"></ol>
+    <div id="loader-error" role="alert"></div>
+    <div id="loader-live" class="sr-only" aria-live="polite"></div>
+    <div class="loader-foot">
+      <span class="loader-note"><svg width="14" height="14" aria-hidden="true"><use href="#i-shield"/></svg>Processed on your device, nothing is uploaded</span>
+      <button class="btn-ghost btn-sm" id="loader-cancel">Cancel</button>
+    </div>
   </div>
 </div>
 

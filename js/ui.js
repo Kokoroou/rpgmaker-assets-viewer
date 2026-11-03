@@ -443,3 +443,152 @@ async function downloadEntry(path) {
     alert(`Download failed: ${e.message}`);
   }
 }
+
+// ─── Loading overlay ──────────────────────────────────
+// Drives #loader while a folder or archive is opened. Loading code reports
+// steps and progress; Loader.check() throws an AbortError once the user has
+// pressed Cancel, so long loops can stop at their next yield point.
+const fmtNum   = n => n.toLocaleString('en-US');
+const fmtBytes = n => n >= 1e9 ? (n / 1e9).toFixed(2) + ' GB'
+                    : n >= 1e6 ? (n / 1e6).toFixed(1) + ' MB'
+                    : Math.max(1, Math.round(n / 1e3)) + ' KB';
+
+const LOADER_STEPS = {
+  scan:   'Scan folder',
+  detect: 'Detect game',
+  read:   'Read archive',
+  table:  'Decrypt file table',
+  index:  'Index media',
+};
+
+const Loader = (() => {
+  const root    = $('loader');
+  const titleEl = $('loader-title');
+  const nameEl  = $('loader-name');
+  const pctEl   = $('loader-pct');
+  const iconUse = $('loader-icon-use');
+  const bar     = $('loader-bar');
+  const fill    = $('loader-fill');
+  const stepsEl = $('loader-steps');
+  const errEl   = $('loader-error');
+  const live    = $('loader-live');
+  const cancel  = $('loader-cancel');
+  const MARK = '<span class="ls-mark" aria-hidden="true">'
+    + '<svg class="ls-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+    + '<svg class="ls-x" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>';
+
+  let active = false, cancelled = false, prevFocus = null;
+  const rows = new Map(); // step id → <li>
+
+  function setSteps(ids) {
+    const old = new Map(rows);
+    rows.clear();
+    stepsEl.innerHTML = '';
+    for (const id of ids) {
+      let li = old.get(id);
+      if (!li) {
+        li = document.createElement('li');
+        li.className = 'loader-step';
+        li.innerHTML = MARK + `<span class="ls-label">${LOADER_STEPS[id]}</span><span class="ls-detail"></span>`;
+      }
+      rows.set(id, li);
+      stepsEl.appendChild(li);
+    }
+  }
+
+  function progress(done, total) {
+    if (!total) {
+      bar.classList.add('indeterminate');
+      bar.removeAttribute('aria-valuenow');
+      pctEl.textContent = '';
+      return;
+    }
+    const pct = Math.min(100, Math.floor(done / total * 100));
+    bar.classList.remove('indeterminate');
+    bar.setAttribute('aria-valuenow', pct);
+    fill.style.width = pct + '%';
+    pctEl.textContent = pct + '%';
+  }
+
+  function detail(id, text) {
+    const li = rows.get(id);
+    if (li) li.lastElementChild.textContent = text || '';
+  }
+
+  // state: 'active' | 'done' | 'error'
+  function step(id, state, text) {
+    const li = rows.get(id);
+    if (!li) return;
+    li.className = 'loader-step ' + state;
+    if (state === 'active') li.setAttribute('aria-current', 'step');
+    else li.removeAttribute('aria-current');
+    if (text !== undefined) detail(id, text);
+    if (state === 'active') { progress(0, 0); live.textContent = LOADER_STEPS[id] + '…'; }
+  }
+
+  function open({ kind, name, steps }) {
+    active = true; cancelled = false;
+    prevFocus = document.activeElement;
+    root.classList.remove('failed');
+    titleEl.textContent = kind === 'archive' ? 'Opening archive' : 'Opening game folder';
+    iconUse.setAttribute('href', kind === 'archive' ? '#i-archive' : '#i-folder');
+    nameEl.textContent = name || '';
+    errEl.textContent = '';
+    fill.style.width = '0';
+    rows.clear();          // fresh rows: nothing carries over from the last load
+    setSteps(steps);
+    progress(0, 0);
+    cancel.textContent = 'Cancel';
+    cancel.disabled = false;
+    document.body.setAttribute('aria-busy', 'true');
+    root.classList.add('active');
+    cancel.focus({ preventScroll: true });
+  }
+
+  function close() {
+    if (!active) return;
+    active = false;
+    root.classList.remove('active', 'failed');
+    document.body.removeAttribute('aria-busy');
+    live.textContent = '';
+    if (prevFocus && document.contains(prevFocus)) prevFocus.focus({ preventScroll: true });
+  }
+
+  function fail(message) {
+    for (const li of rows.values()) {
+      if (li.classList.contains('active')) li.className = 'loader-step error';
+    }
+    root.classList.add('failed');
+    titleEl.textContent = 'Could not open this game';
+    errEl.textContent = message;
+    progress(1, 1);
+    pctEl.textContent = '';
+    cancel.textContent = 'Close';
+    cancel.disabled = false;
+    document.body.removeAttribute('aria-busy');
+    cancel.focus({ preventScroll: true });
+  }
+
+  function requestCancel() {
+    if (!active) return;
+    if (root.classList.contains('failed')) { close(); return; }
+    cancelled = true;
+    cancel.disabled = true;
+    cancel.textContent = 'Cancelling…';
+  }
+
+  function check() {
+    if (cancelled) throw new DOMException('Loading cancelled', 'AbortError');
+  }
+
+  cancel.addEventListener('click', requestCancel);
+  root.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.stopPropagation(); requestCancel(); }
+    if (e.key === 'Tab') { e.preventDefault(); cancel.focus(); } // only one control: keep focus inside
+  });
+
+  return {
+    open, close, fail, step, detail, progress, setSteps, check,
+    get active() { return active; },
+  };
+})();
