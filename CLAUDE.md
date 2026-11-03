@@ -41,7 +41,7 @@ js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
 js/audio-loop.js    — parseOggLoop(buffer) → {rate,start,length,end}|null (LOOPSTART/LOOPLENGTH Vorbis comments)
 js/sprite.js         — spriteLayout()/spriteFrame(): character sheet grid (`$` = 3×4, else 12×8) and walk cycle
-js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryFile()/entryToURL(), showEmptyState(), Loader (loading overlay)
+js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox (mouse wheel/drag zoom; touch: swipe prev/next/close, pinch, double-tap; one history entry so Back closes it), entryFile()/entryToURL(), showEmptyState(), Loader (loading overlay)
 js/scan.js           — lazy folder scan: FS_HANDLE/FS_ENTRY adapters, FolderScan, detectLazy(), background-loading chip (Bg)
 js/dupes.js          — Dupes: opt-in SHA-256 (crypto.subtle) of decrypted bytes in the background (yields to Fg.active), "Unique only" filter, ×N badges, virtual "Duplicates" folder (DUPES_KEY); pure helpers dupeGroups()/uniquePaths()/dupeList()
 js/filters.js        — Filter: toolbar filter panel (#filter-panel: type, image width/height, audio length); reads only headers of the folder on screen in the background (yields to Fg.active); pure helpers imageSize()/oggDuration()/mp4Duration()/parseDuration()/filterMatch(); showFolder() and downloadFolder() go through Filter.apply()
