@@ -25,6 +25,9 @@ const EL = {
   lightbox:         $('lightbox'),
   lbImg:            $('lb-img'),
   lbAudio:          $('lb-audio'),
+  lbLoop:           $('lb-loop'),
+  lbLoopOn:         $('lb-loop-on'),
+  lbLoopInfo:       $('lb-loop-info'),
   lbName:           $('lb-name'),
   lbMeta:           $('lb-meta'),
   lbImgWrap:        $('lb-img-wrap'),
@@ -107,12 +110,16 @@ async function entryToURL(entry) {
   let data, url;
   if (entry._getData) {
     data = await entry._getData();
+    if (entry.isAudio) entry._loop = parseOggLoop(data);
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
     data = decryptWithKey(await (await entryFile(entry)).arrayBuffer());
+    if (entry.isAudio) entry._loop = parseOggLoop(data);
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else {
-    url = URL.createObjectURL(await entryFile(entry));
+    const file = await entryFile(entry);
+    if (entry.isAudio) entry._loop = parseOggLoop(await file.slice(0, 262144).arrayBuffer());
+    url = URL.createObjectURL(file);
   }
   S.blobCache.set(entry.path, url);
   return url;
@@ -452,8 +459,13 @@ async function _loadLbEntry(idx) {
     EL.lbImg.style.display   = 'none';
     EL.lbAudio.style.display = 'block';
     EL.lbAudio.src = '';
+    EL.lbLoop.style.display = 'none';
+    _loopPts = null;
     try {
-      EL.lbAudio.src = await entryToURL(entry);
+      const url = await entryToURL(entry);
+      if (gen !== _lbGeneration) return;
+      _setupLoop(entry._loop);
+      EL.lbAudio.src = url;
       EL.lbAudio.play().catch(() => {});
       EL.lbAudio.addEventListener('loadedmetadata', () => {
         const d = EL.lbAudio.duration;
@@ -468,6 +480,8 @@ async function _loadLbEntry(idx) {
   } else {
     EL.lbAudio.pause();
     EL.lbAudio.style.display = 'none';
+    EL.lbLoop.style.display  = 'none';
+    _loopPts = null;
     EL.lbImg.style.display   = 'block';
     EL.lbImg.style.opacity   = '0';
     try {
@@ -487,6 +501,33 @@ async function _loadLbEntry(idx) {
 
   preloadAround(idx);
 }
+
+// ─── Audio loop points (LOOPSTART / LOOPLENGTH, see js/audio-loop.js) ───
+// Seconds { start, end|null } of the open track, or null when it has none.
+let _loopPts = null, _loopRaf = 0;
+
+function _setupLoop(lp) {
+  _loopPts = lp ? { start: lp.start / lp.rate, end: lp.end === null ? null : lp.end / lp.rate } : null;
+  if (!_loopPts) { EL.lbLoop.style.display = 'none'; return; }
+  EL.lbLoopInfo.textContent = `Loop ${fmtLoopTime(_loopPts.start)} → ` +
+    (_loopPts.end === null ? 'end' : fmtLoopTime(_loopPts.end));
+  EL.lbLoop.style.display = '';
+}
+
+function _loopTick() {
+  _loopRaf = 0;
+  const a = EL.lbAudio;
+  if (_loopPts && EL.lbLoopOn.checked && !a.paused) {
+    const end = _loopPts.end ?? a.duration;
+    if (a.currentTime >= end) a.currentTime = _loopPts.start;
+    _loopRaf = requestAnimationFrame(_loopTick);
+  }
+}
+EL.lbAudio.addEventListener('play', () => { if (!_loopRaf) _loopRaf = requestAnimationFrame(_loopTick); });
+EL.lbAudio.addEventListener('ended', () => {
+  if (_loopPts && EL.lbLoopOn.checked) { EL.lbAudio.currentTime = _loopPts.start; EL.lbAudio.play().catch(() => {}); }
+});
+EL.lbLoopOn.addEventListener('change', () => { if (!_loopRaf) _loopRaf = requestAnimationFrame(_loopTick); });
 
 // ─── Lightbox zoom (wheel + drag) ────────────────────
 EL.lightbox.addEventListener('wheel', e => {

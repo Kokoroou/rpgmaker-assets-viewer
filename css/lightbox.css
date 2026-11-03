@@ -160,3 +160,6 @@
 
   #lb-bar { margin-top: 14px; padding: 0 16px max(24px, env(safe-area-inset-bottom)); }
 }
+
+#lb-loop { font-size: 12px; color: var(--lb-fg2); display: flex; align-items: center; gap: 6px; cursor: pointer; font-variant-numeric: tabular-nums; }
+#lb-loop input { accent-color: #22c55e; }

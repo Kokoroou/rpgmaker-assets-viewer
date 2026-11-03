@@ -38,9 +38,9 @@ Features RPG Maker users actually need, following the engine's own conventions.
 | # | Item | Notes | Effort |
 |---|------|-------|--------|
 | 6 | **Grid-sliced sprites and a walking animation** for character sheets | Naming convention: a `$` prefix is a single character (3×4 frames), no `$` is an 8-character sheet (12×8); `!` is an object that is not shifted half a tile. Cells are 48×48 (MV/MZ) or 32×32 (VX/VX Ace, customizable) | M |
-| 7 | **Show audio loop points** (`LOOPSTART`, `LOOPLENGTH` in the OGG Vorbis comment) and loop at the right point | RPG Maker MV/MZ uses these tags. Only the OGG comment packet needs reading, no separate decoder | M |
+| 7 ✅ | **Show audio loop points** (`LOOPSTART`, `LOOPLENGTH` in the OGG Vorbis comment) and loop at the right point | RPG Maker MV/MZ uses these tags. Only the OGG comment packet needs reading, no separate decoder. Done: `parseOggLoop()` in `js/audio-loop.js`; the lightbox shows the loop and a "loop at points" toggle (rAF-based seek, so accurate to a frame, not sample-exact) | M |
 | 8 | **Group files with identical content** (SHA-256 via `crypto.subtle`) and an "unique only" filter | Useful for games that duplicate assets. Hash after decryption, in the background, without disturbing the user's read priority (`Fg.active`) | M |
-| 9 | **Document the formats with Kaitai Struct (`.ksy`)** for `.rpgmvp` and RGSSAD v1/v3 in `docs/formats/` | Adds no dependency to the app. Lets others verify and reuse, and matches the "record the format source" rule | S–M |
+| 9 ✅ | **Document the formats with Kaitai Struct (`.ksy`)** for `.rpgmvp` and RGSSAD v1/v3 in `docs/formats/` | Adds no dependency to the app. Lets others verify and reuse, and matches the "record the format source" rule. Done: `docs/formats/*.ksy` (illustrative, not compiled in CI) | S–M |
 | 10 | **Better search**: filter by type, image size, audio length | The data is already in the thumbnails and audio metadata | S–M |
 
 ## 3. Maybe (weigh against real demand)
@@ -80,7 +80,7 @@ Against the project's ground rules, legally risky, or not worth the benefit.
 
 ## Suggested order
 
-1. Items 1 → 5 (robustness). Done: 1–5 (loose files: drop `.rpgmvp` / `.png_` / `.rpgmvo`... onto the page, the key is derived from the first image; `downloadFolder()` lists skipped files and why). Next: items 6 and 7.
+1. Items 1 → 5 (robustness). Done: 1–5 (loose files: drop `.rpgmvp` / `.png_` / `.rpgmvo`... onto the page, the key is derived from the first image; `downloadFolder()` lists skipped files and why). Also done: 7 and 9. Next: item 6.
 2. Items 6 and 7 (sprites and loop points: the most visible differentiators).
 3. Item 9 (`.ksy` documentation) in parallel, independent of the code.
 4. Item 11 (RPG Maker 2000/2003) if users ask for it.
