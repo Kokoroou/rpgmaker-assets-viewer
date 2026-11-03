@@ -253,7 +253,8 @@ function openFolderWith(name, walk) {
     Loader.open({ kind: 'folder', name, steps: FOLDER_STEPS });
     Loader.step('scan', 'active', '0 files');
     const files = [];
-    await walk(files, n => Loader.detail('scan', `${fmtNum(n)} files`));
+    await walk(files, (n, total) => Loader.detail('scan',
+      total ? `${fmtNum(n)} / ${fmtNum(total)} files` : `${fmtNum(n)} files`));
     if (!files.length) throw new Error('This folder is empty.');
     await loadGameFolder(files);
   });
@@ -445,20 +446,42 @@ document.addEventListener('mouseup', () => {
 
 // ─── Drag & drop ──────────────────────────────────────
 
-// Modern path: File System Access API (getAsFileSystemHandle)
+// Modern path: File System Access API (showDirectoryPicker, getAsFileSystemHandle).
+// Phase 1 lists the tree (cheap, batched by the browser). Phase 2 resolves the
+// File objects: each getFile() is a round trip to the browser process, so
+// awaiting them one by one scaled linearly (~11 s for 20k files). A small pool
+// keeps several in flight; the cap bounds pending promises/IPC on phones and
+// low-end CPUs. Output order matches a depth-first walk, as before.
+const GET_FILE_CONCURRENCY = 16;
+
 async function traverseHandle(handle, pathPrefix, files, onProgress) {
-  Loader.check();
-  const entryPath = pathPrefix ? pathPrefix + '/' + handle.name : handle.name;
-  if (handle.kind === 'file') {
-    const file = await handle.getFile();
-    file._dragPath = entryPath;
-    files.push(file);
-    if (files.length % 50 === 0) onProgress?.(files.length);
-  } else if (handle.kind === 'directory') {
-    for await (const [, child] of handle.entries()) {
-      await traverseHandle(child, entryPath, files, onProgress);
+  const handles = [], paths = [];
+  const walk = async (h, prefix) => {
+    Loader.check();
+    const p = prefix ? prefix + '/' + h.name : h.name;
+    if (h.kind === 'file') {
+      handles.push(h); paths.push(p);
+      if (handles.length % 50 === 0) onProgress?.(handles.length);
+    } else if (h.kind === 'directory') {
+      for await (const child of h.values()) await walk(child, p);
     }
-  }
+  };
+  await walk(handle, pathPrefix);
+
+  const total = handles.length, out = new Array(total);
+  let next = 0, done = 0;
+  const worker = async () => {
+    while (next < total) {
+      Loader.check();
+      const i = next++;
+      const file = await handles[i].getFile();
+      file._dragPath = paths[i];
+      out[i] = file;
+      if (++done % 50 === 0) onProgress?.(done, total);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(GET_FILE_CONCURRENCY, total) }, worker));
+  for (const f of out) files.push(f);
 }
 
 // Legacy path: FileSystem Entry API (webkitGetAsEntry)
