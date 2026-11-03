@@ -314,6 +314,31 @@ function openFolderLazy(name, sources) {
   });
 }
 
+// Loose media files dropped without a folder (roadmap item 2). No System.json:
+// the key comes from the first encrypted image's PNG header (deriveKeyFromPNG);
+// audio then reuses it. Files that fail later show the usual per-file error.
+function openLooseFiles(files) {
+  return runLoad(async () => {
+    Loader.open({ kind: 'folder', name: `${files.length} file${files.length === 1 ? '' : 's'}`, steps: ['index'] });
+    Loader.step('index', 'active', `0 / ${fmtNum(files.length)}`);
+    const map = new Map(), list = [];
+    let key = '';
+    for (const f of files) {
+      let path = f.name;
+      for (let n = 2; map.has(path); n++) path = `${n}_${f.name}`;
+      const isAudio = AUDIO_EXT.test(f.name);
+      map.set(path, { name: f.name, path, isAudio, isImage: !isAudio, _file: f });
+      list.push(path);
+      if (!key && ENC_IMAGE_EXT.test(f.name))
+        key = deriveKeyFromPNG(await f.slice(0, 32).arrayBuffer()) || '';
+      Loader.check();
+    }
+    Loader.progress(1, 1);
+    Loader.step('index', 'done', mediaSummary(map));
+    commitLibrary(map, new Map([['__root__', list]]), key);
+  });
+}
+
 function openArchive(file) {
   return runLoad(async () => {
     Loader.open({ kind: 'archive', name: file.name, steps: ARCHIVE_STEPS });
@@ -520,6 +545,13 @@ async function handleDrop(dataTransfer) {
     return;
   }
 
+  // Loose media files (no folder)
+  if (!pairs.some(p => p.entry?.isDirectory)) {
+    const loose = pairs.map(p => p.file).filter(f => f && MEDIA_EXT.test(f.name));
+    if (loose.length) await openLooseFiles(loose);
+    return;
+  }
+
   // Folder drop
   const dirPair = pairs.find(p => p.entry?.isDirectory);
   if (!dirPair) return;
@@ -620,6 +652,13 @@ function buildZip(items) {
 }
 
 // ─── Download folder as ZIP ───────────────────────────
+// Short, readable list of files that could not be read (first 10 plus a count).
+function failureReport(failed) {
+  const lines = failed.slice(0, 10).map(f => `• ${f.name}: ${f.reason}`);
+  if (failed.length > 10) lines.push(`… and ${fmtNum(failed.length - 10)} more`);
+  return lines.join('\n');
+}
+
 async function downloadFolder() {
   const key = S.currentFolder;
   if (!key) return;
@@ -632,6 +671,7 @@ async function downloadFolder() {
   try {
     const items = [];
     const rawNames = [];
+    const failed = [];   // {name, reason}: unreadable entries are listed, not silently dropped
     for (const path of paths) {
       const entry = S.files.get(path);
       if (!entry) continue;
@@ -646,7 +686,13 @@ async function downloadFolder() {
         }
         items.push({ name: '', data });
         rawNames.push(canonicalExt(entry.name));
-      } catch {}
+      } catch (e) {
+        failed.push({ name: entry.name, reason: e?.message || String(e) });
+      }
+    }
+    if (!items.length) {
+      alert(`Nothing could be downloaded.\n\n${failureReport(failed)}`);
+      return;
     }
     // Entry names are untrusted: sanitize and de-duplicate before they go into the ZIP.
     const zipNames = uniqueZipNames(rawNames);
@@ -659,6 +705,8 @@ async function downloadFolder() {
     a.download = `${folderName}.zip`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
+    if (failed.length)
+      alert(`${fmtNum(items.length)} file(s) saved, ${fmtNum(failed.length)} skipped:\n\n${failureReport(failed)}`);
   } catch (e) {
     alert(`Download failed: ${e.message}`);
   } finally {
