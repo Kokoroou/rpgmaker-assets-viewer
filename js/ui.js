@@ -22,6 +22,7 @@ const EL = {
   countBadge:       $('count-badge'),
   bgLoad:           $('bg-load'),
   dlFolderBtn:      $('dl-folder-btn'),
+  dupeBtn:          $('dupe-btn'),
   lightbox:         $('lightbox'),
   lbImg:            $('lb-img'),
   lbAudio:          $('lb-audio'),
@@ -48,6 +49,7 @@ const ICONS = {
   folder:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 015.5 5H9l2 2.5h7.5A2.5 2.5 0 0121 10v7.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 17.5z"/></svg>',
   folderOpen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V7.5A2.5 2.5 0 015.5 5H9l2 2.5h6A2.5 2.5 0 0119.5 10v.5"/><path d="M3 17l2.2-5.6A2 2 0 017.1 10H20a1 1 0 01.9 1.4l-2.4 6A2.5 2.5 0 0116.2 19H5a2 2 0 01-2-2z"/></svg>',
   search:     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
+  copies:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
   music:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
 };
 
@@ -130,6 +132,16 @@ async function entryToURL(entry) {
   return url;
 }
 
+// Decrypted bytes of an entry (ZIP export, duplicate hashing). Unlike
+// entryToURL nothing is cached: callers read each file once.
+async function entryBytes(entry) {
+  if (entry._getData) return new Uint8Array(await entry._getData());
+  const buf = await (await entryFile(entry)).arrayBuffer();
+  if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name))
+    return new Uint8Array(decryptWithKey(buf));
+  return new Uint8Array(buf);
+}
+
 // Decrypt an MV/MZ buffer with S.key. If no key is known (System.json missing), derive
 // it from this file when it is an encrypted image; the key stays in memory only.
 function decryptWithKey(buffer) {
@@ -151,6 +163,7 @@ function clearBlobCache() {
 function applyKey(key) {
   S.key = key;
   clearBlobCache();
+  Dupes.reset();   // encrypted files hash differently once decrypted with the right key
   if (S.currentFolder) showFolder(S.currentFolder);
 }
 
@@ -226,7 +239,7 @@ function _sidebarSig() {
   const sPath = S.sidebarPath;
   const keys  = _sbChildren(sPath);
   if (sPath) keys.unshift(sPath);
-  return sPath + '|' + keys.map(k => `${k}:${(S.folders.get(k) || []).length}:${_sbHasKids(k) ? 1 : 0}`).join(',');
+  return sPath + '|' + (sPath ? '' : Dupes.copies ? 'd|' : '') + keys.map(k => `${k}:${(S.folders.get(k) || []).length}:${_sbHasKids(k) ? 1 : 0}`).join(',');
 }
 
 function refreshSidebar() {
@@ -276,6 +289,18 @@ function renderSidebar() {
     }
   }
 
+  // Virtual "Duplicates" folder, once hashing found copies (js/dupes.js)
+  if (!sPath && Dupes.copies) {
+    const item = document.createElement('div');
+    item.className = 'folder-item folder-dupes';
+    item.dataset.folder = DUPES_KEY;
+    item.innerHTML = `<span class="f-icon">${ICONS.copies}</span><span class="f-name">Duplicates</span><span class="f-count">${fmtNum(Dupes.copies)}</span>`;
+    item.title = 'Files whose content also exists at another path';
+    item.addEventListener('click', () => showFolder(DUPES_KEY));
+    if (S.currentFolder === DUPES_KEY) item.classList.add('active');
+    EL.sidebar.appendChild(item);
+  }
+
   // Child folders
   for (const key of children) {
     const hasKids = _sbHasKids(key);
@@ -317,13 +342,14 @@ function showFolder(key) {
   S.currentFolder = key;
   setActiveFolder(key);
   Bg.scan?.prioritize();   // background loader: this folder's files first
-  const all      = S.folders.get(key) || [];
+  const all      = folderPaths(key);
   const q        = S.query.toLowerCase();
-  const filtered = q ? all.filter(p => p.toLowerCase().includes(q)) : all;
+  const matched  = q ? all.filter(p => p.toLowerCase().includes(q)) : all;
+  const filtered = Dupes.on ? uniquePaths(matched, Dupes.hashes) : matched;
   S.currentMedia = filtered;
+  S.hiddenCopies = matched.length - filtered.length;
 
-  const label = key === '__root__' ? 'root' : key;
-  EL.folderPath.innerHTML = `<strong>${escapeHtml(label)}</strong> &ensp;·&ensp; ${filtered.length} items`;
+  updateFolderPath();
   EL.grid.innerHTML = '';
   Thumbs.gen++;
   Thumbs.requested = Thumbs.done = 0;
@@ -346,10 +372,30 @@ function showFolder(key) {
     const entry = S.files.get(path);
     if (entry) EL.grid.appendChild(makeCard(entry, i));
   });
+  Dupes.noteShown();
+  Dupes.decorate();
+}
+
+// Paths of a sidebar folder; the virtual Duplicates folder is computed.
+function folderPaths(key) {
+  return key === DUPES_KEY ? Dupes.list() : S.folders.get(key) || [];
+}
+
+function updateFolderPath() {
+  const key = S.currentFolder;
+  if (!key) return;
+  const label = key === '__root__' ? 'root' : key === DUPES_KEY ? 'Duplicates' : key;
+  const n = S.currentMedia.length;
+  const parts = [`${fmtNum(n)} item${n === 1 ? '' : 's'}`];
+  if (S.hiddenCopies) parts.push(`${fmtNum(S.hiddenCopies)} cop${S.hiddenCopies === 1 ? 'y' : 'ies'} hidden`);
+  const st = Dupes.status();
+  if (st) parts.push(st);
+  EL.folderPath.innerHTML = `<strong>${escapeHtml(label)}</strong> &ensp;·&ensp; ${parts.join(' &ensp;·&ensp; ')}`;
 }
 
 function makeCard(entry, idx) {
   const card     = document.createElement('div');
+  card.dataset.path = entry.path;
   const baseName = entry.name.split('/').pop();
   const dispName = canonicalExt(baseName);
   const safeName = escapeHtml(dispName);
@@ -358,12 +404,12 @@ function makeCard(entry, idx) {
     card.className = 'card audio-card';
     card.innerHTML = `
       <div class="card-img audio-thumb"><div class="audio-icon">${ICONS.music}</div></div>
-      <div class="card-name" title="${safeName}">${safeName}</div>`;
+      <div class="card-name" title="${escapeHtml(entry.path)}">${safeName}</div>`;
   } else {
     card.className = 'card loading';
     card.innerHTML = `
       <div class="card-img"></div>
-      <div class="card-name" title="${safeName}">${safeName}</div>`;
+      <div class="card-name" title="${escapeHtml(entry.path)}">${safeName}</div>`;
     const wrap = card.querySelector('.card-img');
     const gen = Thumbs.gen;
     card._load = async () => {
@@ -414,6 +460,7 @@ function closeLightbox() {
   EL.lbAudio.pause();
   EL.lightbox.classList.remove('open');
   _lbReset();
+  Dupes.refresh();   // a grid rebuild may have waited for the lightbox to close
 }
 
 function lbMove(d) {
@@ -458,6 +505,8 @@ async function _loadLbEntry(idx) {
   const dispName = canonicalExt(entry.name.split('/').pop());
   EL.lbName.textContent    = dispName;
   EL.lbMeta.textContent    = '';
+  const copies = Dupes.copiesOf(path);
+  EL.lbMeta.title = copies.length ? `Same content as:\n${copies.join('\n')}` : '';
   EL.lbCounter.textContent = `${idx + 1} / ${S.currentMedia.length}`;
   EL.lbDownload.dataset.path = path;
   _spriteStop();
@@ -480,7 +529,7 @@ async function _loadLbEntry(idx) {
         if (!isFinite(d)) return;
         const m = Math.floor(d / 60);
         const s = Math.floor(d % 60);
-        EL.lbMeta.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        EL.lbMeta.textContent = `${m}:${s.toString().padStart(2, '0')}` + copyNote(copies);
       }, { once: true });
     } catch (e) {
       EL.lbMeta.textContent = `⚠ ${e.message}`;
@@ -499,7 +548,7 @@ async function _loadLbEntry(idx) {
       await EL.lbImg.decode();
       if (gen !== _lbGeneration) return;
       EL.lbImg.style.opacity = '1';
-      EL.lbMeta.textContent  = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px`;
+      EL.lbMeta.textContent  = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px` + copyNote(copies);
       _spriteOffer(entry);
     } catch (e) {
       if (gen !== _lbGeneration) return;
@@ -510,6 +559,8 @@ async function _loadLbEntry(idx) {
 
   preloadAround(idx);
 }
+
+const copyNote = c => c.length ? ` · ${c.length + 1} identical copies` : '';
 
 // ─── Character sprite animation (js/sprite.js) ───
 let _spriteLayout = null, _spriteRaf = 0, _spriteT0 = 0;
