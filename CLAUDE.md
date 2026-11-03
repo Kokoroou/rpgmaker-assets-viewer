@@ -17,14 +17,15 @@ The app uses the browser File API (`webkitdirectory`, `arrayBuffer`, `Blob URL`)
 
 ## Architecture
 
-`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into seven JS files loaded in order:
+`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into eight JS files loaded in order:
 
 ```
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
 js/state.js          — global S object
 js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
-js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryToURL(), showEmptyState(), Loader (loading overlay)
+js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryFile()/entryToURL(), showEmptyState(), Loader (loading overlay)
+js/scan.js           — lazy folder scan: FS_HANDLE/FS_ENTRY adapters, FolderScan, detectLazy(), background-loading chip (Bg)
 js/app.js            — event handlers, runLoad()/loadGameFolder()/loadMVMZFolder()/loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
 js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params)
 ```
@@ -40,20 +41,24 @@ All files share a single global scope — no modules.
 
 **Entry model** (unified for both MV/MZ and RGSSAD):
 ```js
-// From MV/MZ folder picker
+// From <input webkitdirectory> (File list already in hand)
 { name, path, isAudio, isImage, _file: File }
+
+// From directory picker / drag & drop (lazy scan; File fetched on demand)
+{ name, path, isAudio, isImage, _resolve: () => Promise<File> }
 
 // From RGSSAD archive
 { name, path, isAudio, isImage, _getData: () => ArrayBuffer }
 ```
 
-`entryToURL(entry)` in `ui.js` handles both types with blob cache.
+`entryFile(entry)` resolves the File once (shared promise); `entryToURL(entry)` handles all types with blob cache.
 
-**Two loading flows:**
-1. **MV/MZ** — `loadGameFolder(files)` auto-detects RGSSAD or calls `applyKey()` + `loadMVMZFolder(files)`
-2. **RGSSAD** — `loadRGSSAD(file)` → `parseRGSSAD(buffer)` → populate S → `showGrid()`
+**Loading flows:**
+1. **Folder via directory handle/entry** (picker, drag & drop) — `openFolderLazy(name, sources)` lists only the root, runs `detectLazy()` (archive at root → RGSSAD flow; else `data/System.json` key, engine), then starts a `FolderScan` and closes the overlay as soon as the first media folder is listed. The scan keeps listing directories (media dirs first) and resolving `getFile()` in the background, the folder on screen first (`showFolder()` calls `Bg.scan.prioritize()`). It fills the committed `S.files`/`S.folders` Maps in place; `S.folderStats` holds per-folder `{total, ready}` for the sidebar fill. The header chip `#bg-load` shows progress and reopens the loader as a status view (`Loader.open({view: true})`, button = Hide).
+2. **Folder via `<input webkitdirectory>`** — `loadGameFolder(files)` auto-detects RGSSAD or calls `loadMVMZFolder(files)` (eager; the browser already resolved every File)
+3. **RGSSAD** — `loadRGSSAD(file)` → `parseRGSSAD(buffer)` → populate S → `showGrid()`
 
-**Loading overlay:** every open action goes through `runLoad(task)` in `app.js`, which drives `Loader` (`#loader`, `css/loader.css`): named steps (`scan`/`detect`/`index` for folders, `read`/`table`/`index` for archives), a determinate or sweeping progress bar, Cancel and an error state. Loaders build into new Maps and only `commitLibrary()` swaps them into `S`, so Cancel or a failure keeps the previously open game. Long loops call `Loader.check()` (throws `AbortError` after Cancel) at their yield points.
+**Loading overlay:** every open action goes through `runLoad(task)` in `app.js`, which drives `Loader` (`#loader`, `css/loader.css`): named steps (`detect`/`scan`/`load`/`current` for lazy folders, `scan`/`detect`/`index` for file lists, `read`/`table`/`index` for archives), a determinate or sweeping progress bar, Cancel and an error state. Loaders build into new Maps and only `commitLibrary()` swaps them into `S` (and aborts the previous background scan), so Cancel or a failure keeps the previously open game. Long loops call `Loader.check()` (throws `AbortError` after Cancel) at their yield points.
 
 **ZIP download:** `downloadFolder()` in `app.js` reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
 

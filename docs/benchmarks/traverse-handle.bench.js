@@ -8,7 +8,9 @@ const { chromium, devices } = require('playwright');
 const fs = require('fs'), http = require('http'), path = require('path');
 const { execSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../..');
-const REPO = path.join(ROOT, 'js/app.js');
+// traverseHandle was replaced by the lazy scan (js/scan.js); this benchmarks
+// the eager walk as it was at its last commit.
+const SHIPPED = process.env.SHIPPED || '5cc077a';
 // Last commit with the serial traverseHandle (PR #8 merge).
 const BASELINE = process.env.BASELINE || 'b1ba1a4';
 const grab = (src) => {
@@ -16,7 +18,7 @@ const grab = (src) => {
   const b = src.indexOf('// Legacy path: FileSystem Entry API');
   return src.slice(a, b);
 };
-const NEW = grab(fs.readFileSync(REPO, 'utf8'));
+const NEW = grab(execSync(`git show ${SHIPPED}:js/app.js`, { cwd: ROOT, encoding: 'utf8' }));
 const OLD = grab(execSync(`git show ${BASELINE}:js/app.js`, { cwd: ROOT, encoding: 'utf8' }));
 const withK = (k) => NEW.replace(/GET_FILE_CONCURRENCY = \d+/, 'GET_FILE_CONCURRENCY = ' + k);
 const VARIANTS = { 'serial (old)': OLD, 'pool 4': withK(4), 'pool 8': withK(8), 'pool 16 (shipped)': NEW, 'pool 32': withK(32), 'pool 64': withK(64), 'unbounded': withK('Infinity') };

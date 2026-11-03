@@ -20,6 +20,7 @@ const EL = {
   searchBox:        $('search-box'),
   sizeSlider:       $('size-slider'),
   countBadge:       $('count-badge'),
+  bgLoad:           $('bg-load'),
   dlFolderBtn:      $('dl-folder-btn'),
   lightbox:         $('lightbox'),
   lbImg:            $('lb-img'),
@@ -72,6 +73,14 @@ const obs = new IntersectionObserver(entries => {
 }, { rootMargin: '200px' });
 
 // ─── URL resolution ───────────────────────────────────
+// File for a folder entry. Lazy scans (js/scan.js) give entries a `_resolve`
+// instead of a File; the promise is shared, so a tile and the background
+// loader never fetch the same file twice.
+function entryFile(entry) {
+  if (entry._file) return Promise.resolve(entry._file);
+  return entry._fileP ??= entry._resolve().then(f => (entry._file = f));
+}
+
 async function entryToURL(entry) {
   if (S.blobCache.has(entry.path)) return S.blobCache.get(entry.path);
   let data, url;
@@ -80,10 +89,10 @@ async function entryToURL(entry) {
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
     if (!S.key) throw new Error('No encryption key set');
-    data = decryptMVMZ(await entry._file.arrayBuffer(), S.key);
+    data = decryptMVMZ(await (await entryFile(entry)).arrayBuffer(), S.key);
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else {
-    url = URL.createObjectURL(entry._file);
+    url = URL.createObjectURL(await entryFile(entry));
   }
   S.blobCache.set(entry.path, url);
   return url;
@@ -139,10 +148,54 @@ function _sbHasKids(key) {
   return false;
 }
 
+// Files resolved / total for a folder and everything below it, while a lazy
+// scan is still loading them; null when there is nothing left to load.
+function folderProgress(key) {
+  const stats = S.folderStats;
+  if (!stats) return null;
+  let total = 0, ready = 0;
+  const prefix = key + '/';
+  for (const [k, st] of stats) {
+    if (k === key || (key !== '__root__' && k.startsWith(prefix))) { total += st.total; ready += st.ready; }
+  }
+  return total && ready < total ? { ready, total } : null;
+}
+
+// Pending folders get a faint fill behind the row that grows with progress.
+function decorateFolderItems() {
+  for (const el of EL.sidebar.querySelectorAll('.folder-item')) {
+    const p = folderProgress(el.dataset.folder);
+    el.classList.toggle('pending', !!p);
+    if (p) {
+      el.style.setProperty('--p', (p.ready / p.total * 100).toFixed(1) + '%');
+      el.title = `Loading ${fmtNum(p.ready)} / ${fmtNum(p.total)} files`;
+    } else {
+      el.style.removeProperty('--p');
+      el.removeAttribute('title');
+    }
+  }
+}
+
+// Re-render only when the folders at the current level changed (a background
+// scan calls this often), otherwise just update the progress fills.
+let _sbSig = '';
+function _sidebarSig() {
+  const sPath = S.sidebarPath;
+  const keys  = _sbChildren(sPath);
+  if (sPath) keys.unshift(sPath);
+  return sPath + '|' + keys.map(k => `${k}:${(S.folders.get(k) || []).length}:${_sbHasKids(k) ? 1 : 0}`).join(',');
+}
+
+function refreshSidebar() {
+  if (_sidebarSig() !== _sbSig) renderSidebar();
+  else decorateFolderItems();
+}
+
 function renderSidebar() {
   const sPath    = S.sidebarPath;
   const children = _sbChildren(sPath);
   const parent   = _sbParent(sPath);
+  _sbSig = _sidebarSig();
 
   EL.sidebar.innerHTML = '';
 
@@ -201,6 +254,7 @@ function renderSidebar() {
     if (S.currentFolder === key) item.classList.add('active');
     EL.sidebar.appendChild(item);
   }
+  decorateFolderItems();
 }
 
 function setActiveFolder(key) {
@@ -219,6 +273,7 @@ function showEmptyState(icon, msg, sub) {
 function showFolder(key) {
   S.currentFolder = key;
   setActiveFolder(key);
+  Bg.scan?.prioritize();   // background loader: this folder's files first
   const all      = S.folders.get(key) || [];
   const q        = S.query.toLowerCase();
   const filtered = q ? all.filter(p => p.toLowerCase().includes(q)) : all;
@@ -454,8 +509,10 @@ const fmtBytes = n => n >= 1e9 ? (n / 1e9).toFixed(2) + ' GB'
                     : Math.max(1, Math.round(n / 1e3)) + ' KB';
 
 const LOADER_STEPS = {
-  scan:   'Scan folder',
+  scan:   'Scan folders',
   detect: 'Detect game',
+  load:   'Load files',
+  current:'Current folder',
   read:   'Read archive',
   table:  'Decrypt file table',
   index:  'Index media',
@@ -477,7 +534,9 @@ const Loader = (() => {
     + '<svg class="ls-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
     + '<svg class="ls-x" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>';
 
-  let active = false, cancelled = false, prevFocus = null;
+  // view: true when the loader only shows a background job's status; its
+  // button then hides the overlay instead of cancelling anything.
+  let active = false, cancelled = false, prevFocus = null, view = false, owner = null;
   const rows = new Map(); // step id → <li>
 
   function setSteps(ids) {
@@ -515,19 +574,30 @@ const Loader = (() => {
     if (li) li.lastElementChild.textContent = text || '';
   }
 
-  // state: 'active' | 'done' | 'error'
+  // state: '' (waiting) | 'active' | 'done' | 'error'. Re-sending the same
+  // state only updates the detail, so live status views don't re-announce.
   function step(id, state, text) {
     const li = rows.get(id);
     if (!li) return;
-    li.className = 'loader-step ' + state;
+    const cls = ('loader-step ' + state).trim();
+    const changed = li.className !== cls;
+    li.className = cls;
     if (state === 'active') li.setAttribute('aria-current', 'step');
     else li.removeAttribute('aria-current');
     if (text !== undefined) detail(id, text);
-    if (state === 'active') { progress(0, 0); live.textContent = LOADER_STEPS[id] + '…'; }
+    if (state === 'active' && changed) { progress(0, 0); live.textContent = LOADER_STEPS[id] + '…'; }
   }
 
-  function open({ kind, name, steps }) {
-    active = true; cancelled = false;
+  function title(text) { titleEl.textContent = text; }
+
+  // A background job finished while its status view is open.
+  function finish() {
+    progress(1, 1);
+    cancel.textContent = 'Close';
+  }
+
+  function open({ kind, name, steps, view: isView = false }) {
+    active = true; cancelled = false; view = isView; owner = null;
     prevFocus = document.activeElement;
     root.classList.remove('failed');
     titleEl.textContent = kind === 'archive' ? 'Opening archive' : 'Opening game folder';
@@ -538,16 +608,16 @@ const Loader = (() => {
     rows.clear();          // fresh rows: nothing carries over from the last load
     setSteps(steps);
     progress(0, 0);
-    cancel.textContent = 'Cancel';
+    cancel.textContent = view ? 'Hide' : 'Cancel';
     cancel.disabled = false;
-    document.body.setAttribute('aria-busy', 'true');
+    if (!view) document.body.setAttribute('aria-busy', 'true');
     root.classList.add('active');
     cancel.focus({ preventScroll: true });
   }
 
   function close() {
     if (!active) return;
-    active = false;
+    active = false; view = false; owner = null;
     root.classList.remove('active', 'failed');
     document.body.removeAttribute('aria-busy');
     live.textContent = '';
@@ -571,7 +641,7 @@ const Loader = (() => {
 
   function requestCancel() {
     if (!active) return;
-    if (root.classList.contains('failed')) { close(); return; }
+    if (view || root.classList.contains('failed')) { close(); return; }
     cancelled = true;
     cancel.disabled = true;
     cancel.textContent = 'Cancelling…';
@@ -588,7 +658,11 @@ const Loader = (() => {
   });
 
   return {
-    open, close, fail, step, detail, progress, setSteps, check,
+    open, close, fail, step, detail, progress, setSteps, check, title, finish,
     get active() { return active; },
+    get view()   { return view; },
+    // The background scan whose status the loader is showing, if any.
+    get owner()  { return owner; },
+    set owner(s) { owner = s; },
   };
 })();

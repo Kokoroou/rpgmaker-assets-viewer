@@ -30,12 +30,16 @@ function makeYielder() {
 
 // ─── Commit a freshly indexed library ─────────────────
 // Loading builds into new Maps and only swaps them in here, so a cancelled or
-// failed load leaves whatever was open before untouched.
-function commitLibrary(files, folders, key) {
+// failed load leaves whatever was open before untouched. A lazy folder scan
+// keeps filling the same Maps after the swap, in the background.
+function commitLibrary(files, folders, key, scan = null) {
   clearBlobCache();
+  if (scan) adoptScan(scan); else dropScan();
   S.key = key || '';
-  S.files.clear();   for (const [k, v] of files)   S.files.set(k, v);
-  S.folders.clear(); for (const [k, v] of folders) S.folders.set(k, v);
+  S.files   = files;
+  S.folders = folders;
+  S.folderStats = scan ? scan.stats : null;
+  S.currentFolder = null;
   S.sidebarPath = null;
   EL.grid.innerHTML = '';
   EL.folderPath.innerHTML = '';
@@ -65,7 +69,7 @@ async function loadMVMZFolder(allFiles, key) {
   for (let i = 0; i < total; i++) {
     const f = allFiles[i];
     if (MEDIA_EXT.test(f.name)) {
-      const rel    = f._dragPath || f.webkitRelativePath;
+      const rel    = f.webkitRelativePath;
       const parts  = rel.split('/');
       const folder = parts.length >= 3 ? parts.slice(1, -1).join('/') : '__root__';
       const isAudio = AUDIO_EXT.test(f.name);
@@ -188,7 +192,7 @@ async function loadGameFolder(allFiles) {
 
   const sysJson = allFiles.find(f =>
     f.name === 'System.json' &&
-    (f._dragPath || f.webkitRelativePath || '').toLowerCase().includes('/data/')
+    (f.webkitRelativePath || '').toLowerCase().includes('/data/')
   );
   let key = '';
   if (sysJson) {
@@ -237,7 +241,7 @@ async function runLoad(task) {
 
 const FOLDER_STEPS  = ['scan', 'detect', 'index'];
 const ARCHIVE_STEPS = ['read', 'table', 'index'];
-const folderNameOf  = files => (files[0]?._dragPath || files[0]?.webkitRelativePath || '').split('/')[0];
+const folderNameOf  = files => (files[0]?.webkitRelativePath || '').split('/')[0];
 
 // Folder whose File list is already in hand (the <input webkitdirectory> path).
 function openFileList(files) {
@@ -247,16 +251,63 @@ function openFileList(files) {
   });
 }
 
-// Folder that still has to be walked (directory picker, drag & drop).
-function openFolderWith(name, walk) {
+// Folder behind a directory handle or entry (directory picker, drag & drop).
+// Only the root is read before the overlay closes: detection, the key and the
+// first media folder. The rest is listed and loaded in the background
+// (js/scan.js), with progress in the header chip.
+// `sources` is a list of {fs, root} to try in order (handle API, then entries).
+const LAZY_STEPS = ['detect', 'scan', 'load', 'current'];
+
+function openFolderLazy(name, sources) {
   return runLoad(async () => {
-    Loader.open({ kind: 'folder', name, steps: FOLDER_STEPS });
-    Loader.step('scan', 'active', '0 files');
-    const files = [];
-    await walk(files, (n, total) => Loader.detail('scan',
-      total ? `${fmtNum(n)} / ${fmtNum(total)} files` : `${fmtNum(n)} files`));
-    if (!files.length) throw new Error('This folder is empty.');
-    await loadGameFolder(files);
+    Loader.open({ kind: 'folder', name, steps: LAZY_STEPS });
+    Loader.step('detect', 'active');
+
+    let fs = null, root = null, items = null, lastErr = null;
+    for (const src of sources) {
+      try {
+        const r = await src.root;
+        if (!r) continue;
+        items = await src.fs.list(r);
+        fs = src.fs; root = r;
+        break;
+      } catch (e) { lastErr = e; }
+    }
+    Loader.check();
+    if (!fs) throw lastErr || new Error('Could not read this folder.');
+    if (!items.length) throw new Error('This folder is empty.');
+
+    const arch = items.find(it => !fs.isDir(it) && ARCHIVE_RE.test(fs.name(it)));
+    if (arch) {
+      const file = await fs.file(arch);
+      Loader.step('detect', 'done', `${archiveEngine(file.name)} · ${file.name}`);
+      Loader.setSteps(['detect', 'read', 'table', 'index']);
+      await loadRGSSAD(file);
+      return;
+    }
+
+    const info = await detectLazy(fs, root, items);
+    Loader.check();
+    const scan = new FolderScan(fs, name);
+    scan.key = info.key;
+    scan.keyChecked = info.hasSystem;
+    scan.detectLabel = info.engine || info.hasSystem
+      ? `${info.engine || 'RPG Maker MV/MZ'} · ${info.key ? 'encrypted' : 'not encrypted'}`
+      : 'Unknown layout, scanning for media';
+    Loader.owner = scan;
+    scan.onChange = onScanChange;
+    scan.start(items);
+    renderScanLoader(scan);
+
+    // Wait for the first folder with media (or the end of the scan).
+    try {
+      while (!scan.hasFolder && !scan.listed) {
+        await new Promise(r => setTimeout(r, 50));
+        Loader.check();
+      }
+    } catch (e) { scan.abort(); throw e; }
+
+    commitLibrary(scan.files, scan.folders, scan.key, scan);
   });
 }
 
@@ -334,7 +385,7 @@ async function pickFolder() {
     if (e.name !== 'AbortError') EL.folderInput.click();
     return;
   }
-  await openFolderWith(dir.name, (files, onProgress) => traverseHandle(dir, '', files, onProgress));
+  await openFolderLazy(dir.name, [{ fs: FS_HANDLE, root: dir }]);
 }
 
 EL.openBtn.addEventListener('click', pickFolder);
@@ -446,62 +497,7 @@ document.addEventListener('mouseup', () => {
 
 // ─── Drag & drop ──────────────────────────────────────
 
-// Modern path: File System Access API (showDirectoryPicker, getAsFileSystemHandle).
-// Phase 1 lists the tree (cheap, batched by the browser). Phase 2 resolves the
-// File objects: each getFile() is a round trip to the browser process, so
-// awaiting them one by one scaled linearly (~11 s for 20k files). A small pool
-// keeps several in flight; the cap bounds pending promises/IPC on phones and
-// low-end CPUs. Output order matches a depth-first walk, as before.
-const GET_FILE_CONCURRENCY = 16;
-
-async function traverseHandle(handle, pathPrefix, files, onProgress) {
-  const handles = [], paths = [];
-  const walk = async (h, prefix) => {
-    Loader.check();
-    const p = prefix ? prefix + '/' + h.name : h.name;
-    if (h.kind === 'file') {
-      handles.push(h); paths.push(p);
-      if (handles.length % 50 === 0) onProgress?.(handles.length);
-    } else if (h.kind === 'directory') {
-      for await (const child of h.values()) await walk(child, p);
-    }
-  };
-  await walk(handle, pathPrefix);
-
-  const total = handles.length, out = new Array(total);
-  let next = 0, done = 0;
-  const worker = async () => {
-    while (next < total) {
-      Loader.check();
-      const i = next++;
-      const file = await handles[i].getFile();
-      file._dragPath = paths[i];
-      out[i] = file;
-      if (++done % 50 === 0) onProgress?.(done, total);
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(GET_FILE_CONCURRENCY, total) }, worker));
-  for (const f of out) files.push(f);
-}
-
-// Legacy path: FileSystem Entry API (webkitGetAsEntry)
-async function traverseEntry(entry, pathPrefix, files, onProgress) {
-  Loader.check();
-  const entryPath = pathPrefix ? pathPrefix + '/' + entry.name : entry.name;
-  if (entry.isFile) {
-    const file = await new Promise((res, rej) => entry.file(res, rej));
-    file._dragPath = entryPath;
-    files.push(file);
-    if (files.length % 50 === 0) onProgress?.(files.length);
-  } else if (entry.isDirectory) {
-    const reader = entry.createReader();
-    let batch;
-    do {
-      batch = await new Promise((res, rej) => reader.readEntries(res, rej));
-      for (const e of batch) await traverseEntry(e, entryPath, files, onProgress);
-    } while (batch.length > 0);
-  }
-}
+// Directory walking and lazy loading live in js/scan.js.
 
 async function handleDrop(dataTransfer) {
   if (_loading) return;
@@ -530,16 +526,11 @@ async function handleDrop(dataTransfer) {
     ? dirPair.item.getAsFileSystemHandle().catch(() => null)
     : Promise.resolve(null);
 
-  await openFolderWith(dirPair.entry.name, async (files, onProgress) => {
-    // Modern File System Access API — respects file permissions correctly
-    const handle = await handlePromise;
-    if (handle?.kind === 'directory') {
-      try { await traverseHandle(handle, '', files, onProgress); }
-      catch (e) { if (e?.name === 'AbortError') throw e; files.length = 0; }
-    }
-    // Legacy FileSystem Entry API fallback
-    if (files.length === 0) await traverseEntry(dirPair.entry, '', files, onProgress);
-  });
+  // Modern File System Access API first, legacy FileSystem Entry API fallback.
+  await openFolderLazy(dirPair.entry.name, [
+    { fs: FS_HANDLE, root: handlePromise.then(h => h?.kind === 'directory' ? h : null) },
+    { fs: FS_ENTRY,  root: dirPair.entry },
+  ]);
 }
 
 let _dragDepth = 0;
@@ -646,9 +637,9 @@ async function downloadFolder() {
           data = new Uint8Array(await entry._getData());
         } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
           if (!S.key) throw new Error('No encryption key');
-          data = new Uint8Array(decryptMVMZ(await entry._file.arrayBuffer(), S.key));
+          data = new Uint8Array(decryptMVMZ(await (await entryFile(entry)).arrayBuffer(), S.key));
         } else {
-          data = new Uint8Array(await entry._file.arrayBuffer());
+          data = new Uint8Array(await (await entryFile(entry)).arrayBuffer());
         }
         items.push({ name: canonicalExt(entry.name.split('/').pop()), data });
       } catch {}
