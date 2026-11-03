@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Content-Security-Policy: the page may only send requests to itself and to the
-     anonymous page counter (js/analytics.js). Game files and keys cannot leave the browser.
+<!-- Content-Security-Policy: the page may only send requests to itself, to the
+     anonymous page counter (js/analytics.js) and to the feedback endpoint, which is only
+     called when the user presses Send (js/feedback.js). Game files and keys cannot leave the browser.
      If you edit the inline theme script below, update its sha256 hash here. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://kokoroou.goatcounter.com; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://kokoroou.goatcounter.com; media-src 'self' blob:; connect-src 'self' https://makerlens-feedback.kokoroou.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>RPG Maker Extractor &amp; Asset Viewer — MV, MZ, XP, VX Ace | MakerLens</title>
 <meta name="description" content="Free online RPG Maker extractor, no download needed. Extract images and audio from MV, MZ, XP, VX and VX Ace games in your browser. Files are never uploaded.">
 <meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker MV MZ XP VX asset viewer">
@@ -76,6 +77,8 @@
   <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
   <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17l-5.38 2.85 1.03-6L3.3 9.6l6-.9z"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1h-9l-5 4v-4H4a1 1 0 01-1-1V6a1 1 0 011-1z"/><path d="M8 10h8M8 13h5"/></symbol>
   <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 006 0zM19 7l-3 6a3 3 0 006 0z"/></symbol>
 </svg>
 
@@ -257,6 +260,17 @@
       <p class="about-more">More questions? See the <a href="faq.html">FAQ</a>.</p>
     </div>
 
+    <div class="about-section about-feedback">
+      <div>
+        <div class="about-section-title">Found a bug or have an idea?</div>
+        <p>Tell me directly — it's anonymous and takes a minute.</p>
+      </div>
+      <button class="btn-ghost btn-sm" id="about-feedback-btn">
+        <svg width="16" height="16" aria-hidden="true"><use href="#i-message"/></svg>
+        Report a bug / Suggest
+      </button>
+    </div>
+
     <div class="about-note">
       <div class="note-row">
         <svg width="18" height="18" aria-hidden="true"><use href="#i-shield"/></svg>
@@ -282,6 +296,63 @@
     <div id="drag-msg">Game folder or .rgssad / .rgss2a / .rgss3a archive</div>
   </div>
 </div>
+
+<!-- Feedback card (non-modal; js/feedback.js). Asked once after the 2nd game is
+     opened, or opened from About. Nothing is sent until the user presses Send. -->
+<section id="feedback" role="dialog" aria-labelledby="fb-title" hidden>
+  <button type="button" class="modal-close" id="fb-close" title="Close" aria-label="Close">
+    <svg width="18" height="18" aria-hidden="true"><use href="#i-x"/></svg>
+  </button>
+  <form id="fb-form" novalidate>
+    <div class="fb-body">
+      <h2 id="fb-title">How is MakerLens working for you?</h2>
+      <p class="fb-sub" id="fb-sub">One quick rating helps decide what to improve next.</p>
+
+      <fieldset class="fb-kind">
+        <legend class="sr-only">Type of message</legend>
+        <input type="radio" name="fb-kind" id="fb-kind-bug" value="bug" checked>
+        <label for="fb-kind-bug">Bug</label>
+        <input type="radio" name="fb-kind" id="fb-kind-idea" value="idea">
+        <label for="fb-kind-idea">Idea / comment</label>
+      </fieldset>
+
+      <fieldset class="fb-stars">
+        <legend class="sr-only">Rating, 1 to 5 stars</legend>
+        <input type="radio" name="fb-rating" id="fb-r1" value="1"><label for="fb-r1" title="Poor"><svg width="30" height="30" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">1 star, poor</span></label>
+        <input type="radio" name="fb-rating" id="fb-r2" value="2"><label for="fb-r2" title="Fair"><svg width="30" height="30" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">2 stars, fair</span></label>
+        <input type="radio" name="fb-rating" id="fb-r3" value="3"><label for="fb-r3" title="Good"><svg width="30" height="30" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">3 stars, good</span></label>
+        <input type="radio" name="fb-rating" id="fb-r4" value="4"><label for="fb-r4" title="Very good"><svg width="30" height="30" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">4 stars, very good</span></label>
+        <input type="radio" name="fb-rating" id="fb-r5" value="5"><label for="fb-r5" title="Excellent"><svg width="30" height="30" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">5 stars, excellent</span></label>
+        <span id="fb-rating-label" aria-hidden="true"></span>
+      </fieldset>
+
+      <div class="fb-more">
+        <label for="fb-comment" id="fb-comment-label">Anything to improve, missing, or just to say? <span>(optional)</span></label>
+        <textarea id="fb-comment" rows="3" maxlength="1000" placeholder="Ideas, problems, thoughts…"></textarea>
+        <div class="fb-meta">
+          <span>Anonymous — please don't include personal info. <a href="privacy.html#feedback">What is sent</a></span>
+          <span id="fb-count" aria-hidden="true">0/1000</span>
+        </div>
+        <label class="fb-check" id="fb-browser-row">
+          <input type="checkbox" id="fb-browser">
+          <span>Include browser &amp; OS: <strong id="fb-browser-value"></strong></span>
+        </label>
+        <p class="fb-reply" id="fb-reply">Want a reply? <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/new" rel="noopener" target="_blank">Open a GitHub issue</a> instead.</p>
+      </div>
+
+      <input type="text" name="website" id="fb-website" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div id="fb-error" role="alert"></div>
+      <div class="fb-actions">
+        <button type="button" class="btn-ghost btn-sm" id="fb-skip">Not now</button>
+        <button type="submit" class="btn-primary btn-sm" id="fb-send" disabled>Send</button>
+      </div>
+    </div>
+    <div class="fb-thanks" id="fb-thanks" role="status" hidden>
+      <svg width="22" height="22" aria-hidden="true"><use href="#i-star"/></svg>
+      <span>Thanks — got it!</span>
+    </div>
+  </form>
+</section>
 
 <!-- Loading overlay (shown while a folder or archive is being opened) -->
 <div id="loader" role="dialog" aria-modal="true" aria-labelledby="loader-title" aria-describedby="loader-live">
@@ -328,6 +399,7 @@
 <script src="js/ui.js"></script>
 <script src="js/scan.js"></script>
 <script src="js/app.js"></script>
+<script src="js/feedback.js"></script>
 <script src="js/analytics.js"></script>
 </body>
 </html>

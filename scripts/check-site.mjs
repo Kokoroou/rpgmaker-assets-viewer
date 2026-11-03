@@ -4,7 +4,8 @@
 // CLAUDE.md that a browser would only reveal at runtime:
 //   1. every js/*.js parses (`node --check`);
 //   2. each inline <script> in a page is allowed by that page's CSP sha256 hash;
-//   3. the CSP names no external host besides the GoatCounter endpoint;
+//   3. the CSP names no external host besides the GoatCounter endpoint and, in
+//      index.html only, the feedback Worker (connect-src);
 //   4. local src/href targets exist;
 //   5. JSON-LD blocks are valid JSON, and the FAQ's FAQPage entries match the
 //      visible questions and answers.
@@ -17,6 +18,9 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGES = ['index.html', 'privacy.html', 'faq.html'];
 const ALLOWED_HOSTS = new Set(['kokoroou.goatcounter.com']);
+// The feedback endpoint (feedback-worker/), only on the page that has the form.
+const FEEDBACK_HOST = 'makerlens-feedback.kokoroou.workers.dev';
+const pageHosts = page => page === 'index.html' ? new Set([...ALLOWED_HOSTS, FEEDBACK_HOST]) : ALLOWED_HOSTS;
 
 const errors = [];
 const fail = (file, msg) => errors.push(`${file}: ${msg}`);
@@ -55,7 +59,7 @@ for (const page of PAGES) {
 
   // 3. External hosts in the CSP
   for (const m of policy.matchAll(/https?:\/\/([^\s;'"]+)/g)) {
-    if (!ALLOWED_HOSTS.has(m[1])) fail(page, `CSP allows external host '${m[1]}' (only GoatCounter is allowed)`);
+    if (!pageHosts(page).has(m[1])) fail(page, `CSP allows external host '${m[1]}' (only GoatCounter, and the feedback Worker in index.html, are allowed)`);
   }
 
   // 4. Local references
