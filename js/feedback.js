@@ -1,17 +1,27 @@
-// ─── Feedback: 5-star prompt + bug/idea form ─────────────
-// One card (#feedback in index.html), two modes:
-//   'rating' — asked automatically ONCE, as soon as the 2nd game is on screen
-//              (a first open says little; coming back for another one means the
-//              tool was useful). Non-modal, never blocks the grid or the picker.
-//              Not shown with Do Not Track / Global Privacy Control, on local
-//              copies, or when localStorage is unavailable.
-//   'report' — opened by the user from About ("Report a bug / Suggest").
+// ─── Feedback: 1-tap star rating + bug/idea form ─────────
+// One small card (#feedback in index.html), one view at a time:
+//   rate   — asked automatically ONCE, as soon as the 2nd game is on screen
+//            (a first open says little; coming back for another one means the
+//            tool was useful). Tapping a star SENDS the rating: 1 tap, done.
+//            Non-modal, never blocks the grid or the picker; ignored for
+//            IDLE_MS it slips away (counts as "not now"). Not shown with Do Not
+//            Track / Global Privacy Control, on local copies, or when
+//            localStorage is unavailable.
+//   follow — right after the star: an optional one-line comment, Enter sends
+//            it (as kind 'idea' carrying the same stars, so ratings are not
+//            counted twice). Ignored, it closes by itself.
+//   report — from About ("Report a bug or idea"): Bug / Idea + message.
+//   thanks — short confirmation, closes by itself.
+//
+// Touch points (taps, not counting typing):
+//   rate 1 · rate + comment 1 + Enter · dismiss 1 (or none: it slips away)
+//   bug report from About 2 + Send (browser chip and type are preset)
 //
 // Remembered in localStorage['feedback'], never sent anywhere:
 //   { v: 1, opens, done, skips, nextAt }
 // A "don't ask again" flag like the theme preference, not an identifier.
 //
-// Sent ONLY when the user presses Send, to the developer's feedback inbox
+// Sent ONLY when the user taps a star or presses Send, to the developer's feedback inbox
 // (Cloudflare Worker at feedback.kokoroou.workers.dev, which validates exactly
 // these fields and stores no IP or identifier):
 //   { project, kind, rating, comment, lang, meta: { opens (bucket), browser (only if ticked) } }
@@ -25,7 +35,8 @@ const Feedback = (() => {
   const SKIP_GAP  = 5;   // "Not now" → ask again 5 opens later…
   const MAX_SKIPS = 2;   // …and never after the 2nd "Not now"
   const MAX_LEN   = 1000;
-  const LABELS    = ['Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+  const IDLE_MS   = 45000;   // untouched prompt slips away
+  const FOLLOW_MS = 20000;   // untouched comment box closes
 
   const publicSite = location.hostname === 'kokoroou.github.io';
   const forced     = new URLSearchParams(location.search).has('feedback'); // test the prompt anywhere
@@ -33,8 +44,9 @@ const Feedback = (() => {
   const event      = name => { if (typeof countEvent === 'function') countEvent(name); };
 
   const $f = id => document.getElementById(id);
-  const card = $f('feedback'), form = $f('fb-form'), comment = $f('fb-comment');
-  const sendBtn = $f('fb-send'), errEl = $f('fb-error');
+  const card = $f('feedback'), errEl = $f('fb-error');
+  const note = $f('fb-note'), noteSend = $f('fb-note-send');
+  const msg = $f('fb-msg'), sendBtn = $f('fb-send'), env = $f('fb-env');
 
   // ── persisted state ──
   function load() {
@@ -66,60 +78,44 @@ const Feedback = (() => {
   }
 
   // ── UI state ──
-  let mode = 'rating', rating = 0, sending = false, showTimer = 0, closeTimer = 0;
+  let view = null, rating = 0, sending = false, showTimer = 0, idleTimer = 0, touched = false;
 
-  function reset(newMode) {
-    mode = newMode;
-    rating = 0;
-    form.reset();
-    card.dataset.mode = mode;
-    delete card.dataset.rating;
-    $f('fb-rating-label').textContent = '';
-    $f('fb-count').textContent = `0/${MAX_LEN}`;
+  function setView(v) {
+    view = v;
+    card.dataset.view = v;
     errEl.textContent = '';
-    form.querySelector('.fb-body').hidden = false;
-    $f('fb-thanks').hidden = true;
-    sendBtn.textContent = 'Send';
-    $f('fb-browser-value').textContent = browserInfo();
-    if (mode === 'rating') {
-      $f('fb-title').textContent = 'How is MakerLens working for you?';
-      $f('fb-sub').textContent = 'One quick rating helps decide what to improve next.';
-      $f('fb-skip').textContent = 'Not now';
-    } else {
-      $f('fb-title').textContent = 'Report a bug or suggest an idea';
-      $f('fb-sub').textContent = 'Goes straight to the developer. Anonymous.';
-      $f('fb-skip').textContent = 'Cancel';
-      $f('fb-browser').checked = true;   // shown with its exact value, the user can untick it
-    }
+    clearTimeout(idleTimer);
+    touched = false;
+    if (v === 'rate') idleTimer = setTimeout(() => { if (!touched) dismiss(); }, IDLE_MS);
+    if (v === 'follow') idleTimer = setTimeout(() => { if (!touched && !note.value) close(); }, FOLLOW_MS);
+    if (v === 'thanks') idleTimer = setTimeout(close, 1600);
+  }
+
+  function open(v) {
+    card.querySelectorAll('form').forEach(f => f.reset());
+    card.querySelectorAll('input[name="fb-rating"]').forEach(r => { r.checked = false; });
+    rating = 0;
+    note.style.height = '';
+    noteSend.disabled = sendBtn.disabled = true;
+    env.setAttribute('aria-pressed', 'true');
+    $f('fb-env-value').textContent = browserInfo();
     syncKind();
-    syncSend();
-  }
-
-  function syncKind() {
-    const bug = mode === 'report' && $f('fb-kind-bug').checked;
-    card.dataset.kind = mode === 'report' ? (bug ? 'bug' : 'idea') : 'rating';
-    $f('fb-comment-label').firstChild.textContent = mode === 'rating'
-      ? (rating && rating <= 3 ? 'What should be better? ' : 'Anything to improve, missing, or just to say? ')
-      : bug ? 'What went wrong? What did you do just before? ' : 'Your idea or comment ';
-    comment.placeholder = mode === 'report' && bug
-      ? 'e.g. "Audio in an MZ game does not play in Firefox"'
-      : 'Ideas, problems, thoughts…';
-  }
-
-  function syncSend() {
-    sendBtn.disabled = sending || (mode === 'rating' ? !rating : !comment.value.trim());
-  }
-
-  function open(newMode) {
-    clearTimeout(closeTimer);
-    reset(newMode);
+    setView(v);
     card.hidden = false;
     requestAnimationFrame(() => card.classList.add('open'));
   }
 
   function close() {
+    clearTimeout(idleTimer);
     card.classList.remove('open');
     card.hidden = true;
+    view = null;
+  }
+
+  function syncKind() {
+    const bug = $f('fb-kind-bug').checked;
+    card.dataset.kind = bug ? 'bug' : 'idea';
+    msg.placeholder = bug ? 'What happened? What did you do just before?' : 'Your idea or comment';
   }
 
   // ── automatic prompt ──
@@ -144,7 +140,7 @@ const Feedback = (() => {
     const tryShow = () => {
       if (!card.hidden) return;
       if (busy()) { if (++tries < 120) showTimer = setTimeout(tryShow, 1000); return; }
-      open('rating');
+      open('rate');
       event('feedback-shown');
     };
     showTimer = setTimeout(tryShow, 1500);
@@ -152,7 +148,7 @@ const Feedback = (() => {
 
   function dismiss() {
     if (sending) return;
-    if (mode === 'rating') {
+    if (view === 'rate') {
       const s = load();
       if (s && !s.done) { s.skips = (s.skips || 0) + 1; s.nextAt = s.opens + SKIP_GAP; save(s); }
       event('feedback-skipped');
@@ -160,75 +156,106 @@ const Feedback = (() => {
     close();
   }
 
-  // ── send ──
-  async function send() {
-    if (sendBtn.disabled) return;
+  // ── network ──
+  async function post(fields) {
     const s = load() || {};
-    const browser = mode === 'report' && $f('fb-browser').checked ? browserInfo() : '';
     const body = {
       project: 'makerlens',
-      kind: mode === 'rating' ? 'rating' : ($f('fb-kind-bug').checked ? 'bug' : 'idea'),
-      rating: mode === 'rating' ? rating : null,
-      comment: comment.value.trim().slice(0, MAX_LEN),
       lang: (navigator.language || '').slice(0, 2).toLowerCase().replace(/[^a-z]/g, ''),
-      meta: { opens: bucket(s.opens || 0), browser },
       website: $f('fb-website').value,   // honeypot, empty for humans
+      ...fields,
+      meta: { opens: bucket(s.opens || 0), ...(fields.meta || {}) },
     };
-    errEl.textContent = '';
+    // text/plain keeps it a "simple" CORS request (no preflight round trip).
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(body),
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+    });
+    if (res.status === 429) throw new Error('Too many messages from your network. Try again in a minute.');
+    if (!res.ok) throw new Error(`Couldn't send (error ${res.status}).`);
+  }
+
+  async function run(task, busyEl) {
+    if (sending) return false;
     sending = true;
-    syncSend();
-    sendBtn.textContent = 'Sending…';
+    errEl.textContent = '';
+    busyEl?.classList.add('fb-busy');
     try {
-      // text/plain keeps it a "simple" CORS request (no preflight round trip).
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-        body: JSON.stringify(body),
-        credentials: 'omit',
-        referrerPolicy: 'no-referrer',
-      });
-      if (res.status === 429) throw new Error('Too many messages from your network. Please try again in a minute.');
-      if (!res.ok) throw new Error(`Couldn't send (error ${res.status}).`);
-      if (mode === 'rating' && s.v) { s.done = true; save(s); }
-      if (mode === 'rating') event('feedback-sent');
-      form.querySelector('.fb-body').hidden = true;
-      $f('fb-thanks').hidden = false;
-      closeTimer = setTimeout(close, 2200);
+      await task();
+      return true;
     } catch (e) {
       errEl.textContent = e instanceof TypeError || !e.message
         ? (publicSite ? "Couldn't send. Check your connection and try again."
-                      : 'Feedback can only be sent from the online site. You can open a GitHub issue instead.')
+                      : 'Feedback can only be sent from the online site.')
         : e.message;
-      sendBtn.textContent = 'Send';
+      return false;
     } finally {
       sending = false;
-      syncSend();
+      busyEl?.classList.remove('fb-busy');
     }
   }
 
+  // Star tapped → the rating is sent right away.
+  async function rate(n) {
+    rating = n;
+    const ok = await run(() => post({ kind: 'rating', rating: n, comment: '' }), card.querySelector('.fb-stars'));
+    if (!ok) { card.querySelectorAll('input[name="fb-rating"]').forEach(r => { r.checked = false; }); return; }
+    const s = load();
+    if (s) { s.done = true; save(s); }
+    event('feedback-sent');
+    $f('fb-follow-q').textContent = n <= 3 ? 'What went wrong?' : n === 4 ? 'What would make it 5?' : 'What do you like most?';
+    setView('follow');
+  }
+
+  async function sendNote() {
+    const text = note.value.trim();
+    if (!text) return;
+    const ok = await run(() => post({ kind: 'idea', rating, comment: text.slice(0, MAX_LEN) }), card.querySelector('.fb-follow'));
+    if (ok) { $f('fb-thanks-text').textContent = 'Thanks!'; setView('thanks'); }
+  }
+
+  async function sendReport() {
+    const text = msg.value.trim();
+    if (!text) return;
+    const bug = $f('fb-kind-bug').checked;
+    const browser = bug && env.getAttribute('aria-pressed') === 'true' ? browserInfo() : '';
+    const ok = await run(() => post({ kind: bug ? 'bug' : 'idea', rating: null, comment: text.slice(0, MAX_LEN), meta: { browser } }),
+      card.querySelector('.fb-report'));
+    if (ok) { $f('fb-thanks-text').textContent = 'Sent. Thanks!'; setView('thanks'); }
+  }
+
   // ── events ──
-  form.querySelectorAll('input[name="fb-rating"]').forEach(r => r.addEventListener('change', () => {
-    rating = +r.value;
-    card.dataset.rating = rating;
-    $f('fb-rating-label').textContent = LABELS[rating - 1];
-    syncKind();
-    syncSend();
-  }));
-  form.querySelectorAll('input[name="fb-kind"]').forEach(r => r.addEventListener('change', syncKind));
-  comment.addEventListener('input', () => {
-    $f('fb-count').textContent = `${comment.value.length}/${MAX_LEN}`;
-    syncSend();
+  card.querySelectorAll('input[name="fb-rating"]').forEach(r =>
+    r.addEventListener('change', () => { if (r.checked) rate(+r.value); }));
+
+  const grow = el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; };
+  note.addEventListener('input', () => { touched = true; noteSend.disabled = !note.value.trim(); grow(note); });
+  note.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendNote(); }
   });
+  $f('fb-note-send').closest('form').addEventListener('submit', e => { e.preventDefault(); sendNote(); });
+
+  msg.addEventListener('input', () => { sendBtn.disabled = !msg.value.trim(); });
+  msg.addEventListener('keydown', e => {   // multi-line reports: Ctrl/Cmd+Enter sends
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); sendReport(); }
+  });
+  sendBtn.closest('form').addEventListener('submit', e => { e.preventDefault(); sendReport(); });
+  card.querySelectorAll('input[name="fb-kind"]').forEach(r => r.addEventListener('change', syncKind));
+  env.addEventListener('click', () => env.setAttribute('aria-pressed', env.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'));
+
+  // Any interaction keeps the card from slipping away.
+  ['pointerdown', 'focusin', 'keydown'].forEach(t => card.addEventListener(t, () => { touched = true; }));
   $f('fb-close').addEventListener('click', dismiss);
-  $f('fb-skip').addEventListener('click', dismiss);
-  form.addEventListener('submit', e => { e.preventDefault(); send(); });
   card.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); dismiss(); } });
 
   $f('about-feedback-btn').addEventListener('click', () => {
     clearTimeout(showTimer);
     document.getElementById('about-modal').classList.remove('open');
     open('report');
-    setTimeout(() => comment.focus(), 50);
+    setTimeout(() => msg.focus(), 50);
   });
 
   return { noteOpen, open };

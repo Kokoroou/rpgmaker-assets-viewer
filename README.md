@@ -97,7 +97,7 @@ The public site counts anonymous page visits with [GoatCounter](https://www.goat
 - Not active when you open `index.html` locally.
 - A Content-Security-Policy in `index.html` blocks requests to any other host, so this is enforced by the browser, not just promised.
 
-**Feedback (optional).** After the second game you open, a small card asks for a 1–5 star rating and an optional comment, once; bug reports and ideas can be sent any time from About. It is sent only when you press Send, to the developer's feedback inbox (a Cloudflare Worker at `feedback.kokoroou.workers.dev`) that stores the rating, comment, browser language, a usage bucket and (for bug reports, if ticked) browser + OS — no file data, IP or identifier. Whether you already answered is remembered in `localStorage`. Not shown with Do Not Track / GPC or on local copies. Details in [privacy.html](privacy.html#feedback).
+**Feedback (optional).** After the second game you open, a small card asks once for a 1–5 star rating (tapping a star sends it, then an optional one-line comment); bug reports and ideas can be sent any time from About. Nothing is sent before a star is tapped or Send is pressed; it goes to the developer's feedback inbox (a Cloudflare Worker at `feedback.kokoroou.workers.dev`) that stores the rating, comment, browser language, a usage bucket and (for bug reports, if ticked) browser + OS — no file data, IP or identifier. Whether you already answered is remembered in `localStorage`. Not shown with Do Not Track / GPC or on local copies. Details in [privacy.html](privacy.html#feedback).
 
 ---
 

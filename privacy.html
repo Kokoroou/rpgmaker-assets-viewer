@@ -53,14 +53,14 @@
   <p>The code is short and public: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/analytics.js" rel="noopener">js/analytics.js</a>.</p>
 
   <h2 id="feedback">Feedback (optional)</h2>
-  <p>After you open a second game, a small card may ask you to rate MakerLens from 1 to 5 stars and, if you like, leave a comment. You can also send a bug report or idea at any time from <strong>About → Report a bug / Suggest</strong>. Nothing is sent unless you press <strong>Send</strong>.</p>
-  <p>When you press Send, one request goes to our own feedback endpoint (a Cloudflare Worker) with:</p>
+  <p>After you open a second game, a small card may ask you to rate MakerLens from 1 to 5 stars. <strong>Tapping a star sends that rating</strong>; you can then add a short comment, sent only if you press Enter or the send button. You can also send a bug report or idea at any time from <strong>About → Report a bug or idea</strong>. Nothing is sent unless you tap a star or press Send; closing or ignoring the card sends nothing.</p>
+  <p>Each message is one request to our own feedback endpoint (a Cloudflare Worker) with:</p>
   <ul>
     <li>the type (rating, bug or idea) and the star rating,</li>
     <li>the comment you typed (up to 1000 characters),</li>
     <li>your browser language (e.g. <code>vi</code>), so the comment can be read correctly,</li>
     <li>roughly how many games you have opened (<code>1</code>, <code>2</code>, <code>3-5</code>, <code>6-10</code>, <code>11+</code>), and</li>
-    <li>for bug reports only, if you leave the box ticked: your browser and system, e.g. <code>Chrome 131 · Windows</code>, shown next to the box before sending.</li>
+    <li>for bug reports only, unless you remove it: your browser and system, e.g. <code>Chrome 131 · Windows</code>, shown in the form before sending (tap it to leave it out).</li>
   </ul>
   <p>Never sent: file or folder names, game titles, the engine, keys or file contents. We store the date (without time) but no IP address, cookie or identifier, so a message cannot be linked to you or to your other messages. Please don't type personal information into the comment. If you want a reply, <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/issues" rel="noopener">open a GitHub issue</a> instead. To have a comment you sent removed, open an issue quoting it.</p>
   <p>The card is not shown if your browser has Do Not Track or Global Privacy Control enabled, or on local copies of the tool, and after you answer it never appears again. Whether it was shown, skipped or answered is also counted as an anonymous GoatCounter event (only that word, no content). Code that sends it: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/feedback.js" rel="noopener">js/feedback.js</a>. Only the developer can read the messages; the inbox is behind a login, and Worker request logs are turned off.</p>
