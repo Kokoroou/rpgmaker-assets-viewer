@@ -117,6 +117,12 @@ See [LEGAL.md](LEGAL.md) for full details on intended use, user responsibility, 
 
 Pull requests are welcome. For significant changes, open an issue first to discuss scope and approach.
 
+Before opening a PR, run the same checks CI runs (Node 22+, no install needed):
+
+```bash
+node scripts/check-site.mjs && node --test "tests/*.test.mjs"
+```
+
 Please do **not** commit actual game assets or encryption keys — even as test fixtures — without explicit permission from the relevant copyright holder.
 
 ---

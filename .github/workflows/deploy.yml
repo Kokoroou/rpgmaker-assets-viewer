@@ -1,0 +1,74 @@
+# Deploy the static site to GitHub Pages on every push to main, after the site checks
+# and unit tests pass (the same commands as ci.yml's lint/test, a few seconds).
+# Deploy does not wait for the whole CI workflow on purpose: its Semgrep job scans the
+# full tree on main, so a pre-existing finding would block every deploy.
+#
+# One-time setup: Settings → Pages → Build and deployment → Source: "GitHub Actions"
+# (instead of "Deploy from a branch"); until then the deploy job fails and the site
+# keeps being served from the branch.
+#
+# Only the public site is published: development files (CLAUDE.md, docs/, scripts/,
+# tests/, .github/, references/) stay out of the artifact.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # redeploy main by hand
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Site checks
+        run: node scripts/check-site.mjs
+      - name: Unit tests
+        run: node --test "tests/*.test.mjs"
+
+  build:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Assemble site
+        run: |
+          set -euo pipefail
+          mkdir _site
+          cp -R index.html privacy.html faq.html css js og-image.png sitemap.xml llms.txt \
+                screenshots LICENSE LEGAL.md README.md _site/
+          touch _site/.nojekyll # serve files as-is
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

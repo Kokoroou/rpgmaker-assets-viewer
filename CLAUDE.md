@@ -15,6 +15,21 @@ start index.html
 
 The app uses the browser File API (`webkitdirectory`, `arrayBuffer`, `Blob URL`) — these only work in a browser context, not Node.js. There are no dependencies, no package manager, no bundler.
 
+## Checks and CI/CD
+
+Node (22+) runs the checks; still no dependencies:
+
+```
+node scripts/check-site.mjs        # JS syntax, CSP hashes + hosts, local links, FAQ JSON-LD vs page
+node --test "tests/*.test.mjs"     # decrypt-mvmz / decrypt-rgssad / constants on synthetic bytes
+```
+
+Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared global scope, like the browser); fixtures are built in the test, never real game assets.
+
+- `.github/workflows/ci.yml` — calls `kokoroou/agent-toolkit/.github/workflows/quality.yml@v0` (lint = `check-site.mjs`, test = `node --test`, plus Gitleaks + Semgrep) on PRs and pushes to `main`.
+- `.github/workflows/deploy.yml` — on a push to `main`, reruns the two checks above, then publishes the public files (pages, `css/`, `js/`, images, `sitemap.xml`, `llms.txt`, `screenshots/`, LICENSE/LEGAL/README) to GitHub Pages. Requires Settings → Pages → Source = "GitHub Actions". A new top-level file the site serves must be added to its "Assemble site" step.
+- `.github/dependabot.yml` — weekly updates of the pinned actions.
+
 ## Architecture
 
 `index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into eight JS files loaded in order:
