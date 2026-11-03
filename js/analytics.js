@@ -9,10 +9,16 @@
 // NEVER sent: file names, folder names, game titles, keys, file contents.
 // Do not add any of those here — see "Legal constraints" in CLAUDE.md.
 //
-// The Content-Security-Policy in index.html only allows this host,
-// so the page cannot send data anywhere else.
+// Events: countEvent(name) counts one of the fixed names in EVENTS (used by
+// js/feedback.js to measure how many asked users answer). Only the event name
+// is sent — no rating, no comment, nothing about files.
+//
+// The Content-Security-Policy in index.html only allows this host (and the
+// feedback endpoint, called only when the user presses Send).
+var countEvent = function () {};
 (function () {
   var GC_ENDPOINT = 'https://kokoroou.goatcounter.com/count';
+  var EVENTS = ['feedback-shown', 'feedback-skipped', 'feedback-sent'];
   // Query params GoatCounter reads as traffic source / campaign.
   // Anything else in the URL is not sent.
   var SOURCE_PARAMS = ['utm_source', 'ref', 'src', 'source', 'utm_campaign', 'campaign'];
@@ -32,4 +38,11 @@
   });
   if (q.toString()) params.set('q', '?' + q.toString());
   new Image().src = GC_ENDPOINT + '?' + params.toString();
+
+  countEvent = function (name) {
+    if (EVENTS.indexOf(name) < 0) return;
+    new Image().src = GC_ENDPOINT + '?' + new URLSearchParams({
+      p: name, t: name, e: 'true', rnd: Math.random().toString(36).slice(2)
+    }).toString();
+  };
 }());

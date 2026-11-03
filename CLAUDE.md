@@ -32,7 +32,7 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared g
 
 ## Architecture
 
-`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into eight JS files loaded in order:
+`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into nine JS files loaded in order:
 
 ```
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
@@ -42,7 +42,8 @@ js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
 js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryFile()/entryToURL(), showEmptyState(), Loader (loading overlay)
 js/scan.js           — lazy folder scan: FS_HANDLE/FS_ENTRY adapters, FolderScan, detectLazy(), background-loading chip (Bg)
 js/app.js            — event handlers, runLoad()/loadGameFolder()/loadMVMZFolder()/loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
-js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params)
+js/feedback.js       — Feedback: one-time 1-tap star prompt (from the 2nd opened game, via commitLibrary → noteOpen), optional follow-up comment, and the About bug/idea form (#feedback)
+js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params) + countEvent() for the fixed feedback-* events
 ```
 
 All files share a single global scope — no modules.
@@ -74,6 +75,8 @@ All files share a single global scope — no modules.
 3. **RGSSAD** — `loadRGSSAD(file)` → `parseRGSSAD(buffer)` → populate S → `showGrid()`
 
 **Loading overlay:** every open action goes through `runLoad(task)` in `app.js`, which drives `Loader` (`#loader`, `css/loader.css`): named steps (`detect`/`scan`/`load`/`current` for lazy folders, `scan`/`detect`/`index` for file lists, `read`/`table`/`index` for archives), a determinate or sweeping progress bar, Cancel and an error state. Loaders build into new Maps and only `commitLibrary()` swaps them into `S` (and aborts the previous background scan), so Cancel or a failure keeps the previously open game. Long loops call `Loader.check()` (throws `AbortError` after Cancel) at their yield points.
+
+**Feedback:** `js/feedback.js` POSTs to the shared feedback inbox `https://feedback.kokoroou.workers.dev/api/submit` (Cloudflare Worker + D1 in the private repo `Kokoroou/feedbacks`, project key `makerlens`) only when the user taps a star (the rating is sent at once; the optional follow-up comment goes as kind `idea` with the same stars, so ratings are not counted twice) or presses Send. That Worker's `src/projects.js` allow-lists this site's origin and the `meta` fields (`opens`, `browser`); a new field must be added there too. The answered state lives in `localStorage['feedback']` (`{opens, done, skips, nextAt}`), never sent.
 
 **ZIP download:** `downloadFolder()` in `app.js` reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
 
@@ -107,5 +110,6 @@ All files share a single global scope — no modules.
 - **Do not distribute or embed actual game assets** (images, audio, scripts from any RPG Maker game) in this repository, even as test fixtures, without explicit rights.
 - When extending decryption to new formats, document the format source (spec, reference implementation) in a code comment.
 - **Analytics must never include user file data.** `js/analytics.js` may send only the page path, referrer and the traffic-source query params listed in `SOURCE_PARAMS`. Never send file/folder names, game titles, keys, or contents — knowing what users open would undermine the DMCA position in `LEGAL.md`. No cookies or storage-based identifiers (they would require a consent banner).
-- **Content-Security-Policy** is set by a `<meta>` tag in `index.html`, `privacy.html` and `faq.html`. Do not add external hosts to it beyond the GoatCounter endpoint. If you edit the inline theme script in `<head>`, recompute its `sha256` hash in the CSP of all three pages or the script will be blocked.
+- **Feedback must never include user file data.** `js/feedback.js` may send only `project`, `kind`, `rating`, `comment`, `lang` and `meta.opens` (bucket) / `meta.browser` (bug reports only, shown as a chip the user can remove); the inbox Worker validates exactly these and must not store IP, user agent, headers or any identifier (only the day). The automatic prompt stays off with Do Not Track / GPC and on local copies. Update `privacy.html#feedback` when the payload changes.
+- **Content-Security-Policy** is set by a `<meta>` tag in `index.html`, `privacy.html` and `faq.html`. Do not add external hosts to it beyond the GoatCounter endpoint and, in `index.html`'s `connect-src` only, the feedback inbox (`feedback.kokoroou.workers.dev`); `scripts/check-site.mjs` enforces this. If you edit the inline theme script in `<head>`, recompute its `sha256` hash in the CSP of all three pages or the script will be blocked.
 - **Folder picker:** `pickFolder()` in `app.js` prefers `showDirectoryPicker` (Chrome/Edge prompt says "view files") and falls back to `<input webkitdirectory>` (Chrome's prompt for it says "upload", which contradicts the privacy promise).

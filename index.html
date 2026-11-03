@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Content-Security-Policy: the page may only send requests to itself and to the
-     anonymous page counter (js/analytics.js). Game files and keys cannot leave the browser.
+<!-- Content-Security-Policy: the page may only send requests to itself, to the
+     anonymous page counter (js/analytics.js) and to the feedback endpoint, which is only
+     called when the user presses Send (js/feedback.js). Game files and keys cannot leave the browser.
      If you edit the inline theme script below, update its sha256 hash here. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://kokoroou.goatcounter.com; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://kokoroou.goatcounter.com; media-src 'self' blob:; connect-src 'self' https://feedback.kokoroou.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>RPG Maker Extractor &amp; Asset Viewer — MV, MZ, XP, VX Ace | MakerLens</title>
 <meta name="description" content="Free online RPG Maker extractor, no download needed. Extract images and audio from MV, MZ, XP, VX and VX Ace games in your browser. Files are never uploaded.">
 <meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker MV MZ XP VX asset viewer">
@@ -76,6 +77,12 @@
   <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
   <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17l-5.38 2.85 1.03-6L3.3 9.6l6-.9z"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1h-9l-5 4v-4H4a1 1 0 01-1-1V6a1 1 0 011-1z"/><path d="M8 10h8M8 13h5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-bug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="13" rx="5"/><path d="M12 11v9M7 13H3M21 13h-4M7 17l-3 2M17 17l3 2M7 9L4 7M17 9l3-2M9 7a3 3 0 016 0"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z"/></symbol>
   <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 006 0zM19 7l-3 6a3 3 0 006 0z"/></symbol>
 </svg>
 
@@ -257,6 +264,13 @@
       <p class="about-more">More questions? See the <a href="faq.html">FAQ</a>.</p>
     </div>
 
+    <div class="about-section about-feedback">
+      <button class="btn-ghost btn-sm" id="about-feedback-btn">
+        <svg width="16" height="16" aria-hidden="true"><use href="#i-message"/></svg>
+        Report a bug or idea
+      </button>
+    </div>
+
     <div class="about-note">
       <div class="note-row">
         <svg width="18" height="18" aria-hidden="true"><use href="#i-shield"/></svg>
@@ -282,6 +296,65 @@
     <div id="drag-msg">Game folder or .rgssad / .rgss2a / .rgss3a archive</div>
   </div>
 </div>
+
+<!-- Feedback card (non-modal; js/feedback.js). Three views:
+       rate   — asked once after the 2nd game: tapping a star sends the rating (1 tap).
+       follow — after the star: optional one-line comment, Enter sends.
+       report — from About: Bug / Idea + message.
+     Nothing is sent before a star is tapped or Send is pressed. -->
+<section id="feedback" role="dialog" aria-labelledby="fb-title" hidden>
+  <button type="button" class="fb-close" id="fb-close" title="Close" aria-label="Close">
+    <svg width="16" height="16" aria-hidden="true"><use href="#i-x"/></svg>
+  </button>
+
+  <div class="fb-view fb-rate" data-view="rate">
+    <h2 id="fb-title" class="fb-title">Enjoying MakerLens?</h2>
+    <fieldset class="fb-stars">
+      <legend class="sr-only">Rate MakerLens from 1 to 5 stars; your choice is sent right away</legend>
+          <input type="radio" name="fb-rating" id="fb-r1" value="1"><label for="fb-r1" title="Poor"><svg width="28" height="28" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">1 star</span></label>
+          <input type="radio" name="fb-rating" id="fb-r2" value="2"><label for="fb-r2" title="Fair"><svg width="28" height="28" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">2 stars</span></label>
+          <input type="radio" name="fb-rating" id="fb-r3" value="3"><label for="fb-r3" title="Good"><svg width="28" height="28" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">3 stars</span></label>
+          <input type="radio" name="fb-rating" id="fb-r4" value="4"><label for="fb-r4" title="Very good"><svg width="28" height="28" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">4 stars</span></label>
+          <input type="radio" name="fb-rating" id="fb-r5" value="5"><label for="fb-r5" title="Excellent"><svg width="28" height="28" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">5 stars</span></label>
+    </fieldset>
+  </div>
+
+  <form class="fb-view fb-follow" data-view="follow" novalidate>
+    <p class="fb-title" role="status"><span class="fb-done">Thanks!</span> <span id="fb-follow-q">What would make it better?</span></p>
+    <div class="fb-row">
+      <label for="fb-note" class="sr-only">Optional comment</label>
+      <textarea id="fb-note" rows="1" maxlength="1000" placeholder="Optional · Enter to send"></textarea>
+      <button type="submit" class="fb-send" id="fb-note-send" title="Send" aria-label="Send comment" disabled>
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-send"/></svg>
+      </button>
+    </div>
+  </form>
+
+  <form class="fb-view fb-report" data-view="report" novalidate>
+    <h2 class="fb-title" id="fb-report-title">Send feedback</h2>
+    <fieldset class="fb-kind">
+      <legend class="sr-only">Type</legend>
+      <input type="radio" name="fb-kind" id="fb-kind-bug" value="bug" checked><label for="fb-kind-bug"><svg width="15" height="15" aria-hidden="true"><use href="#i-bug"/></svg>Bug</label>
+      <input type="radio" name="fb-kind" id="fb-kind-idea" value="idea"><label for="fb-kind-idea"><svg width="15" height="15" aria-hidden="true"><use href="#i-bulb"/></svg>Idea</label>
+    </fieldset>
+    <label for="fb-msg" class="sr-only">Message</label>
+    <textarea id="fb-msg" rows="3" maxlength="1000" placeholder="What happened?"></textarea>
+    <div class="fb-row fb-foot">
+      <button type="button" class="fb-env" id="fb-env" aria-pressed="true" title="Sent with bug reports to help reproduce them. Tap to leave it out.">
+        <span id="fb-env-value"></span><svg width="12" height="12" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <button type="submit" class="btn-primary btn-sm" id="fb-send" disabled>Send</button>
+    </div>
+    <p class="fb-fine">Anonymous · <a href="privacy.html#feedback">What is sent</a> · <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/new" rel="noopener" target="_blank">Want a reply?</a></p>
+  </form>
+
+  <div class="fb-view fb-thanks" data-view="thanks" role="status">
+    <svg width="20" height="20" aria-hidden="true"><use href="#i-check"/></svg><span id="fb-thanks-text">Thanks!</span>
+  </div>
+
+  <input type="text" id="fb-website" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <div id="fb-error" role="alert"></div>
+</section>
 
 <!-- Loading overlay (shown while a folder or archive is being opened) -->
 <div id="loader" role="dialog" aria-modal="true" aria-labelledby="loader-title" aria-describedby="loader-live">
@@ -328,6 +401,7 @@
 <script src="js/ui.js"></script>
 <script src="js/scan.js"></script>
 <script src="js/app.js"></script>
+<script src="js/feedback.js"></script>
 <script src="js/analytics.js"></script>
 </body>
 </html>

@@ -37,6 +37,7 @@
   --ok:   #15803d;
   --err:  #b91c1c;
   --warn: #a16207;
+  --star: #d97706;   /* rating stars */
 
   /* checkerboard behind transparent sprites */
   --c1:   #e2e8f0;
@@ -87,6 +88,7 @@
     --ok:   #4ade80;
     --err:  #f87171;
     --warn: #fbbf24;
+    --star: #fbbf24;
     --c1:   #1b2336;
     --c2:   #111827;
     --dot:        rgba(248,250,252,.035);
@@ -119,6 +121,7 @@
   --ok:   #4ade80;
   --err:  #f87171;
   --warn: #fbbf24;
+  --star: #fbbf24;
   --c1:   #1b2336;
   --c2:   #111827;
   --dot:        rgba(248,250,252,.035);

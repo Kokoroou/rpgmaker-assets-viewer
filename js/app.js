@@ -48,6 +48,9 @@ function commitLibrary(files, folders, key, scan = null) {
   S.query = '';
   setStatus(EL.setupStatus, '', '');
   showGrid();
+  // The grid is on screen (background indexing may still run): counts toward
+  // the one-time rating prompt, which appears from the 2nd game on.
+  if (typeof Feedback !== 'undefined') Feedback.noteOpen(files.size > 0);
 }
 
 function mediaSummary(files) {

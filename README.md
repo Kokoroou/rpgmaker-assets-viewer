@@ -89,13 +89,15 @@ No encryption key needed — keys are embedded in the archive. Select the game f
 
 Full details: [privacy.html](https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html).
 
-The public site counts anonymous page visits with [GoatCounter](https://www.goatcounter.com) to understand how many people use the tool and where they come from. See [`js/analytics.js`](js/analytics.js) — it is the only code that sends anything over the network.
+The public site counts anonymous page visits with [GoatCounter](https://www.goatcounter.com) to understand how many people use the tool and where they come from. See [`js/analytics.js`](js/analytics.js). The only other network request is optional feedback that you choose to send (below).
 
 - **Sent:** page path, referring site (e.g. `google.com`), and traffic-source URL parameters such as `?utm_source=chatgpt.com` (other URL parameters are dropped).
 - **Never sent:** file names, folder names, game titles, keys, or file contents.
-- No cookies, no `localStorage`, no IP storage. Do Not Track / Global Privacy Control are respected.
+- No cookies, no `localStorage` identifier, no IP storage. Do Not Track / Global Privacy Control are respected.
 - Not active when you open `index.html` locally.
 - A Content-Security-Policy in `index.html` blocks requests to any other host, so this is enforced by the browser, not just promised.
+
+**Feedback (optional).** After the second game you open, a small card asks once for a 1–5 star rating (tapping a star sends it, then an optional one-line comment); bug reports and ideas can be sent any time from About. Nothing is sent before a star is tapped or Send is pressed; it goes to the developer's feedback inbox (a Cloudflare Worker at `feedback.kokoroou.workers.dev`) that stores the rating, comment, browser language, a usage bucket and (for bug reports, if ticked) browser + OS — no file data, IP or identifier. Whether you already answered is remembered in `localStorage`. Not shown with Do Not Track / GPC or on local copies. Details in [privacy.html](privacy.html#feedback).
 
 ---
 
