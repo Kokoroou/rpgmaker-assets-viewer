@@ -72,6 +72,27 @@ const obs = new IntersectionObserver(entries => {
   }
 }, { rootMargin: '200px' });
 
+// ─── Foreground reads ─────────────────────────────────
+// Thumbnails and the lightbox are what the user is waiting for. While any of
+// them is reading a file, the background scan (js/scan.js) throttles itself so
+// on a slow disk these reads are not queued behind its requests.
+const Fg = { active: 0 };
+function fgStart() {
+  Fg.active++;
+  let ended = false;
+  return () => {
+    if (ended) return;
+    ended = true;
+    Fg.active--;
+    if (!Fg.active) Bg.scan?.prioritize();
+  };
+}
+
+// Thumbnails of the folder on screen: requested = cards scrolled into view,
+// done = decoded or failed. Shown in the loader's status view.
+// `ends` releases cards dropped before their image decoded (folder switch).
+const Thumbs = { gen: 0, requested: 0, done: 0, ends: new Set() };
+
 // ─── URL resolution ───────────────────────────────────
 // File for a folder entry. Lazy scans (js/scan.js) give entries a `_resolve`
 // instead of a File; the promise is shared, so a tile and the background
@@ -168,7 +189,7 @@ function decorateFolderItems() {
     el.classList.toggle('pending', !!p);
     if (p) {
       el.style.setProperty('--p', (p.ready / p.total * 100).toFixed(1) + '%');
-      el.title = `Loading ${fmtNum(p.ready)} / ${fmtNum(p.total)} files`;
+      el.title = `Indexing ${fmtNum(p.ready)} / ${fmtNum(p.total)} files`;
     } else {
       el.style.removeProperty('--p');
       el.removeAttribute('title');
@@ -282,6 +303,10 @@ function showFolder(key) {
   const label = key === '__root__' ? 'root' : key;
   EL.folderPath.innerHTML = `<strong>${label}</strong> &ensp;·&ensp; ${filtered.length} items`;
   EL.grid.innerHTML = '';
+  Thumbs.gen++;
+  Thumbs.requested = Thumbs.done = 0;
+  for (const end of Thumbs.ends) end();
+  Thumbs.ends.clear();
 
   if (filtered.length === 0) {
     if (q) {
@@ -317,16 +342,28 @@ function makeCard(entry, idx) {
       <div class="card-img"></div>
       <div class="card-name" title="${dispName}">${dispName}</div>`;
     const wrap = card.querySelector('.card-img');
+    const gen = Thumbs.gen;
     card._load = async () => {
+      const end = fgStart();   // until decoded: plain images are read by <img>
+      Thumbs.ends.add(end);
+      Thumbs.requested++;
+      const settle = ok => {
+        end();
+        Thumbs.ends.delete(end);
+        card.classList.remove('loading');
+        card.classList.toggle('error', !ok);
+        if (gen === Thumbs.gen) { Thumbs.done++; Bg.scan?.notify(); }
+      };
       try {
         const url = await entryToURL(entry);
         const img = document.createElement('img');
         img.src = url;
         img.alt = dispName;
-        img.addEventListener('load',  () => card.classList.remove('loading', 'error'));
-        img.addEventListener('error', () => { card.classList.remove('loading'); card.classList.add('error'); });
+        img.addEventListener('load',  () => settle(true));
+        img.addEventListener('error', () => settle(false));
         wrap.appendChild(img);
-      } catch { card.classList.remove('loading'); card.classList.add('error'); }
+      } catch { settle(false); }
+      Bg.scan?.notify();
     };
     obs.observe(card);
   }
@@ -383,6 +420,11 @@ async function preloadAround(idx) {
 }
 
 async function loadLbEntry(idx) {
+  const end = fgStart();
+  try { await _loadLbEntry(idx); } finally { end(); }
+}
+
+async function _loadLbEntry(idx) {
   const gen = ++_lbGeneration;
   const path  = S.currentMedia[idx];
   if (!path) return;
@@ -511,8 +553,8 @@ const fmtBytes = n => n >= 1e9 ? (n / 1e9).toFixed(2) + ' GB'
 const LOADER_STEPS = {
   scan:   'Scan folders',
   detect: 'Detect game',
-  load:   'Load files',
-  current:'Current folder',
+  load:   'Index files',
+  current:'Thumbnails on screen',
   read:   'Read archive',
   table:  'Decrypt file table',
   index:  'Index media',
