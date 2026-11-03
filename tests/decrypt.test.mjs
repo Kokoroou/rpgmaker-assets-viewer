@@ -13,7 +13,7 @@ function load(...files) {
   }
   // Top-level const/let live in the script scope, not on the global object: expose them.
   return vm.runInContext(
-    '({ RPG_HEADER, EXT_REMAP, canonicalExt, getMimeType, MEDIA_EXT, escapeHtml, decryptMVMZ, parseRGSSAD, rgssDecryptData })',
+    '({ RPG_HEADER, EXT_REMAP, canonicalExt, getMimeType, MEDIA_EXT, escapeHtml, decryptMVMZ, deriveKeyFromPNG, sanitizeFileName, uniqueZipNames, parseRGSSAD, rgssDecryptData })',
     ctx);
 }
 const js = load('constants.js', 'decrypt-mvmz.js', 'decrypt-rgssad.js');

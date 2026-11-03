@@ -24,11 +24,11 @@ Tác động lớn, công sức nhỏ, nằm trong phạm vi hiện tại.
 
 | # | Việc | Vì sao | Công sức |
 |---|------|--------|----------|
-| 1 | **Suy key từ header PNG đã biết** khi `System.json` thiếu, hỏng hoặc bị sửa | Header ảnh `.rpgmvp`/`.png_` sau 16 byte đầu là 16 byte PNG đã biết (signature + chunk IHDR), nên XOR ngược ra key. Hiện app thất bại nếu thiếu `System.json`. Key vẫn chỉ nằm trong bộ nhớ | S |
+| 1 ✅ | **Suy key từ header PNG đã biết** khi `System.json` thiếu, hỏng hoặc bị sửa | Header ảnh `.rpgmvp`/`.png_` sau 16 byte đầu là 16 byte PNG đã biết (signature + chunk IHDR), nên XOR ngược ra key. Hiện app thất bại nếu thiếu `System.json`. Key vẫn chỉ nằm trong bộ nhớ | S |
 | 2 | **Mở file lẻ** (kéo thả vài `.rpgmvp`/`.png_`/`.rpgmvo`...) | Cần có mục 1 để dùng được khi không có `System.json`. Với âm thanh có thể thử key đã suy từ ảnh, hoặc từ header OggS đã biết | S–M |
 | 3 | **Báo lỗi theo từng file, không dừng cả lần mở** (archive hỏng, file cắt cụt, header sai) | Hiện lỗi dễ làm hỏng cả luồng. Nên liệt kê phần đọc được, đánh dấu file lỗi và lý do | S–M |
-| 4 | **Test thêm cho đầu vào xấu**: header RGSSAD sai, offset/size vượt file, tên file có `..` hoặc ký tự lạ, vòng lặp dài | Tăng độ tin cậy, đồng thời chặn path traversal khi xuất ZIP. Fixture vẫn dựng trong test, không dùng asset thật | S |
-| 5 | **Kiểm tra tên file khi xuất ZIP** (loại `..`, đường dẫn tuyệt đối, ký tự cấm trên Windows, tên trùng sau khi đổi đuôi) | Archive đầu vào là dữ liệu không tin cậy; tên entry đi thẳng vào ZIP | S |
+| 4 ✅ | **Test thêm cho đầu vào xấu**: header RGSSAD sai, offset/size vượt file, tên file có `..` hoặc ký tự lạ, vòng lặp dài | Tăng độ tin cậy, đồng thời chặn path traversal khi xuất ZIP. Fixture vẫn dựng trong test, không dùng asset thật | S |
+| 5 ✅ | **Kiểm tra tên file khi xuất ZIP** (loại `..`, đường dẫn tuyệt đối, ký tự cấm trên Windows, tên trùng sau khi đổi đuôi) | Archive đầu vào là dữ liệu không tin cậy; tên entry đi thẳng vào ZIP | S |
 
 ## 2. Nên làm (tiếp theo)
 

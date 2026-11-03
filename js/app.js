@@ -631,6 +631,7 @@ async function downloadFolder() {
 
   try {
     const items = [];
+    const rawNames = [];
     for (const path of paths) {
       const entry = S.files.get(path);
       if (!entry) continue;
@@ -639,14 +640,17 @@ async function downloadFolder() {
         if (entry._getData) {
           data = new Uint8Array(await entry._getData());
         } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
-          if (!S.key) throw new Error('No encryption key');
-          data = new Uint8Array(decryptMVMZ(await (await entryFile(entry)).arrayBuffer(), S.key));
+          data = new Uint8Array(decryptWithKey(await (await entryFile(entry)).arrayBuffer()));
         } else {
           data = new Uint8Array(await (await entryFile(entry)).arrayBuffer());
         }
-        items.push({ name: canonicalExt(entry.name.split('/').pop()), data });
+        items.push({ name: '', data });
+        rawNames.push(canonicalExt(entry.name));
       } catch {}
     }
+    // Entry names are untrusted: sanitize and de-duplicate before they go into the ZIP.
+    const zipNames = uniqueZipNames(rawNames);
+    items.forEach((it, i) => { it.name = zipNames[i]; });
 
     const zip = buildZip(items);
     const folderName = key === '__root__' ? 'assets' : key.split('/').pop();

@@ -109,14 +109,24 @@ async function entryToURL(entry) {
     data = await entry._getData();
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
-    if (!S.key) throw new Error('No encryption key set');
-    data = decryptMVMZ(await (await entryFile(entry)).arrayBuffer(), S.key);
+    data = decryptWithKey(await (await entryFile(entry)).arrayBuffer());
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else {
     url = URL.createObjectURL(await entryFile(entry));
   }
   S.blobCache.set(entry.path, url);
   return url;
+}
+
+// Decrypt an MV/MZ buffer with S.key. If no key is known (System.json missing), derive
+// it from this file when it is an encrypted image; the key stays in memory only.
+function decryptWithKey(buffer) {
+  if (!S.key) {
+    const k = deriveKeyFromPNG(buffer);
+    if (!k) throw new Error('No encryption key set');
+    S.key = k;
+  }
+  return decryptMVMZ(buffer, S.key);
 }
 
 function clearBlobCache() {
