@@ -1,0 +1,49 @@
+name: Feedback / Góp ý
+description: Report a problem or share an idea — no GitHub experience needed. / Báo lỗi hoặc gợi ý, không cần biết GitHub.
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping! Fill in only the first box — everything else is optional.
+        Cảm ơn bạn! Chỉ cần điền ô đầu tiên, các ô còn lại không bắt buộc.
+
+        **Please do not attach game files, images or audio.** Describing what you see is enough.
+        Vui lòng không đính kèm file game, ảnh hoặc âm thanh — chỉ cần mô tả.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is this about? / Nội dung là gì?
+      options:
+        - Something is broken (bug) / Có lỗi
+        - I have an idea / Gợi ý tính năng
+        - I have a question / Câu hỏi
+        - Something else / Khác
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: message
+    attributes:
+      label: Tell us in your own words / Mô tả bằng lời của bạn
+      description: Short is fine. What did you try, and what happened? / Ngắn gọn cũng được. Bạn đã làm gì và điều gì xảy ra?
+      placeholder: "e.g. I opened my game folder and the images stayed blank."
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Which kind of game? (optional) / Loại game (không bắt buộc)
+      options:
+        - Not sure / Không rõ
+        - RPG Maker MV or MZ (folder with data/System.json)
+        - RPG Maker XP / VX / VX Ace (.rgssad, .rgss2a, .rgss3a)
+        - Not related to a game / Không liên quan
+      default: 0
+  - type: input
+    id: browser
+    attributes:
+      label: Browser (optional) / Trình duyệt (không bắt buộc)
+      description: For example Chrome, Edge, Firefox, Safari.
+      placeholder: Chrome on Windows
