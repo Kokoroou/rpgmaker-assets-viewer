@@ -256,7 +256,7 @@ function openFileList(files) {
 // first media folder. The rest is listed and loaded in the background
 // (js/scan.js), with progress in the header chip.
 // `sources` is a list of {fs, root} to try in order (handle API, then entries).
-const LAZY_STEPS = ['detect', 'scan', 'load', 'current'];
+const LAZY_STEPS = ['detect', 'scan', 'load'];
 
 function openFolderLazy(name, sources) {
   return runLoad(async () => {

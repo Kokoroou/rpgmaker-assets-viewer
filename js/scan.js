@@ -46,8 +46,16 @@ const FS_ENTRY = {
 
 // Few listings in flight keep the sidebar filling steadily; getFile() calls are
 // pooled as in the benchmark (docs/benchmarks/traverse-handle.md).
-const LIST_CONCURRENCY     = 4;
-const GET_FILE_CONCURRENCY = 16;
+// While a thumbnail or the lightbox is reading (Fg.active), indexing pauses
+// and listing drops to one request, so a slow disk serves the user first.
+// On a slow disk (removable drive, network share) a big pool adds no
+// throughput, only a longer queue in front of the user's next read, so the
+// pool shrinks once getFile() latency shows the disk is slow.
+const LIST_CONCURRENCY      = 4;
+const LIST_BUSY             = 1;
+const GET_FILE_CONCURRENCY  = 16;
+const GET_FILE_SLOW_DISK    = 4;
+const SLOW_DISK_MS          = 15;   // average disk time per getFile()
 const MEDIA_DIR = /^(img|audio|movies|graphics)$/i;           // children listed early too
 const FIRST_DIR = /^(www|img|audio|movies|graphics)$/i;
 const LAST_DIR  = /^(\..*|js|data|save|fonts|locales|css|node_modules|swiftshader|lib|plugins)$/i;
@@ -65,6 +73,7 @@ class FolderScan {
     this.listing = 0;
     this.resolving = 0;
     this.ready   = 0;           // resolved (or failed) files
+    this.latency = null;        // ms per getFile(), moving average
     this.failed  = 0;
     this.listed  = false;       // every directory has been listed
     this.done    = false;       // listed and every file resolved
@@ -100,7 +109,7 @@ class FolderScan {
 
   _pumpList() {
     if (this.aborted) return;
-    while (this.listing < LIST_CONCURRENCY) {
+    while (this.listing < (Fg.active ? LIST_BUSY : LIST_CONCURRENCY)) {
       const job = this._nextDir();
       if (!job) break;
       this.listing++;
@@ -159,9 +168,18 @@ class FolderScan {
   }
 
   // ── Resolving File objects ──
+  _poolSize() {
+    // Start small until the disk has shown its speed.
+    return this.latency == null || this.latency > SLOW_DISK_MS ? GET_FILE_SLOW_DISK : GET_FILE_CONCURRENCY;
+  }
+
   _resolve(item, folder) {
+    const t0 = performance.now(), inFlight = Math.max(1, this.resolving);
     const count = ok => {
       if (this.aborted) return;
+      // Round trip divided by requests in flight ≈ disk time per file.
+      const ms = (performance.now() - t0) / inFlight;
+      this.latency = this.latency == null ? ms : this.latency * 0.8 + ms * 0.2;
       this.ready++;
       if (!ok) this.failed++;
       const st = this.stats.get(folder);
@@ -192,7 +210,7 @@ class FolderScan {
   }
 
   _pumpResolve() {
-    while (!this.aborted && this.resolving < GET_FILE_CONCURRENCY) {
+    while (!this.aborted && !Fg.active && this.resolving < this._poolSize()) {
       const entry = this._nextEntry();
       if (!entry) break;
       this.resolving++;
@@ -200,8 +218,12 @@ class FolderScan {
     }
   }
 
-  // Call when the user switches folder so its files jump the queue.
-  prioritize() { this._pumpResolve(); }
+  // Call when the user switches folder (its files jump the queue) or when
+  // foreground reads finish (back to full speed).
+  prioritize() { this._pumpList(); this._pumpResolve(); }
+
+  // Something shown in the status view changed outside the scan.
+  notify() { this._changed(); }
 
   _checkDone() {
     if (!this.done && this.listed && this.ready >= this.files.size) {
@@ -253,16 +275,17 @@ function folderLabel(key) { return key === '__root__' ? 'root' : key; }
 // reused by another load since, so nothing is assumed about its rows).
 function renderScanLoader(scan) {
   const found = scan.found;
-  Loader.title(scan.done ? 'Game folder loaded' : 'Loading game folder');
+  Loader.title(scan.done ? 'Game folder indexed' : 'Indexing game folder');
   Loader.step('detect', 'done', scan.detectLabel);
   Loader.step('scan', scan.listed ? 'done' : 'active',
     `${fmtNum(scan.folders.size)} folder${scan.folders.size === 1 ? '' : 's'} · ${fmtNum(found)} files`);
   Loader.step('load', scan.done ? 'done' : found ? 'active' : '',
     found ? `${fmtNum(scan.ready)} / ${fmtNum(found)}${scan.failed ? ` · ${fmtNum(scan.failed)} unreadable` : ''}` : '');
-  const cur = S.files === scan.files ? S.currentFolder : null;
-  const st  = cur && scan.stats.get(cur);
-  if (st) Loader.step('current', st.ready >= st.total ? 'done' : 'active',
-    `${folderLabel(cur)} · ${fmtNum(st.ready)} / ${fmtNum(st.total)}`);
+  // Thumbnails are read from disk only when they scroll into view, so this
+  // counts the cards on screen, not the whole folder.
+  const onScreen = S.files === scan.files && S.currentFolder && Thumbs.requested;
+  if (onScreen) Loader.step('current', Thumbs.done >= Thumbs.requested ? 'done' : 'active',
+    `${fmtNum(Thumbs.done)} / ${fmtNum(Thumbs.requested)}`);
   else Loader.step('current', '', '');
   Loader.progress(scan.ready, found);
   if (scan.done) Loader.finish();
@@ -284,9 +307,9 @@ function updateBgChip(scan) {
   chip.hidden = false;
   chip.classList.toggle('done', scan.done);
   chip.querySelector('.bg-load-pct').textContent = scan.done ? '' : `${pct}%`;
-  chip.querySelector('.bg-load-label').textContent = scan.done ? 'Loaded' : 'Loading';
-  chip.title = scan.done ? 'All files loaded'
-    : `Loading in background: ${fmtNum(scan.ready)} / ${fmtNum(scan.found)} files${scan.listed ? '' : ', still scanning folders'}`;
+  chip.querySelector('.bg-load-label').textContent = scan.done ? 'Indexed' : 'Indexing';
+  chip.title = scan.done ? 'All files indexed'
+    : `Indexing in background: ${fmtNum(scan.ready)} / ${fmtNum(scan.found)} files${scan.listed ? '' : ', still scanning folders'}. Thumbnails load as you scroll.`;
   if (scan.done) Bg.hideTimer = setTimeout(() => { chip.hidden = true; }, 2500);
 }
 
