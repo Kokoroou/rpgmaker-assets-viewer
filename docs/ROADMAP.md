@@ -91,3 +91,78 @@ Một việc đáng làm khi: (a) giữ được 100% client-side và không dep
 (b) không cần gửi bất cứ thứ gì về server, (c) có tài liệu hoặc triển khai tham
 chiếu để ghi nguồn, (d) kiểm thử được bằng byte tổng hợp. Thiếu một trong bốn
 điều kiện thì chuyển xuống mục 4 hoặc cần thảo luận trước.
+
+---
+
+## Tài liệu tham khảo và ghi nhận (acknowledgements)
+
+Danh sách gốc: [awesome-game-file-format-reversing](https://github.com/VelocityRa/awesome-game-file-format-reversing)
+([bản web](https://velocityra.github.io/awesome-game-file-format-reversing/)).
+Các dự án dưới đây được **nhận diện từ mô tả trong danh sách**; khi dùng logic
+của chúng, đọc mã nguồn thật, kiểm tra giấy phép, viết lại theo cách riêng và
+ghi nguồn trong comment mã (CLAUDE.md: "document the format source").
+Cột "Dùng cho" trỏ về số mục ở trên.
+
+### RPG Maker MV/MZ (`.rpgmvp`, `.png_`, `.rpgmvo`, `.ogg_`...)
+
+| Dự án | Dùng cho |
+|-------|----------|
+| [uuksu/RPGMakerDecrypter](https://github.com/uuksu/RPGMakerDecrypter) (MIT; bản sao cục bộ ở `references/`) | Nguồn chính của thuật toán RGSSAD và MV/MZ |
+| [RPG-Maker-Translation-Tools/rpgm-asset-decrypter-rs](https://github.com/RPG-Maker-Translation-Tools/rpgm-asset-decrypter-rs) và [rpgm-asset-decrypter-lib](https://github.com/RPG-Maker-Translation-Tools/rpgm-asset-decrypter-lib) | Mục 1–2: suy key khi thiếu `System.json` |
+| [Petschko/RPG-Maker-MV-Decrypter](https://gitlab.com/Petschko/RPG-Maker-MV-Decrypter) | Mục 1–2, 15: xử lý key và header (kèm [bản GitHub cũ, chỉ đọc](https://github.com/Petschko/RPG-Maker-MV-Decrypter)) |
+| [Bioruebe/rmvdec](https://github.com/Bioruebe/rmvdec) | Mục 2: giải mã file lẻ |
+| [RPG-Maker-Translation-Tools/rpgmdec](https://github.com/RPG-Maker-Translation-Tools/rpgmdec) | Mục 3: kiểm tra asset sau giải mã |
+| [TTitanUA/rpg-game-decrypter-python](https://github.com/TTitanUA/rpg-game-decrypter-python) | Tham khảo luồng giải mã MV/MZ trong GUI |
+
+### RPG Maker XP / VX / VX Ace (RGSSAD)
+
+| Dự án | Dùng cho |
+|-------|----------|
+| [luxrck/rgssad](https://github.com/luxrck/rgssad) | Đối chiếu v1/v3 |
+| [usagirei/RGSS-Decryptor](https://github.com/usagirei/RGSS-Decryptor) ([bản của Bioruebe](https://github.com/Bioruebe/RGSS-Decryptor)) | Đối chiếu v1/v3 |
+| [RPG-Maker-Translation-Tools/rpgm-archive-decrypter](https://github.com/RPG-Maker-Translation-Tools/rpgm-archive-decrypter) và [rpgm-archive-decrypter-lib](https://github.com/RPG-Maker-Translation-Tools/rpgm-archive-decrypter-lib) | Mục 3–4: xử lý archive hỏng |
+| [elizagamedev/rpga](https://github.com/elizagamedev/rpga) | Mục 14: Wolf RPG archive |
+| [dogtopus/rgssad-fuse](https://github.com/dogtopus/rgssad-fuse) | Đọc lazy từng entry, tránh nạp cả archive |
+| [Ancurio/mkxp](https://github.com/Ancurio/mkxp) ([mkxp-z](https://github.com/mkxp-z/mkxp-z)) | Hành vi RGSS khi đọc archive |
+
+### RPG Maker 2000/2003 và các bản cũ
+
+| Dự án | Dùng cho |
+|-------|----------|
+| [Ghabry/libxyzimage](https://github.com/Ghabry/libxyzimage) | Mục 11: ảnh `.xyz` |
+| [vn-tools/xyz2png](https://github.com/vn-tools/xyz2png) (gộp vào [arc_unpacker](https://github.com/vn-tools/arc_unpacker)) | Mục 11: ảnh `.xyz` |
+| [EasyRPG/liblcf](https://github.com/EasyRPG/liblcf), [EasyRPG/Player](https://github.com/EasyRPG/Player), [EasyRPG/Tools](https://github.com/EasyRPG/Tools) | Mục 11–12: định dạng LCF, kết xuất bản đồ |
+| [Ghabry/rpg95-fileformat](https://github.com/Ghabry/rpg95-fileformat) | Tài liệu định dạng RPG Maker 95 |
+| [florianessl/lucifer-file-carver](https://github.com/florianessl/lucifer-file-carver) | Mục 3: chịu lỗi khi dữ liệu hỏng |
+
+### Audio, sprite, nhận diện
+
+| Dự án | Dùng cho |
+|-------|----------|
+| [Splendide-Imaginarius/crosslooper](https://github.com/Splendide-Imaginarius/crosslooper) | Mục 7: quy ước `LOOPSTART`/`LOOPLENGTH` |
+| [MeguminBOT/TextureAtlas-Toolbox](https://github.com/MeguminBOT/TextureAtlas-Toolbox) | Mục 6: cắt sprite sheet |
+| [BoBoBaSs84/DDS.Tools](https://github.com/BoBoBaSs84/DDS.Tools) | Mục 8: phát hiện trùng |
+
+### Tài liệu định dạng và công cụ phân tích
+
+| Dự án | Dùng cho |
+|-------|----------|
+| [Kaitai Struct](https://kaitai.io/) ([mã nguồn](https://github.com/kaitai-io/kaitai_struct)) | Mục 9: mô tả `.ksy` |
+| [pytai](https://github.com/Dvd848/pytai) | Kiểm tra cấu trúc `.ksy` trên dữ liệu mẫu |
+| [palimpsest](https://github.com/kenrinzero/palimpsest) | Danh mục header container, tham khảo nhận diện định dạng |
+
+### Mô hình sản phẩm (trình xem chạy trong trình duyệt)
+
+| Dự án | Ý tưởng |
+|-------|---------|
+| [magcius/noclip.website](https://github.com/magcius/noclip.website) | Trình xem game chạy hoàn toàn trong trình duyệt |
+| [Kokoroou/lore-insight](https://github.com/Kokoroou/lore-insight) | Mục 17: công cụ cùng tác giả, cùng nguyên tắc offline |
+| [steffest/DPaint-js](https://github.com/steffest/DPaint-js) | Ví dụ định dạng cũ đọc thuần JavaScript |
+| [InvoxiPlayGames/stfs-webjs](https://github.com/InvoxiPlayGames/stfs-webjs) | Ví dụ đọc container nhị phân trong trình duyệt |
+
+### Ngoài phạm vi (chỉ để biết, xem mục 4)
+
+[Luminol](https://github.com/Astrabit-ST/Luminol),
+[rpgmtranslate-qt](https://github.com/RPG-Maker-Translation-Tools/rpgmtranslate-qt),
+[rvpacker-txt-rs](https://github.com/RPG-Maker-Translation-Tools/rvpacker-txt-rs),
+[rpgsave-converter](https://github.com/13xforever/rpgsave-converter).
