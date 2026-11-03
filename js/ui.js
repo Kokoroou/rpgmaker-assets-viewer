@@ -475,14 +475,32 @@ function makeCard(entry, idx) {
 }
 
 // ─── Lightbox ─────────────────────────────────────────
+// The open lightbox owns one history entry, so the phone's Back button or
+// back gesture closes it instead of leaving the page. Same URL, no hash:
+// nothing about the file reaches the address bar or analytics.
+const LB_STATE = 'makerlens-lightbox';
+
 async function openLightbox(idx) {
   _lbReset();
   S.lbIdx = idx;
+  if (!EL.lightbox.classList.contains('open') && history.state !== LB_STATE) {
+    try { history.pushState(LB_STATE, ''); } catch (_) {}
+  }
   EL.lightbox.classList.add('open');
   await loadLbEntry(idx);
 }
 
 function closeLightbox() {
+  _lbClose();
+  if (history.state === LB_STATE) history.back();   // popstate finds it closed
+}
+
+window.addEventListener('popstate', () => {
+  if (EL.lightbox.classList.contains('open') && history.state !== LB_STATE) _lbClose();
+});
+
+function _lbClose() {
+  _lbSwipeEnd();
   _spriteStop();
   EL.lbAudio.pause();
   EL.lightbox.classList.remove('open');
@@ -688,12 +706,14 @@ EL.lightbox.addEventListener('wheel', e => {
 }, { passive: false });
 
 EL.lbImg.addEventListener('click', e => {
+  if (_lbFromTouch()) return;   // touch has its own double-tap below
   if (Math.hypot(e.clientX - _lbMdx, e.clientY - _lbMdy) > 3) return;
   if (_lbZ > 1) { _lbZ = 1; _lbTx = 0; _lbTy = 0; } else { _lbZ = 2; }
   _lbApply();
 });
 
 EL.lightbox.addEventListener('mousedown', e => {
+  if (_lbFromTouch()) return;
   _lbMdx = e.clientX; _lbMdy = e.clientY;
   if (_lbZ <= 1) return;
   e.preventDefault();
@@ -715,6 +735,184 @@ document.addEventListener('mouseup', () => {
   _lbPanning = false;
   EL.lbImg.classList.remove('grabbing');
 });
+
+// ─── Lightbox touch (swipe, pinch, double-tap) ───────
+// Pointer Events with pointerType 'touch' / 'pen' only; mouse keeps the
+// wheel + drag handlers above. Not zoomed: swipe left / right = next /
+// previous, swipe down on the media = close. Pinch zooms around the fingers,
+// one finger pans while zoomed, double-tap toggles 2.5× at the tapped point.
+const _lbPts = new Map();          // pointerId → {x, y}
+let _lbG = null;                   // current gesture
+let _lbTouchAt = 0, _lbTap = null; // last touch time, last tap {x, y, t}
+const _lbWrapEl = EL.lbImgWrap;
+const _lbReduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+const _lbFromTouch = () => performance.now() - _lbTouchAt < 800;
+const _lbImageOn = () => EL.lbImg.style.display !== 'none' && EL.lbAudio.style.display === 'none';
+
+function _lbClampZ(z) { return Math.max(1, Math.min(8, z)); }
+
+// Layout centre of the image (its centre with the current translate undone).
+function _lbCentre() {
+  const r = EL.lbImg.getBoundingClientRect();
+  return { x: (r.left + r.right) / 2 - _lbTx, y: (r.top + r.bottom) / 2 - _lbTy };
+}
+
+// Zoom to nz keeping image point under (px, py) — given the gesture start
+// state z0/tx0/ty0 and the start point (sx, sy) — under the finger.
+function _lbZoomAt(c, z0, tx0, ty0, sx, sy, nz, px, py) {
+  const lx = (sx - c.x - tx0) / z0, ly = (sy - c.y - ty0) / z0;
+  _lbZ = nz;
+  if (nz === 1) { _lbTx = 0; _lbTy = 0; }
+  else { _lbTx = px - c.x - lx * nz; _lbTy = py - c.y - ly * nz; }
+  _lbApply();
+}
+
+function _lbSwipeSet(dx, dy, fade) {
+  _lbWrapEl.style.transform = dx || dy ? `translate(${dx}px,${dy}px)` : '';
+  _lbWrapEl.style.opacity = fade < 1 ? String(fade) : '';
+}
+
+function _lbSwipeEnd() {
+  _lbWrapEl.classList.remove('lb-anim');
+  _lbSwipeSet(0, 0, 1);
+  EL.lightbox.style.background = '';
+}
+
+function _lbSnapBack() {
+  _lbWrapEl.classList.add('lb-anim');
+  _lbSwipeSet(0, 0, 1);
+  EL.lightbox.style.background = '';
+  setTimeout(() => _lbWrapEl.classList.remove('lb-anim'), 200);
+}
+
+// Slide the current item out, switch, slide the next one in from the other side.
+function _lbSwipeTo(d) {
+  if (S.currentMedia.length < 2) { _lbSnapBack(); return; }
+  if (_lbReduceMotion.matches) { _lbSwipeEnd(); lbMove(d); return; }
+  const w = innerWidth;
+  _lbWrapEl.classList.add('lb-anim');
+  _lbSwipeSet(-d * w, 0, 0);
+  setTimeout(() => {
+    _lbWrapEl.classList.remove('lb-anim');
+    _lbSwipeSet(d * w * 0.3, 0, 0);
+    lbMove(d);
+    void _lbWrapEl.offsetWidth;          // commit the start position
+    _lbWrapEl.classList.add('lb-anim');
+    _lbSwipeSet(0, 0, 1);
+    setTimeout(() => _lbWrapEl.classList.remove('lb-anim'), 200);
+  }, 170);
+}
+
+function _lbPinchStart() {
+  const [a, b] = [..._lbPts.values()];
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  _lbSwipeEnd();
+  _lbG = { mode: 'pinch', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+           z0: _lbZ, tx0: _lbTx, ty0: _lbTy, sx: mx, sy: my, c: _lbCentre() };
+}
+
+function _lbPanStart(p) {
+  _lbG = { mode: 'pan', px: p.x - _lbTx, py: p.y - _lbTy };
+}
+
+EL.lightbox.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' || !EL.lightbox.classList.contains('open')) return;
+  _lbTouchAt = performance.now();
+  // Native controls keep their own touch behaviour (seek bar, buttons, selects).
+  if (e.target.closest('button, input, select, label, audio, #lb-controls')) return;
+  const onMedia = !!e.target.closest('#lb-img-wrap');
+  // No setPointerCapture: touch is captured to its target implicitly, and an
+  // explicit capture on #lightbox would retarget the click to the backdrop
+  // (whose click handler closes the viewer).
+  _lbPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (_lbPts.size === 2 && _lbImageOn() && onMedia || _lbPts.size === 2 && _lbG?.mode === 'pinch') {
+    _lbPinchStart();
+  } else if (_lbPts.size === 1) {
+    if (_lbZ > 1 && onMedia) _lbPanStart({ x: e.clientX, y: e.clientY });
+    else _lbG = { mode: 'wait', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0 };
+    Object.assign(_lbG, { onMedia, t0: performance.now(), x0: e.clientX, y0: e.clientY });
+  }
+});
+
+EL.lightbox.addEventListener('pointermove', e => {
+  const p = _lbPts.get(e.pointerId);
+  if (!p || !_lbG) return;
+  p.x = e.clientX; p.y = e.clientY;
+  const g = _lbG;
+
+  if (g.mode === 'pinch' && _lbPts.size >= 2) {
+    const [a, b] = [..._lbPts.values()];
+    const nz = _lbClampZ(g.z0 * Math.hypot(a.x - b.x, a.y - b.y) / g.d0);
+    _lbZoomAt(g.c, g.z0, g.tx0, g.ty0, g.sx, g.sy, nz, (a.x + b.x) / 2, (a.y + b.y) / 2);
+    return;
+  }
+  if (g.mode === 'pan') {
+    _lbTx = e.clientX - g.px; _lbTy = e.clientY - g.py;
+    _lbApply();
+    return;
+  }
+
+  const dx = e.clientX - g.sx, dy = e.clientY - g.sy;
+  if (g.mode === 'wait' && Math.hypot(dx, dy) > 10) {
+    if (Math.abs(dx) > Math.abs(dy) * 1.2) g.mode = 'swipe-x';
+    else if (dy > 0 && g.onMedia) g.mode = 'swipe-down';
+    else g.mode = 'none';
+  }
+  g.dx = dx; g.dy = dy;
+  if (g.mode === 'swipe-x') {
+    // Rubber band when there is nothing to move to.
+    _lbSwipeSet(S.currentMedia.length < 2 ? dx / 4 : dx, 0, 1);
+  } else if (g.mode === 'swipe-down') {
+    const k = Math.max(0, dy) / innerHeight;
+    _lbSwipeSet(0, Math.max(0, dy), 1 - k * 0.6);
+    EL.lightbox.style.background = `rgba(2,6,23,${(0.94 * (1 - k)).toFixed(3)})`;
+  }
+});
+
+function _lbPointerUp(e) {
+  if (!_lbPts.delete(e.pointerId)) return;
+  const g = _lbG;
+  if (!g) return;
+  const cancelled = e.type === 'pointercancel';
+
+  if (g.mode === 'pinch') {
+    if (_lbZ < 1.05) _lbReset();
+    if (_lbPts.size === 1 && _lbZ > 1) {
+      _lbPanStart([..._lbPts.values()][0]);
+      _lbG.onMedia = true;   // t0 stays unset: lifting the last finger is not a tap
+    }
+    else if (_lbPts.size === 0) _lbG = null;
+    return;
+  }
+  if (_lbPts.size) return;
+  _lbG = null;
+  if (cancelled) { if (g.mode !== 'pan') _lbSnapBack(); return; }
+
+  const dt = Math.max(1, performance.now() - g.t0);
+  if (g.mode === 'swipe-x') {
+    const fast = Math.abs(g.dx) / dt > 0.45 && Math.abs(g.dx) > 30;
+    if (Math.abs(g.dx) > Math.min(90, innerWidth * 0.22) || fast) _lbSwipeTo(g.dx < 0 ? 1 : -1);
+    else _lbSnapBack();
+  } else if (g.mode === 'swipe-down') {
+    if (g.dy > innerHeight * 0.18 || g.dy / dt > 0.5 && g.dy > 40) { _lbSwipeEnd(); closeLightbox(); }
+    else _lbSnapBack();
+  } else if ((g.mode === 'wait' || g.mode === 'pan') &&
+             Math.hypot(e.clientX - g.x0, e.clientY - g.y0) < 10 && dt < 300) {
+    // A tap. Two taps on the image close together = zoom toggle.
+    const now = performance.now(), last = _lbTap;
+    _lbTap = { x: e.clientX, y: e.clientY, t: now };
+    if (last && now - last.t < 320 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 30
+        && _lbImageOn() && g.onMedia) {
+      _lbTap = null;
+      if (_lbZ > 1) _lbReset();
+      else _lbZoomAt(_lbCentre(), 1, 0, 0, e.clientX, e.clientY, 2.5, e.clientX, e.clientY);
+    }
+  }
+}
+EL.lightbox.addEventListener('pointerup', _lbPointerUp);
+EL.lightbox.addEventListener('pointercancel', _lbPointerUp);
 
 // ─── Download ─────────────────────────────────────────
 async function downloadEntry(path) {

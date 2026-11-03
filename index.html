@@ -250,26 +250,28 @@
 
 <!-- ╔════ LIGHTBOX ════╗ -->
 <div id="lightbox" role="dialog" aria-modal="true" aria-label="Preview">
-  <div id="lb-top-bar">
+  <!-- Desktop: each control is fixed on its own (wrapper is display: contents).
+       Phones: one bottom bar within thumb reach (css/lightbox.css). -->
+  <div id="lb-controls">
     <button id="lb-close" class="lb-btn" title="Close (Esc)" aria-label="Close">
       <svg width="20" height="20" aria-hidden="true"><use href="#i-x"/></svg>
     </button>
-    <span id="lb-counter"></span>
+    <button class="lb-nav lb-btn" id="lb-prev" title="Previous (←)" aria-label="Previous">
+      <svg width="22" height="22" aria-hidden="true"><use href="#i-left"/></svg>
+    </button>
+    <span id="lb-counter" aria-live="polite"></span>
+    <button class="lb-nav lb-btn" id="lb-next" title="Next (→)" aria-label="Next">
+      <svg width="22" height="22" aria-hidden="true"><use href="#i-right"/></svg>
+    </button>
     <button id="lb-download" class="lb-btn" title="Download" aria-label="Download">
       <svg width="20" height="20" aria-hidden="true"><use href="#i-download"/></svg>
     </button>
   </div>
-  <button class="lb-nav lb-btn" id="lb-prev" title="Previous (←)" aria-label="Previous">
-    <svg width="22" height="22" aria-hidden="true"><use href="#i-left"/></svg>
-  </button>
   <div id="lb-img-wrap">
     <img id="lb-img" src="" alt="">
     <canvas id="lb-sprite-cv" style="display:none"></canvas>
     <audio id="lb-audio" controls></audio>
   </div>
-  <button class="lb-nav lb-btn" id="lb-next" title="Next (→)" aria-label="Next">
-    <svg width="22" height="22" aria-hidden="true"><use href="#i-right"/></svg>
-  </button>
   <div id="lb-bar">
     <div id="lb-name"></div>
     <div id="lb-meta"></div>

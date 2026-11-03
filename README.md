@@ -13,7 +13,7 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX and 
 - **Automatic key handling** — reads `encryptionKey` from `data/System.json`; if that is missing or broken, recovers the key from a known PNG header (kept in memory only)
 - **Folders, archives and loose files** — pick or drop a game folder, an `.rgssad` / `.rgss2a` / `.rgss3a` archive, or individual encrypted files
 - **Fast on big games** — folders are scanned lazily in the background; thumbnails load on demand
-- **Image and audio preview** — grid, lightbox with keyboard navigation, in-browser audio player
+- **Image and audio preview** — grid, lightbox with keyboard navigation and, on phones, swipe / pinch gestures with a bottom control bar, in-browser audio player
 - **Export** — download one asset, or the whole current folder as a `.zip` (files that cannot be read are listed, not silently dropped)
 - **Duplicate finder** — "Unique only" hides files with identical content (SHA-256 of the decrypted bytes, computed in the browser); copies are badged and grouped in a Duplicates folder
 - **Search and filters** — by name, by type (images / audio), image width and height (with presets such as 48×48 tiles), and audio length; sizes and lengths are read from file headers only
