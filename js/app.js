@@ -9,61 +9,136 @@ if (_sw) {
 function setStatus(el, cls, text) {
   if (!el) return;
   el.className = cls;
-  if (cls === 'loading') {
-    el.innerHTML = '<span class="status-spinner"></span>' + text;
-  } else {
-    el.textContent = text;
-  }
+  el.textContent = text;
 }
 
-// ─── MV/MZ folder loading ─────────────────────────────
-async function loadMVMZFolder(files) {
+// Let the browser paint (and the Cancel button respond) between work chunks.
+const nextFrame = () => new Promise(r => setTimeout(r, 0));
+
+// Yields at most every ~30 ms of work, so long loops stay responsive without
+// paying a setTimeout per item.
+function makeYielder() {
+  let last = performance.now();
+  return async () => {
+    if (performance.now() - last < 30) return false;
+    await nextFrame();
+    Loader.check();
+    last = performance.now();
+    return true;
+  };
+}
+
+// ─── Commit a freshly indexed library ─────────────────
+// Loading builds into new Maps and only swaps them in here, so a cancelled or
+// failed load leaves whatever was open before untouched.
+function commitLibrary(files, folders, key) {
   clearBlobCache();
-  S.files.clear();
-  S.folders.clear();
+  S.key = key || '';
+  S.files.clear();   for (const [k, v] of files)   S.files.set(k, v);
+  S.folders.clear(); for (const [k, v] of folders) S.folders.set(k, v);
   S.sidebarPath = null;
-
-  const st = EL.setupStatus;
-  for (let i = 0; i < files.length; i++) {
-    const f = files[i];
-    if (!MEDIA_EXT.test(f.name)) continue;
-    const rel    = f._dragPath || f.webkitRelativePath;
-    const parts  = rel.split('/');
-    const folder = parts.length >= 3 ? parts.slice(1, -1).join('/') : '__root__';
-    const isAudio = AUDIO_EXT.test(f.name);
-    S.files.set(rel, { name: f.name, path: rel, isAudio, isImage: !isAudio, _file: f });
-    if (!S.folders.has(folder)) S.folders.set(folder, []);
-    S.folders.get(folder).push(rel);
-    if (i % 10000 === 9999) {
-      setStatus(st, 'loading', `Indexing… ${S.files.size} media files`);
-      await new Promise(r => setTimeout(r, 0));
-    }
-  }
-
+  EL.grid.innerHTML = '';
+  EL.folderPath.innerHTML = '';
+  EL.countBadge.textContent = '';
+  EL.searchBox.value = '';
+  S.query = '';
+  setStatus(EL.setupStatus, '', '');
   showGrid();
 }
 
+function mediaSummary(files) {
+  let img = 0, aud = 0;
+  for (const e of files.values()) e.isAudio ? aud++ : img++;
+  const parts = [];
+  if (img) parts.push(`${fmtNum(img)} image${img === 1 ? '' : 's'}`);
+  if (aud) parts.push(`${fmtNum(aud)} audio`);
+  return parts.join(' · ') || 'No media found';
+}
+
+// ─── MV/MZ folder loading ─────────────────────────────
+async function loadMVMZFolder(allFiles, key) {
+  const files = new Map(), folders = new Map();
+  const total = allFiles.length;
+  const tick  = makeYielder();
+
+  Loader.step('index', 'active', `0 / ${fmtNum(total)} files`);
+  for (let i = 0; i < total; i++) {
+    const f = allFiles[i];
+    if (MEDIA_EXT.test(f.name)) {
+      const rel    = f._dragPath || f.webkitRelativePath;
+      const parts  = rel.split('/');
+      const folder = parts.length >= 3 ? parts.slice(1, -1).join('/') : '__root__';
+      const isAudio = AUDIO_EXT.test(f.name);
+      files.set(rel, { name: f.name, path: rel, isAudio, isImage: !isAudio, _file: f });
+      if (!folders.has(folder)) folders.set(folder, []);
+      folders.get(folder).push(rel);
+    }
+    if (await tick()) {
+      Loader.progress(i + 1, total);
+      Loader.detail('index', `${fmtNum(i + 1)} / ${fmtNum(total)} files`);
+    }
+  }
+  Loader.progress(1, 1);
+  Loader.step('index', 'done', mediaSummary(files));
+  await nextFrame();
+  Loader.check();
+
+  commitLibrary(files, folders, key);
+}
+
 // ─── RGSSAD archive loading ───────────────────────────
-async function loadRGSSAD(file) {
-  const st = EL.setupStatus;
-  setStatus(st, 'loading', 'Reading archive…');
+const ARCHIVE_ENGINE = { rgssad: 'RPG Maker XP', rgss2a: 'RPG Maker VX', rgss3a: 'RPG Maker VX Ace' };
+const archiveEngine = name => ARCHIVE_ENGINE[name.split('.').pop().toLowerCase()] || 'RGSSAD archive';
+
+// file.arrayBuffer() gives no progress, so stream the file into one buffer.
+async function readFileWithProgress(file, onProgress) {
+  if (typeof file.stream !== 'function') return file.arrayBuffer();
+  const out    = new Uint8Array(file.size);
+  const reader = file.stream().getReader();
+  const tick   = makeYielder();
+  let off = 0;
   try {
-    const buf    = await file.arrayBuffer();
-    setStatus(st, 'loading', 'Indexing files…');
-    const parsed = parseRGSSAD(buf);
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      out.set(value, off);
+      off += value.length;
+      Loader.check();
+      onProgress(off, file.size);
+      await tick();
+    }
+  } catch (e) {
+    reader.cancel().catch(() => {});
+    throw e;
+  }
+  return out.buffer;
+}
 
-    clearBlobCache();
-    S.files.clear();
-    S.folders.clear();
-    S.sidebarPath = null;
+async function loadRGSSAD(file) {
+  Loader.step('read', 'active', `0 / ${fmtBytes(file.size)}`);
+  const buf = await readFileWithProgress(file, (n, t) => {
+    Loader.progress(n, t);
+    Loader.detail('read', `${fmtBytes(n)} / ${fmtBytes(t)}`);
+  });
+  Loader.step('read', 'done', fmtBytes(file.size));
 
-    for (const item of parsed) {
-      if (!MEDIA_EXT.test(item.name)) continue;
+  Loader.step('table', 'active', archiveEngine(file.name));
+  await nextFrame();
+  Loader.check();
+  const parsed = parseRGSSAD(buf);
+  Loader.step('table', 'done', `${fmtNum(parsed.length)} entries`);
+
+  const files = new Map(), folders = new Map();
+  const tick  = makeYielder();
+  Loader.step('index', 'active', `0 / ${fmtNum(parsed.length)}`);
+  for (let i = 0; i < parsed.length; i++) {
+    const item = parsed[i];
+    if (MEDIA_EXT.test(item.name)) {
       const parts   = item.name.split('/');
       const folder  = parts.length > 1 ? parts.slice(0, -1).join('/') : '__root__';
       const isAudio = AUDIO_EXT.test(item.name);
       const { offset, size, fKey } = item;
-      S.files.set(item.name, {
+      files.set(item.name, {
         name: item.name, path: item.name,
         isAudio, isImage: !isAudio,
         _getData: async () => {
@@ -71,25 +146,42 @@ async function loadRGSSAD(file) {
           return rgssDecryptData(new Uint8Array(ab), fKey);
         },
       });
-      if (!S.folders.has(folder)) S.folders.set(folder, []);
-      S.folders.get(folder).push(item.name);
+      if (!folders.has(folder)) folders.set(folder, []);
+      folders.get(folder).push(item.name);
     }
-
-    setStatus(st, 'ok', `✓ Loaded ${S.files.size} items from "${file.name}"`);
-    showGrid();
-  } catch (e) {
-    setStatus(st, 'err', `✕ ${e.message}`);
+    if (await tick()) {
+      Loader.progress(i + 1, parsed.length);
+      Loader.detail('index', `${fmtNum(i + 1)} / ${fmtNum(parsed.length)}`);
+    }
   }
+  Loader.progress(1, 1);
+  Loader.step('index', 'done', mediaSummary(files));
+  await nextFrame();
+  Loader.check();
+
+  commitLibrary(files, folders, '');
 }
 
 // ─── Auto-detect game folder ──────────────────────────
+function detectFolderEngine(files) {
+  let mz = false, mv = false;
+  for (const f of files) {
+    if (f.name === 'rmmz_core.js') mz = true;
+    else if (f.name === 'rpg_core.js') mv = true;
+  }
+  return mz ? 'RPG Maker MZ' : mv ? 'RPG Maker MV' : null;
+}
+
 async function loadGameFolder(allFiles) {
-  const st = EL.setupStatus;
-  setStatus(st, 'loading', 'Analyzing folder…');
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  Loader.step('scan', 'done', `${fmtNum(allFiles.length)} files`);
+  Loader.step('detect', 'active');
+  await nextFrame();
+  Loader.check();
 
   const rgssadFile = allFiles.find(f => /\.(rgssad|rgss2a|rgss3a)$/i.test(f.name));
   if (rgssadFile) {
+    Loader.step('detect', 'done', `${archiveEngine(rgssadFile.name)} · ${rgssadFile.name}`);
+    Loader.setSteps(['scan', 'detect', 'read', 'table', 'index']);
     await loadRGSSAD(rgssadFile);
     return;
   }
@@ -98,14 +190,80 @@ async function loadGameFolder(allFiles) {
     f.name === 'System.json' &&
     (f._dragPath || f.webkitRelativePath || '').toLowerCase().includes('/data/')
   );
+  let key = '';
   if (sysJson) {
     try {
       const json = JSON.parse(await sysJson.text());
-      if (json.encryptionKey) applyKey(json.encryptionKey);
+      if (json.encryptionKey) key = json.encryptionKey;
     } catch {}
   }
+  Loader.check();
 
-  await loadMVMZFolder(allFiles);
+  const engine = detectFolderEngine(allFiles);
+  Loader.step('detect', 'done',
+    engine || sysJson ? `${engine || 'RPG Maker MV/MZ'} · ${key ? 'encrypted' : 'not encrypted'}`
+                      : 'Unknown layout, scanning for media');
+
+  await loadMVMZFolder(allFiles, key);
+}
+
+// ─── Load lifecycle ───────────────────────────────────
+// Wraps one open-folder/archive action: busy UI, loader overlay, cancel and
+// error handling. `task` opens the loader itself once it knows the name.
+let _loading = false;
+async function runLoad(task) {
+  if (_loading || Loader.active) return;
+  _loading = true;
+  const orig = EL.openBtn.innerHTML;
+  EL.openBtn.disabled = true;
+  EL.openBtn.innerHTML = '<span class="status-spinner"></span><span class="btn-label">Loading…</span>';
+  try {
+    await task();
+    Loader.close();
+  } catch (e) {
+    if (e?.name === 'AbortError') {
+      Loader.close();
+    } else {
+      const msg = e?.message || String(e);
+      if (Loader.active) Loader.fail(msg);
+      setStatus(EL.setupStatus, 'err', `✕ ${msg}`);
+    }
+  } finally {
+    _loading = false;
+    EL.openBtn.disabled = false;
+    EL.openBtn.innerHTML = orig;
+  }
+}
+
+const FOLDER_STEPS  = ['scan', 'detect', 'index'];
+const ARCHIVE_STEPS = ['read', 'table', 'index'];
+const folderNameOf  = files => (files[0]?._dragPath || files[0]?.webkitRelativePath || '').split('/')[0];
+
+// Folder whose File list is already in hand (the <input webkitdirectory> path).
+function openFileList(files) {
+  return runLoad(async () => {
+    Loader.open({ kind: 'folder', name: folderNameOf(files), steps: FOLDER_STEPS });
+    await loadGameFolder(files);
+  });
+}
+
+// Folder that still has to be walked (directory picker, drag & drop).
+function openFolderWith(name, walk) {
+  return runLoad(async () => {
+    Loader.open({ kind: 'folder', name, steps: FOLDER_STEPS });
+    Loader.step('scan', 'active', '0 files');
+    const files = [];
+    await walk(files, n => Loader.detail('scan', `${fmtNum(n)} files`));
+    if (!files.length) throw new Error('This folder is empty.');
+    await loadGameFolder(files);
+  });
+}
+
+function openArchive(file) {
+  return runLoad(async () => {
+    Loader.open({ kind: 'archive', name: file.name, steps: ARCHIVE_STEPS });
+    await loadRGSSAD(file);
+  });
 }
 
 // ─── Grid activation ──────────────────────────────────
@@ -162,30 +320,11 @@ _darkMQ.addEventListener?.('change', _syncThemeLabel);
 _syncThemeLabel();
 
 // ─── Events: Folder picker ────────────────────────────
-async function openFolderFiles(getFiles) {
-  const orig = EL.openBtn.innerHTML;
-  EL.openBtn.disabled = true;
-  EL.openBtn.innerHTML = '<span class="status-spinner"></span>Loading…';
-  try {
-    const files = await getFiles();
-    if (files.length) {
-      EL.grid.innerHTML = '';
-      EL.folderPath.innerHTML = '';
-      EL.countBadge.textContent = '';
-      EL.searchBox.value = '';
-      S.query = '';
-      await loadGameFolder(files);
-    }
-  } finally {
-    EL.openBtn.disabled = false;
-    EL.openBtn.innerHTML = orig;
-  }
-}
-
 // Prefer the File System Access API (Chrome/Edge): its permission prompt says
 // "view files", whereas <input webkitdirectory> makes Chrome ask to "upload"
 // files — misleading, since nothing is ever sent. Other browsers fall back.
 async function pickFolder() {
+  if (_loading) return;
   if (!window.showDirectoryPicker) return EL.folderInput.click();
   let dir;
   try {
@@ -194,11 +333,7 @@ async function pickFolder() {
     if (e.name !== 'AbortError') EL.folderInput.click();
     return;
   }
-  await openFolderFiles(async () => {
-    const files = [];
-    await traverseHandle(dir, '', files);
-    return files;
-  });
+  await openFolderWith(dir.name, (files, onProgress) => traverseHandle(dir, '', files, onProgress));
 }
 
 EL.openBtn.addEventListener('click', pickFolder);
@@ -206,21 +341,16 @@ $('open-game-btn').addEventListener('click', pickFolder);
 EL.folderInput.addEventListener('change', async () => {
   const files = Array.from(EL.folderInput.files);
   EL.folderInput.value = '';
-  if (files.length) await openFolderFiles(async () => files);
+  if (files.length) await openFileList(files);
 });
 
 // ─── Events: RGSSAD archive ───────────────────────────
-$('load-rgssad-btn').addEventListener('click', () => EL.rgssadInput.click());
+$('load-rgssad-btn').addEventListener('click', () => { if (!_loading) EL.rgssadInput.click(); });
 EL.rgssadInput.addEventListener('change', async () => {
   const f = EL.rgssadInput.files[0];
   if (!f) return;
   EL.rgssadInput.value = '';
-  EL.grid.innerHTML = '';
-  EL.folderPath.innerHTML = '';
-  EL.countBadge.textContent = '';
-  EL.searchBox.value = '';
-  S.query = '';
-  await loadRGSSAD(f);
+  await openArchive(f);
 });
 
 // ─── Events: Lightbox ─────────────────────────────────
@@ -317,12 +447,13 @@ document.addEventListener('mouseup', () => {
 
 // Modern path: File System Access API (getAsFileSystemHandle)
 async function traverseHandle(handle, pathPrefix, files, onProgress) {
+  Loader.check();
   const entryPath = pathPrefix ? pathPrefix + '/' + handle.name : handle.name;
   if (handle.kind === 'file') {
     const file = await handle.getFile();
     file._dragPath = entryPath;
     files.push(file);
-    if (files.length % 500 === 0) onProgress?.(files.length);
+    if (files.length % 50 === 0) onProgress?.(files.length);
   } else if (handle.kind === 'directory') {
     for await (const [, child] of handle.entries()) {
       await traverseHandle(child, entryPath, files, onProgress);
@@ -332,12 +463,13 @@ async function traverseHandle(handle, pathPrefix, files, onProgress) {
 
 // Legacy path: FileSystem Entry API (webkitGetAsEntry)
 async function traverseEntry(entry, pathPrefix, files, onProgress) {
+  Loader.check();
   const entryPath = pathPrefix ? pathPrefix + '/' + entry.name : entry.name;
   if (entry.isFile) {
     const file = await new Promise((res, rej) => entry.file(res, rej));
     file._dragPath = entryPath;
     files.push(file);
-    if (files.length % 500 === 0) onProgress?.(files.length);
+    if (files.length % 50 === 0) onProgress?.(files.length);
   } else if (entry.isDirectory) {
     const reader = entry.createReader();
     let batch;
@@ -349,76 +481,47 @@ async function traverseEntry(entry, pathPrefix, files, onProgress) {
 }
 
 async function handleDrop(dataTransfer) {
-  const overlay = $('drag-overlay');
-  const msg     = $('drag-msg');
+  if (_loading) return;
 
   // Collect entries synchronously before any await
   const pairs = [];
   for (const item of dataTransfer.items) {
     if (item.kind !== 'file') continue;
-    pairs.push({ item, entry: item.webkitGetAsEntry?.() });
+    pairs.push({ item, entry: item.webkitGetAsEntry?.(), file: item.getAsFile?.() });
   }
 
-  const resetMsg = () => { msg.textContent = 'Drop game folder or archive here'; };
-  const prepareReload = () => {
-    EL.grid.innerHTML = ''; EL.folderPath.innerHTML = '';
-    EL.countBadge.textContent = ''; EL.searchBox.value = ''; S.query = '';
-  };
-
-  // Handle RGSSAD archive drop
-  for (const { entry } of pairs) {
-    if (!entry?.isFile) continue;
-    if (!/\.(rgssad|rgss2a|rgss3a)$/i.test(entry.name)) continue;
-    overlay.classList.add('active');
-    msg.textContent = `Loading ${entry.name}…`;
-    try {
-      const file = await new Promise((res, rej) => entry.file(res, rej));
-      prepareReload();
-      await loadRGSSAD(file);
-    } finally {
-      overlay.classList.remove('active');
-      resetMsg();
-    }
+  // Archive drop
+  const arch = pairs.find(p => p.entry?.isFile !== false && /\.(rgssad|rgss2a|rgss3a)$/i.test(p.entry?.name || p.file?.name || ''));
+  if (arch) {
+    const file = arch.file || await new Promise((res, rej) => arch.entry.file(res, rej));
+    await openArchive(file);
     return;
   }
 
-  // Handle folder drop
+  // Folder drop
   const dirPair = pairs.find(p => p.entry?.isDirectory);
   if (!dirPair) return;
 
-  overlay.classList.add('active');
-  msg.textContent = 'Reading folder…';
-  try {
-    const files = [];
-    const progress = count => { msg.textContent = `Reading folder… ${count} files`; };
+  // Ask for the handle now: the DataTransfer is only valid during the drop event.
+  const handlePromise = typeof dirPair.item.getAsFileSystemHandle === 'function'
+    ? dirPair.item.getAsFileSystemHandle().catch(() => null)
+    : Promise.resolve(null);
 
+  await openFolderWith(dirPair.entry.name, async (files, onProgress) => {
     // Modern File System Access API — respects file permissions correctly
-    if (typeof dirPair.item.getAsFileSystemHandle === 'function') {
-      try {
-        const handle = await dirPair.item.getAsFileSystemHandle();
-        if (handle?.kind === 'directory') {
-          await traverseHandle(handle, '', files, progress);
-        }
-      } catch (_) { /* fall through to legacy */ }
+    const handle = await handlePromise;
+    if (handle?.kind === 'directory') {
+      try { await traverseHandle(handle, '', files, onProgress); }
+      catch (e) { if (e?.name === 'AbortError') throw e; files.length = 0; }
     }
-
     // Legacy FileSystem Entry API fallback
-    if (files.length === 0 && dirPair.entry) {
-      await traverseEntry(dirPair.entry, '', files, progress);
-    }
-
-    msg.textContent = `Indexing ${files.length} files…`;
-    prepareReload();
-    await loadGameFolder(files);
-  } finally {
-    overlay.classList.remove('active');
-    resetMsg();
-  }
+    if (files.length === 0) await traverseEntry(dirPair.entry, '', files, onProgress);
+  });
 }
 
 let _dragDepth = 0;
 document.addEventListener('dragenter', e => {
-  if (!e.dataTransfer.types.includes('Files')) return;
+  if (!e.dataTransfer.types.includes('Files') || _loading) return;
   if (++_dragDepth === 1) $('drag-overlay').classList.add('active');
 });
 document.addEventListener('dragleave', () => {

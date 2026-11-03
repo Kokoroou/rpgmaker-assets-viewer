@@ -24,8 +24,8 @@ js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
 js/state.js          — global S object
 js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
-js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryToURL(), showEmptyState()
-js/app.js            — event handlers, loadMVMZFolder(), loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
+js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryToURL(), showEmptyState(), Loader (loading overlay)
+js/app.js            — event handlers, runLoad()/loadGameFolder()/loadMVMZFolder()/loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
 js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params)
 ```
 
@@ -52,6 +52,8 @@ All files share a single global scope — no modules.
 **Two loading flows:**
 1. **MV/MZ** — `loadGameFolder(files)` auto-detects RGSSAD or calls `applyKey()` + `loadMVMZFolder(files)`
 2. **RGSSAD** — `loadRGSSAD(file)` → `parseRGSSAD(buffer)` → populate S → `showGrid()`
+
+**Loading overlay:** every open action goes through `runLoad(task)` in `app.js`, which drives `Loader` (`#loader`, `css/loader.css`): named steps (`scan`/`detect`/`index` for folders, `read`/`table`/`index` for archives), a determinate or sweeping progress bar, Cancel and an error state. Loaders build into new Maps and only `commitLibrary()` swaps them into `S`, so Cancel or a failure keeps the previously open game. Long loops call `Loader.check()` (throws `AbortError` after Cancel) at their yield points.
 
 **ZIP download:** `downloadFolder()` in `app.js` reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
 
