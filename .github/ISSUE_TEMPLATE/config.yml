@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Privacy – what the site sends
+    url: https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html
+    about: MakerLens processes your files only in your browser.

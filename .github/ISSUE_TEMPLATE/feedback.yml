@@ -1,0 +1,47 @@
+name: Feedback
+description: Report a problem or share an idea — no GitHub experience needed.
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping! Fill in the first two boxes — everything else is optional.
+
+        **Please do not attach game files, images or audio.** Describing what you see is enough.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is this about?
+      options:
+        - Something is broken (bug)
+        - I have an idea
+        - I have a question
+        - Something else
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: message
+    attributes:
+      label: Tell us in your own words
+      description: Short is fine. What did you try, and what happened?
+      placeholder: "e.g. I opened my game folder and the images stayed blank."
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Which kind of game? (optional)
+      options:
+        - Not sure
+        - RPG Maker MV or MZ (folder with data/System.json)
+        - RPG Maker XP / VX / VX Ace (.rgssad, .rgss2a, .rgss3a)
+        - Not related to a game
+      default: 0
+  - type: input
+    id: browser
+    attributes:
+      label: Browser (optional)
+      description: For example Chrome, Edge, Firefox, Safari.
+      placeholder: Chrome on Windows
