@@ -1,0 +1,16 @@
+# From agent-toolkit's templates/.github/dependabot.yml. The site has no package
+# dependencies, so only the pinned GitHub Actions are kept up to date.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    cooldown: # wait before adopting a new release (compromised / broken publishes)
+      default-days: 7
+    directory: /
+    target-branch: main
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
