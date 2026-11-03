@@ -1,166 +1,167 @@
 # Roadmap
 
-Định hướng cho MakerLens, rút ra từ việc đối chiếu với danh sách
+Direction for MakerLens, drawn from cross-checking the
 [awesome-game-file-format-reversing](https://github.com/VelocityRa/awesome-game-file-format-reversing)
-(mục RPG Maker và các trình xem asset chung). Các dự án được nhắc tới chỉ được
-đọc qua mô tả một dòng trong danh sách; **hãy đọc mã nguồn thật trước khi bắt
-chước thuật toán của chúng** và ghi nguồn định dạng trong comment (xem CLAUDE.md).
+list (the RPG Maker section and the general asset viewers). The projects
+mentioned were only read through their one-line descriptions in that list;
+**read the real source before imitating any of their algorithms**, and record
+the format source in a code comment (see CLAUDE.md).
 
-Nguyên tắc nền, không thay đổi:
+Ground rules, unchanged:
 
-- 100% client-side, không upload, không lưu key (xem `LEGAL.md`).
-- Không dependency, không bước build, tất cả chạy khi mở `index.html`.
-- Analytics không bao giờ chứa dữ liệu file.
-- Khác biệt của MakerLens so với đa số tool cùng lĩnh vực (CLI/desktop):
-  chạy trong trình duyệt, không cài đặt. Mọi mục dưới đây phải giữ được điều đó.
+- 100% client-side, no upload, no key storage (see `LEGAL.md`).
+- No dependencies, no build step; everything runs by opening `index.html`.
+- Analytics never contain file data.
+- What sets MakerLens apart from most tools in this space (CLI/desktop): it runs
+  in the browser with no install. Every item below must preserve that.
 
-Ký hiệu công sức: **S** (≤ 1 ngày), **M** (vài ngày), **L** (hơn một tuần).
-
----
-
-## 1. Nên làm (ưu tiên cao)
-
-Tác động lớn, công sức nhỏ, nằm trong phạm vi hiện tại.
-
-| # | Việc | Vì sao | Công sức |
-|---|------|--------|----------|
-| 1 ✅ | **Suy key từ header PNG đã biết** khi `System.json` thiếu, hỏng hoặc bị sửa | Header ảnh `.rpgmvp`/`.png_` sau 16 byte đầu là 16 byte PNG đã biết (signature + chunk IHDR), nên XOR ngược ra key. Đã làm: `deriveKeyFromPNG()` (chỉ ảnh; audio dùng chung key đã suy). Key vẫn chỉ nằm trong bộ nhớ | S |
-| 2 ✅ | **Mở file lẻ** (kéo thả vài `.rpgmvp`/`.png_`/`.rpgmvo`...) | Cần có mục 1 để dùng được khi không có `System.json`. Với âm thanh có thể thử key đã suy từ ảnh, hoặc từ header OggS đã biết | S–M |
-| 3 ✅ | **Báo lỗi theo từng file, không dừng cả lần mở** (archive hỏng, file cắt cụt, header sai) | Hiện lỗi dễ làm hỏng cả luồng. Nên liệt kê phần đọc được, đánh dấu file lỗi và lý do | S–M |
-| 4 ✅ | **Test thêm cho đầu vào xấu**: header RGSSAD sai, offset/size vượt file, tên file có `..` hoặc ký tự lạ, vòng lặp dài | Tăng độ tin cậy, đồng thời chặn path traversal khi xuất ZIP. Fixture vẫn dựng trong test, không dùng asset thật | S |
-| 5 ✅ | **Kiểm tra tên file khi xuất ZIP** (loại `..`, đường dẫn tuyệt đối, ký tự cấm trên Windows, tên trùng sau khi đổi đuôi) | Archive đầu vào là dữ liệu không tin cậy; tên entry đi thẳng vào ZIP | S |
-
-## 2. Nên làm (tiếp theo)
-
-Tính năng người dùng RPG Maker thực sự dùng, bám vào quy ước sẵn có của engine.
-
-| # | Việc | Ghi chú | Công sức |
-|---|------|---------|----------|
-| 6 | **Cắt sprite theo lưới + phát hoạt ảnh đi bộ** cho charset | Quy ước tên: tiền tố `$` là một nhân vật (3×4 khung), không có `$` là sheet 8 nhân vật (12×8); `!` là object không dịch nửa ô. Ô 48×48 (MV/MZ) hoặc 32×32 (VX/VX Ace, tùy chỉnh) | M |
-| 7 | **Hiển thị loop point của audio** (`LOOPSTART`, `LOOPLENGTH` trong Vorbis comment của OGG) và phát lặp đúng điểm | RPG Maker MV/MZ dùng các tag này. Chỉ cần đọc comment packet của OGG, không cần decoder riêng | M |
-| 8 | **Gom file trùng nội dung** (băm SHA-256 bằng `crypto.subtle`) và bộ lọc "chỉ hiện bản duy nhất" | Hữu ích với game nhân bản asset. Băm sau khi giải mã, chạy nền, không ảnh hưởng ưu tiên đọc của người dùng (`Fg.active`) | M |
-| 9 | **Tài liệu hóa định dạng bằng Kaitai Struct (`.ksy`)** cho `.rpgmvp` và RGSSAD v1/v3 trong `docs/formats/` | Không thêm dependency vào app. Giúp người khác kiểm chứng và tái dùng; khớp yêu cầu ghi nguồn định dạng | S–M |
-| 10 | **Tìm kiếm tốt hơn**: lọc theo loại, theo kích thước ảnh, theo độ dài audio | Dữ liệu đã có trong thumbnail và audio metadata | S–M |
-
-## 3. Có thể làm (cân nhắc, tùy nhu cầu người dùng)
-
-Hợp lý nhưng cần xác nhận có người dùng thật, hoặc mở rộng phạm vi đáng kể.
-
-| # | Việc | Ghi chú | Công sức |
-|---|------|---------|----------|
-| 11 | **RPG Maker 2000/2003**: mở thư mục game trần, xem PNG/WAV/MIDI, giải mã ảnh `.xyz` | `.xyz` là chuỗi zlib kèm palette; trình duyệt có `DecompressionStream('deflate')` nên không cần thư viện. Tham khảo mô tả trong `libxyzimage`/`xyz2png`. Định dạng nhỏ, rủi ro thấp | M |
-| 12 | **Xem tileset (A1–A5, B–E) ghép sẵn** và phân biệt autotile | Cần hiểu bố cục từng loại; chỉ hiển thị, không cần dựng map | M |
-| 13 | **Ren'Py `.rpa`** (RPA-2.0/3.0) | Index là pickle nén zlib; phải tự viết bộ đọc pickle tối thiểu và an toàn (không chạy gì cả). Mở sang cộng đồng visual novel, nhưng lệch thương hiệu "RPG Maker" | L |
-| 14 | **Wolf RPG archive** | `rpga` hỗ trợ giải nén; nhiều phiên bản mã hóa khác nhau. Chỉ làm nếu có yêu cầu rõ ràng và có tài liệu định dạng đáng tin | L |
-| 15 | **Phát hiện và thông báo rõ khi game dùng mã hóa tùy chỉnh** (plugin giải mã, header đổi) | Chỉ báo "không hỗ trợ vì ..." thay vì thất bại âm thầm. Không cố bẻ plugin | S–M |
-| 16 | **PWA / chạy offline** (service worker) | Hợp với lời hứa riêng tư, nhưng cần cập nhật CSP và bước "Assemble site" của deploy | M |
-| 17 | **Liên kết chéo với LoreInsight** (xem luồng sự kiện ↔ xem asset) | Chỉ là liên kết/hướng dẫn, không chia sẻ dữ liệu giữa hai trang | S |
-| 18 | **Nén ZIP (deflate)** bằng `CompressionStream` thay vì chỉ "store" | Tải về nhỏ hơn; cần tự tính CRC cho dữ liệu nén như hiện tại. Lợi ích hạn chế vì PNG/OGG vốn đã nén | S–M |
-
-## 4. Không nên làm
-
-Đi ngược nguyên tắc nền của dự án hoặc rủi ro pháp lý, hoặc lợi ích không đáng.
-
-| Việc | Lý do |
-|------|-------|
-| **Bất kỳ upload/đồng bộ phía server** (kể cả "chia sẻ link", lưu thư viện lên cloud, OCR/dịch thuật gọi API với nội dung file) | Vi phạm ràng buộc DMCA trong `LEGAL.md` và lời hứa riêng tư |
-| **Đóng gói hoặc nhúng asset game thật** (ảnh mẫu, audio demo, fixture từ game thật) | Cùng lý do pháp lý; test luôn dùng byte tổng hợp |
-| **Lưu key giải mã hoặc tên game/thư mục** vào localStorage, cookie, analytics | Key chỉ trong bộ nhớ; analytics không được biết người dùng mở gì. Cũng tránh phải có banner đồng ý |
-| **Thêm analytics chi tiết** (số file, loại engine, kích thước game, lỗi kèm tên file) | Dù ẩn danh, chúng làm yếu lập luận pháp lý. Nếu cần chẩn đoán lỗi, hiển thị tại máy người dùng và để họ tự sao chép |
-| **Tải hoặc gọi host bên thứ ba** (CDN, font, thư viện) | CSP chỉ cho phép endpoint GoatCounter; giữ không dependency |
-| **Thêm bước build, bundler, framework, package manager** | Mất lợi thế "mở `index.html` là chạy" và dễ kiểm chứng mã |
-| **Tính năng sửa/đóng gói lại game** (re-encrypt, tạo lại project, vá game, bypass bảo vệ bản quyền) | Rời khỏi vai trò "xem và trích xuất", tăng rủi ro pháp lý; tool khác đã làm tốt hơn (RPG Maker Decrypter, Petschko) |
-| **Bẻ DRM/mã hóa của plugin hoặc công cụ bảo vệ bên thứ ba** | Ngoài phạm vi định dạng chuẩn của engine; rủi ro pháp lý |
-| **Chuyển đổi/dịch văn bản game, trình soạn map, trình sửa save, mô phỏng engine** | Là sản phẩm khác (rpgmtranslate, Luminol, EasyRPG, mkxp...). Không đáng trùng lặp công sức |
-| **Viết lại bằng WebAssembly/Rust chỉ để nhanh hơn** | Giải mã chỉ XOR 16 byte; nút thắt nằm ở I/O đĩa và giải mã ảnh, không phải CPU |
-| **Mở rộng sang hàng chục engine/format kiểu QuickBMS/GARbro/AssetStudio** | Các tool đó chuyên hóa và đã trưởng thành; MakerLens thắng ở độ tập trung và dễ dùng |
+Effort: **S** (≤ 1 day), **M** (a few days), **L** (more than a week).
 
 ---
 
-## Thứ tự đề xuất
+## 1. Do first (high priority)
 
-1. Mục 1 → 5 (độ bền). Đã xong: 1–5 (file lẻ: kéo thả `.rpgmvp`/`.png_`/`.rpgmvo`... vào trang, key suy từ ảnh đầu tiên; `downloadFolder()` liệt kê file bị bỏ qua và lý do). Tiếp theo: mục 6 và 7.
-2. Mục 6 và 7 (sprite và loop point: điểm khác biệt dễ thấy nhất).
-3. Mục 9 (tài liệu `.ksy`) làm song song, độc lập với code.
-4. Mục 11 (RPG Maker 2000/2003) nếu có người dùng yêu cầu.
-5. Các mục còn lại đánh giá lại sau mỗi đợt phát hành.
+Large impact, small effort, within the current scope.
 
-## Cách chọn việc mới
+| # | Item | Why | Effort |
+|---|------|-----|--------|
+| 1 ✅ | **Derive the key from the known PNG header** when `System.json` is missing, broken or altered | After the first 16 bytes, an `.rpgmvp` / `.png_` header is 16 known PNG bytes (signature + IHDR chunk), so XOR-ing back yields the key. Done: `deriveKeyFromPNG()` (images only; audio reuses the derived key). The key still lives only in memory | S |
+| 2 ✅ | **Open loose files** (drop a few `.rpgmvp` / `.png_` / `.rpgmvo`...) | Needs item 1 to work without `System.json`. For audio, try the key derived from images, or the known OggS header | S–M |
+| 3 ✅ | **Per-file error reporting, without aborting the whole open** (corrupt archive, truncated file, wrong header) | Errors used to break the whole flow. List what is readable, mark bad files and say why | S–M |
+| 4 ✅ | **More tests for bad input**: wrong RGSSAD header, offset/size beyond the file, file names with `..` or odd characters, long loops | More reliability, and blocks path traversal on ZIP export. Fixtures are still built inside the tests, never real assets | S |
+| 5 ✅ | **Validate file names on ZIP export** (drop `..`, absolute paths, characters forbidden on Windows, names that collide after the extension changes) | Input archives are untrusted data; entry names go straight into the ZIP | S |
 
-Một việc đáng làm khi: (a) giữ được 100% client-side và không dependency,
-(b) không cần gửi bất cứ thứ gì về server, (c) có tài liệu hoặc triển khai tham
-chiếu để ghi nguồn, (d) kiểm thử được bằng byte tổng hợp. Thiếu một trong bốn
-điều kiện thì chuyển xuống mục 4 hoặc cần thảo luận trước.
+## 2. Do next
+
+Features RPG Maker users actually need, following the engine's own conventions.
+
+| # | Item | Notes | Effort |
+|---|------|-------|--------|
+| 6 | **Grid-sliced sprites and a walking animation** for character sheets | Naming convention: a `$` prefix is a single character (3×4 frames), no `$` is an 8-character sheet (12×8); `!` is an object that is not shifted half a tile. Cells are 48×48 (MV/MZ) or 32×32 (VX/VX Ace, customizable) | M |
+| 7 | **Show audio loop points** (`LOOPSTART`, `LOOPLENGTH` in the OGG Vorbis comment) and loop at the right point | RPG Maker MV/MZ uses these tags. Only the OGG comment packet needs reading, no separate decoder | M |
+| 8 | **Group files with identical content** (SHA-256 via `crypto.subtle`) and an "unique only" filter | Useful for games that duplicate assets. Hash after decryption, in the background, without disturbing the user's read priority (`Fg.active`) | M |
+| 9 | **Document the formats with Kaitai Struct (`.ksy`)** for `.rpgmvp` and RGSSAD v1/v3 in `docs/formats/` | Adds no dependency to the app. Lets others verify and reuse, and matches the "record the format source" rule | S–M |
+| 10 | **Better search**: filter by type, image size, audio length | The data is already in the thumbnails and audio metadata | S–M |
+
+## 3. Maybe (weigh against real demand)
+
+Reasonable, but needs confirmation that real users want it, or widens the scope considerably.
+
+| # | Item | Notes | Effort |
+|---|------|-------|--------|
+| 11 | **RPG Maker 2000/2003**: open a bare game folder, view PNG/WAV/MIDI, decode `.xyz` images | `.xyz` is a zlib stream plus a palette; browsers have `DecompressionStream('deflate')`, so no library is needed. See the descriptions in `libxyzimage` / `xyz2png`. Small format, low risk | M |
+| 12 | **Pre-assembled tileset view (A1–A5, B–E)** that tells autotiles apart | Requires understanding each type's layout; display only, no map building | M |
+| 13 | **Ren'Py `.rpa`** (RPA-2.0/3.0) | The index is a zlib-compressed pickle; a minimal, safe pickle reader (executing nothing) would have to be written. Opens the door to the visual-novel community but strays from the "RPG Maker" brand | L |
+| 14 | **Wolf RPG archives** | `rpga` can extract them; several encryption variants exist. Only if there is a clear request and trustworthy format documentation | L |
+| 15 | **Detect and clearly report games with custom encryption** (decryption plugins, altered headers) | Say "not supported because ..." instead of failing silently. Do not try to break plugins | S–M |
+| 16 | **PWA / offline** (service worker) | Fits the privacy promise, but needs a CSP update and a change to the deploy "Assemble site" step | M |
+| 17 | **Cross-link with LoreInsight** (event flow ↔ asset viewing) | Only a link / guide, no data shared between the two sites | S |
+| 18 | **ZIP compression (deflate)** with `CompressionStream` instead of "store" only | Smaller downloads; CRC must be computed for the compressed data as it is today. Limited gain because PNG/OGG are already compressed | S–M |
+
+## 4. Do not do
+
+Against the project's ground rules, legally risky, or not worth the benefit.
+
+| Item | Reason |
+|------|--------|
+| **Any server-side upload or sync** (including "share link", saving the library to the cloud, OCR/translation that calls an API with file content) | Violates the DMCA constraint in `LEGAL.md` and the privacy promise |
+| **Bundling or embedding real game assets** (sample images, demo audio, fixtures from real games) | Same legal reason; tests always use synthetic bytes |
+| **Storing decryption keys or game/folder names** in localStorage, cookies or analytics | Keys stay in memory only; analytics must not know what users open. Also avoids needing a consent banner |
+| **Detailed analytics** (file counts, engine type, game size, errors with file names) | Even anonymous, they weaken the legal argument. For diagnosing errors, show them on the user's machine and let them copy them themselves |
+| **Loading or calling third-party hosts** (CDN, fonts, libraries) | The CSP allows only the GoatCounter endpoint (and the feedback inbox); stay dependency-free |
+| **Adding a build step, bundler, framework or package manager** | Loses the "open `index.html` and it runs" advantage and makes the code harder to verify |
+| **Editing or repackaging games** (re-encrypt, rebuild a project, patch a game, bypass copy protection) | Leaves the "view and extract" role and raises legal risk; other tools already do it better (RPG Maker Decrypter, Petschko) |
+| **Breaking the DRM/encryption of plugins or third-party protectors** | Outside the engine's standard formats; legal risk |
+| **Text conversion/translation, map editors, save editors, engine emulation** | Different products (rpgmtranslate, Luminol, EasyRPG, mkxp...). Not worth duplicating the effort |
+| **Rewriting in WebAssembly/Rust just for speed** | Decryption is a 16-byte XOR; the bottleneck is disk I/O and image decoding, not CPU |
+| **Expanding to dozens of engines/formats like QuickBMS/GARbro/AssetStudio** | Those tools are specialized and mature; MakerLens wins on focus and ease of use |
 
 ---
 
-## Tài liệu tham khảo và ghi nhận (acknowledgements)
+## Suggested order
 
-Danh sách gốc: [awesome-game-file-format-reversing](https://github.com/VelocityRa/awesome-game-file-format-reversing)
-([bản web](https://velocityra.github.io/awesome-game-file-format-reversing/)).
-Các dự án dưới đây được **nhận diện từ mô tả trong danh sách**; khi dùng logic
-của chúng, đọc mã nguồn thật, kiểm tra giấy phép, viết lại theo cách riêng và
-ghi nguồn trong comment mã (CLAUDE.md: "document the format source").
-Cột "Dùng cho" trỏ về số mục ở trên.
+1. Items 1 → 5 (robustness). Done: 1–5 (loose files: drop `.rpgmvp` / `.png_` / `.rpgmvo`... onto the page, the key is derived from the first image; `downloadFolder()` lists skipped files and why). Next: items 6 and 7.
+2. Items 6 and 7 (sprites and loop points: the most visible differentiators).
+3. Item 9 (`.ksy` documentation) in parallel, independent of the code.
+4. Item 11 (RPG Maker 2000/2003) if users ask for it.
+5. Re-evaluate the rest after each release.
+
+## How to pick new work
+
+A task is worth doing when: (a) it stays 100% client-side with no dependencies,
+(b) it needs nothing sent to a server, (c) there is documentation or a
+reference implementation to cite, and (d) it can be tested with synthetic
+bytes. If one of the four is missing, move it to section 4 or discuss it first.
+
+---
+
+## References and acknowledgements
+
+Source list: [awesome-game-file-format-reversing](https://github.com/VelocityRa/awesome-game-file-format-reversing)
+([web version](https://velocityra.github.io/awesome-game-file-format-reversing/)).
+The projects below were **identified from their descriptions in that list**; when
+using their logic, read the real source, check the license, rewrite it in our
+own way and cite the source in a code comment (CLAUDE.md: "document the format
+source"). The "Used for" column points back to the item numbers above.
 
 ### RPG Maker MV/MZ (`.rpgmvp`, `.png_`, `.rpgmvo`, `.ogg_`...)
 
-| Dự án | Dùng cho |
-|-------|----------|
-| [uuksu/RPGMakerDecrypter](https://github.com/uuksu/RPGMakerDecrypter) (MIT; bản sao cục bộ ở `references/`) | Nguồn chính của thuật toán RGSSAD và MV/MZ |
-| [RPG-Maker-Translation-Tools/rpgm-asset-decrypter-rs](https://github.com/RPG-Maker-Translation-Tools/rpgm-asset-decrypter-rs) và [rpgm-asset-decrypter-lib](https://github.com/RPG-Maker-Translation-Tools/rpgm-asset-decrypter-lib) | Mục 1–2: suy key khi thiếu `System.json` |
-| [Petschko/RPG-Maker-MV-Decrypter](https://gitlab.com/Petschko/RPG-Maker-MV-Decrypter) | Mục 1–2, 15: xử lý key và header (kèm [bản GitHub cũ, chỉ đọc](https://github.com/Petschko/RPG-Maker-MV-Decrypter)) |
-| [Bioruebe/rmvdec](https://github.com/Bioruebe/rmvdec) | Mục 2: giải mã file lẻ |
-| [RPG-Maker-Translation-Tools/rpgmdec](https://github.com/RPG-Maker-Translation-Tools/rpgmdec) | Mục 3: kiểm tra asset sau giải mã |
-| [TTitanUA/rpg-game-decrypter-python](https://github.com/TTitanUA/rpg-game-decrypter-python) | Tham khảo luồng giải mã MV/MZ trong GUI |
+| Project | Used for |
+|---------|----------|
+| [uuksu/RPGMakerDecrypter](https://github.com/uuksu/RPGMakerDecrypter) (MIT; local copy in `references/`) | Main source of the RGSSAD and MV/MZ algorithms |
+| [RPG-Maker-Translation-Tools/rpgm-asset-decrypter-rs](https://github.com/RPG-Maker-Translation-Tools/rpgm-asset-decrypter-rs) and [rpgm-asset-decrypter-lib](https://github.com/RPG-Maker-Translation-Tools/rpgm-asset-decrypter-lib) | Items 1–2: deriving the key when `System.json` is missing |
+| [Petschko/RPG-Maker-MV-Decrypter](https://gitlab.com/Petschko/RPG-Maker-MV-Decrypter) | Items 1–2, 15: key and header handling (plus the [old GitHub copy, read-only](https://github.com/Petschko/RPG-Maker-MV-Decrypter)) |
+| [Bioruebe/rmvdec](https://github.com/Bioruebe/rmvdec) | Item 2: decrypting loose files |
+| [RPG-Maker-Translation-Tools/rpgmdec](https://github.com/RPG-Maker-Translation-Tools/rpgmdec) | Item 3: checking assets after decryption |
+| [TTitanUA/rpg-game-decrypter-python](https://github.com/TTitanUA/rpg-game-decrypter-python) | Reference for the MV/MZ decryption flow in a GUI |
 
 ### RPG Maker XP / VX / VX Ace (RGSSAD)
 
-| Dự án | Dùng cho |
-|-------|----------|
-| [luxrck/rgssad](https://github.com/luxrck/rgssad) | Đối chiếu v1/v3 |
-| [usagirei/RGSS-Decryptor](https://github.com/usagirei/RGSS-Decryptor) ([bản của Bioruebe](https://github.com/Bioruebe/RGSS-Decryptor)) | Đối chiếu v1/v3 |
-| [RPG-Maker-Translation-Tools/rpgm-archive-decrypter](https://github.com/RPG-Maker-Translation-Tools/rpgm-archive-decrypter) và [rpgm-archive-decrypter-lib](https://github.com/RPG-Maker-Translation-Tools/rpgm-archive-decrypter-lib) | Mục 3–4: xử lý archive hỏng |
-| [elizagamedev/rpga](https://github.com/elizagamedev/rpga) | Mục 14: Wolf RPG archive |
-| [dogtopus/rgssad-fuse](https://github.com/dogtopus/rgssad-fuse) | Đọc lazy từng entry, tránh nạp cả archive |
-| [Ancurio/mkxp](https://github.com/Ancurio/mkxp) ([mkxp-z](https://github.com/mkxp-z/mkxp-z)) | Hành vi RGSS khi đọc archive |
+| Project | Used for |
+|---------|----------|
+| [luxrck/rgssad](https://github.com/luxrck/rgssad) | Cross-checking v1/v3 |
+| [usagirei/RGSS-Decryptor](https://github.com/usagirei/RGSS-Decryptor) ([Bioruebe's fork](https://github.com/Bioruebe/RGSS-Decryptor)) | Cross-checking v1/v3 |
+| [RPG-Maker-Translation-Tools/rpgm-archive-decrypter](https://github.com/RPG-Maker-Translation-Tools/rpgm-archive-decrypter) and [rpgm-archive-decrypter-lib](https://github.com/RPG-Maker-Translation-Tools/rpgm-archive-decrypter-lib) | Items 3–4: handling corrupt archives |
+| [elizagamedev/rpga](https://github.com/elizagamedev/rpga) | Item 14: Wolf RPG archives |
+| [dogtopus/rgssad-fuse](https://github.com/dogtopus/rgssad-fuse) | Lazy per-entry reads, avoiding loading the whole archive |
+| [Ancurio/mkxp](https://github.com/Ancurio/mkxp) ([mkxp-z](https://github.com/mkxp-z/mkxp-z)) | RGSS behavior when reading archives |
 
-### RPG Maker 2000/2003 và các bản cũ
+### RPG Maker 2000/2003 and older versions
 
-| Dự án | Dùng cho |
-|-------|----------|
-| [Ghabry/libxyzimage](https://github.com/Ghabry/libxyzimage) | Mục 11: ảnh `.xyz` |
-| [vn-tools/xyz2png](https://github.com/vn-tools/xyz2png) (gộp vào [arc_unpacker](https://github.com/vn-tools/arc_unpacker)) | Mục 11: ảnh `.xyz` |
-| [EasyRPG/liblcf](https://github.com/EasyRPG/liblcf), [EasyRPG/Player](https://github.com/EasyRPG/Player), [EasyRPG/Tools](https://github.com/EasyRPG/Tools) | Mục 11–12: định dạng LCF, kết xuất bản đồ |
-| [Ghabry/rpg95-fileformat](https://github.com/Ghabry/rpg95-fileformat) | Tài liệu định dạng RPG Maker 95 |
-| [florianessl/lucifer-file-carver](https://github.com/florianessl/lucifer-file-carver) | Mục 3: chịu lỗi khi dữ liệu hỏng |
+| Project | Used for |
+|---------|----------|
+| [Ghabry/libxyzimage](https://github.com/Ghabry/libxyzimage) | Item 11: `.xyz` images |
+| [vn-tools/xyz2png](https://github.com/vn-tools/xyz2png) (merged into [arc_unpacker](https://github.com/vn-tools/arc_unpacker)) | Item 11: `.xyz` images |
+| [EasyRPG/liblcf](https://github.com/EasyRPG/liblcf), [EasyRPG/Player](https://github.com/EasyRPG/Player), [EasyRPG/Tools](https://github.com/EasyRPG/Tools) | Items 11–12: the LCF format, map rendering |
+| [Ghabry/rpg95-fileformat](https://github.com/Ghabry/rpg95-fileformat) | RPG Maker 95 format documentation |
+| [florianessl/lucifer-file-carver](https://github.com/florianessl/lucifer-file-carver) | Item 3: tolerating corrupt data |
 
-### Audio, sprite, nhận diện
+### Audio, sprites, detection
 
-| Dự án | Dùng cho |
-|-------|----------|
-| [Splendide-Imaginarius/crosslooper](https://github.com/Splendide-Imaginarius/crosslooper) | Mục 7: quy ước `LOOPSTART`/`LOOPLENGTH` |
-| [MeguminBOT/TextureAtlas-Toolbox](https://github.com/MeguminBOT/TextureAtlas-Toolbox) | Mục 6: cắt sprite sheet |
-| [BoBoBaSs84/DDS.Tools](https://github.com/BoBoBaSs84/DDS.Tools) | Mục 8: phát hiện trùng |
+| Project | Used for |
+|---------|----------|
+| [Splendide-Imaginarius/crosslooper](https://github.com/Splendide-Imaginarius/crosslooper) | Item 7: the `LOOPSTART` / `LOOPLENGTH` convention |
+| [MeguminBOT/TextureAtlas-Toolbox](https://github.com/MeguminBOT/TextureAtlas-Toolbox) | Item 6: slicing sprite sheets |
+| [BoBoBaSs84/DDS.Tools](https://github.com/BoBoBaSs84/DDS.Tools) | Item 8: duplicate detection |
 
-### Tài liệu định dạng và công cụ phân tích
+### Format documentation and analysis tools
 
-| Dự án | Dùng cho |
-|-------|----------|
-| [Kaitai Struct](https://kaitai.io/) ([mã nguồn](https://github.com/kaitai-io/kaitai_struct)) | Mục 9: mô tả `.ksy` |
-| [pytai](https://github.com/Dvd848/pytai) | Kiểm tra cấu trúc `.ksy` trên dữ liệu mẫu |
-| [palimpsest](https://github.com/kenrinzero/palimpsest) | Danh mục header container, tham khảo nhận diện định dạng |
+| Project | Used for |
+|---------|----------|
+| [Kaitai Struct](https://kaitai.io/) ([source](https://github.com/kaitai-io/kaitai_struct)) | Item 9: `.ksy` descriptions |
+| [pytai](https://github.com/Dvd848/pytai) | Checking `.ksy` structure against sample data |
+| [palimpsest](https://github.com/kenrinzero/palimpsest) | Catalog of container headers, reference for format detection |
 
-### Mô hình sản phẩm (trình xem chạy trong trình duyệt)
+### Product models (viewers that run in the browser)
 
-| Dự án | Ý tưởng |
-|-------|---------|
-| [magcius/noclip.website](https://github.com/magcius/noclip.website) | Trình xem game chạy hoàn toàn trong trình duyệt |
-| [Kokoroou/lore-insight](https://github.com/Kokoroou/lore-insight) | Mục 17: công cụ cùng tác giả, cùng nguyên tắc offline |
-| [steffest/DPaint-js](https://github.com/steffest/DPaint-js) | Ví dụ định dạng cũ đọc thuần JavaScript |
-| [InvoxiPlayGames/stfs-webjs](https://github.com/InvoxiPlayGames/stfs-webjs) | Ví dụ đọc container nhị phân trong trình duyệt |
+| Project | Idea |
+|---------|------|
+| [magcius/noclip.website](https://github.com/magcius/noclip.website) | A game viewer running entirely in the browser |
+| [Kokoroou/lore-insight](https://github.com/Kokoroou/lore-insight) | Item 17: a tool by the same author with the same offline principles |
+| [steffest/DPaint-js](https://github.com/steffest/DPaint-js) | Example of an old format read in pure JavaScript |
+| [InvoxiPlayGames/stfs-webjs](https://github.com/InvoxiPlayGames/stfs-webjs) | Example of reading a binary container in the browser |
 
-### Ngoài phạm vi (chỉ để biết, xem mục 4)
+### Out of scope (for awareness only, see section 4)
 
 [Luminol](https://github.com/Astrabit-ST/Luminol),
 [rpgmtranslate-qt](https://github.com/RPG-Maker-Translation-Tools/rpgmtranslate-qt),

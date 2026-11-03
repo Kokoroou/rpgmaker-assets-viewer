@@ -1,133 +1,71 @@
 # MakerLens
 
-A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX, and VX Ace**. Runs entirely client-side — no server, no uploads; your game files and keys never leave your machine.
+A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX and VX Ace**. Runs entirely client-side: no server, no uploads; your game files and keys never leave your machine.
 
 **[Try it live →](https://kokoroou.github.io/rpgmaker-assets-viewer/)**
 
----
-
-## Table of Contents
-
-- [Demo](#demo)
-- [Features](#features)
-- [Supported Formats](#supported-formats)
-- [Getting Started](#getting-started)
-- [Legal Notice](#legal-notice)
-- [Acknowledgments](#acknowledgments)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
-## Demo
-
 <video src="https://github.com/user-attachments/assets/aa643c3b-81a1-4a13-936a-ebf4ea69e886" controls width="100%"></video>
-
----
 
 ## Features
 
-- **Zero-install** — open `index.html` directly in any modern browser
-- **Local-only processing** — files are read via the browser File API; no file or key is ever uploaded or transmitted
-- **Auto key extraction** — reads `encryptionKey` from `data/System.json` automatically (MV/MZ)
-- **RGSSAD archive support** — load `.rgssad` / `.rgss2a` / `.rgss3a` archives directly (XP/VX/VX Ace)
-- **Audio preview** — plays decrypted `.ogg_`, `.m4a_`, `.rpgmvo`, `.rpgmvm` files in-browser
-- **Folder browser** — sidebar groups assets by sub-folder with an expandable tree
-- **Lazy-loaded grid** — renders thumbnails on demand; handles large directories without freezing
-- **Lightbox viewer** — full-resolution image preview or audio player with keyboard navigation (`←` / `→` / `Esc`)
-- **Download individual** — save any decrypted asset to disk from the lightbox
-- **Download folder** — export all files in the current folder as a `.zip` (no-dependency, in-browser ZIP builder)
-- **Search** — real-time filename filter
-- **Adjustable tile size** — slider from 70 px to 280 px
-- **Resizable sidebar** — drag the sidebar edge; preference persisted to `localStorage`
-- **Light / dark theme** — follows your system setting by default; toggle in the header to override (persisted)
+- **Zero install, no build** — open the site, or `index.html` locally, in any modern browser
+- **Local-only processing** — files are read with the browser File API; no file or key is ever uploaded
+- **Automatic key handling** — reads `encryptionKey` from `data/System.json`; if that is missing or broken, recovers the key from a known PNG header (kept in memory only)
+- **Folders, archives and loose files** — pick or drop a game folder, an `.rgssad` / `.rgss2a` / `.rgss3a` archive, or individual encrypted files
+- **Fast on big games** — folders are scanned lazily in the background; thumbnails load on demand
+- **Image and audio preview** — grid, lightbox with keyboard navigation, in-browser audio player
+- **Export** — download one asset, or the whole current folder as a `.zip` (files that cannot be read are listed, not silently dropped)
+- **Search, adjustable tiles, light/dark theme**
 
----
+## Supported formats
 
-## Supported Formats
+| Engine | Files | Decryption |
+|--------|-------|------------|
+| MV | `.rpgmvp` (image), `.rpgmvo` / `.rpgmvm` (audio) | 16-byte XOR with the key from `System.json` |
+| MZ | `.png_` (image), `.ogg_` / `.m4a_` (audio) | same |
+| XP / VX | `.rgssad`, `.rgss2a` (RGSSAD v1) | key embedded in the archive |
+| VX Ace | `.rgss3a` (RGSSAD v3) | per-file keys embedded in the archive |
+| Any | `.png` `.jpg` `.gif` `.webp` `.bmp` `.ogg` `.m4a` | none, shown as is |
 
-### RPG Maker MV / MZ
+Algorithms and their sources are documented in the code comments (`js/decrypt-*.js`).
 
-| Extension | Type | Notes |
-|-----------|------|-------|
-| `.rpgmvp` | Image (MV) | Decrypted in-browser using key from `System.json` |
-| `.png_` | Image (MZ) | Same |
-| `.rpgmvo` | Audio (MV) | OGG, decrypted in-browser |
-| `.rpgmvm` | Audio (MV) | M4A, decrypted in-browser |
-| `.ogg_` | Audio (MZ) | OGG, decrypted in-browser |
-| `.m4a_` | Audio (MZ) | M4A, decrypted in-browser |
-| `.png`, `.jpg`, `.gif`, `.webp`, `.bmp` | Image | Displayed directly |
-| `.ogg`, `.m4a` | Audio | Played directly |
+## Getting started
 
-### RPG Maker XP / VX / VX Ace
+1. Open **[MakerLens](https://kokoroou.github.io/rpgmaker-assets-viewer/)**.
+2. Click **Select Game Folder** (or drop the folder anywhere on the page) and choose the game's root directory. For XP / VX / VX Ace you can also click **Select archive**.
+3. Browse, search, click an asset to preview it, or use **Download folder**.
 
-| File | Engine | Notes |
-|------|--------|-------|
-| `Game.rgssad` | XP | RGSSAD v1, key `0xDEADCAFE` |
-| `Game.rgss2a` | VX | RGSSAD v1, same algorithm |
-| `Game.rgss3a` | VX Ace | RGSSAD v3, per-file keys |
+Desktop Chrome, Edge, Firefox and Brave work best; mobile browsers may not support folder selection. More help (where the key is, offline use, supported versions): [FAQ](https://kokoroou.github.io/rpgmaker-assets-viewer/faq.html).
 
-No encryption key needed — keys are embedded in the archive. Select the game folder or the archive file directly.
+## Privacy and legal
 
----
+- **Privacy:** your files are processed only in your browser. The public site counts anonymous page visits (GoatCounter) and sends feedback only when you choose to. What is sent, and what never is, is defined in [`privacy.html`](https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html), the single source of truth. A Content-Security-Policy makes the browser block every other host.
+- **Legal:** intended for your own assets or work done with the rights holder's permission. See [`LEGAL.md`](LEGAL.md) for intended use, user responsibility and takedown policy.
 
-## Getting Started
+## Documentation
 
-**No installation needed** — open **[MakerLens](https://kokoroou.github.io/rpgmaker-assets-viewer/)** directly in your browser.
-
-1. Go to **[kokoroou.github.io/rpgmaker-assets-viewer](https://kokoroou.github.io/rpgmaker-assets-viewer/)** (or open `index.html` locally).
-2. Click **Select Game Folder** and pick the game's root directory.
-   - **MV / MZ:** The encryption key is auto-detected from `data/System.json` — no manual entry needed.
-   - **XP / VX / VX Ace:** The archive (`Game.rgssad`, `.rgss2a`, `.rgss3a`) is auto-detected inside the folder. You can also click **Select archive** to load it directly.
-3. Browse folders, search by filename, click an asset to preview it, or use **Download folder** to export the current folder as a `.zip`.
-
-> **Browser compatibility:** Works in all major desktop browsers (Chrome, Edge, Firefox, Brave). Mobile browsers may not support folder selection.
-
----
-
-## Privacy & analytics
-
-Full details: [privacy.html](https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html).
-
-The public site counts anonymous page visits with [GoatCounter](https://www.goatcounter.com) to understand how many people use the tool and where they come from. See [`js/analytics.js`](js/analytics.js). The only other network request is optional feedback that you choose to send (below).
-
-- **Sent:** page path, referring site (e.g. `google.com`), and traffic-source URL parameters such as `?utm_source=chatgpt.com` (other URL parameters are dropped).
-- **Never sent:** file names, folder names, game titles, keys, or file contents.
-- No cookies, no `localStorage` identifier, no IP storage. Do Not Track / Global Privacy Control are respected.
-- Not active when you open `index.html` locally.
-- A Content-Security-Policy in `index.html` blocks requests to any other host, so this is enforced by the browser, not just promised.
-
-**Feedback (optional).** After the second game you open, a small card asks once for a 1–5 star rating (tapping a star sends it, then an optional one-line comment); bug reports and ideas can be sent any time from About. Nothing is sent before a star is tapped or Send is pressed; it goes to the developer's feedback inbox (a Cloudflare Worker at `feedback.kokoroou.workers.dev`) that stores the rating, comment, browser language, a usage bucket and (for bug reports, if ticked) browser + OS — no file data, IP or identifier. Whether you already answered is remembered in `localStorage`. Not shown with Do Not Track / GPC or on local copies. Details in [privacy.html](privacy.html#feedback).
-
----
-
-## Legal Notice
-
-See [LEGAL.md](LEGAL.md) for full details on intended use, user responsibility, and DMCA/takedown policy.
-
-**Summary:** This tool reads only files you explicitly select from your local machine. No file or key is uploaded or stored. It is intended for developers, artists, and researchers working with their own assets or with explicit permission.
-
----
-
-## Acknowledgments
-
-- [**RPGMakerDecrypter**](https://github.com/uuksu/RPGMakerDecrypter) by Mikko Uuksulainen — MIT licensed CLI reference implementation for RPG Maker XP/VX/MV/MZ decryption. The original author explicitly invited the creation of web UIs and cross-platform tools built on this work (see CHANGELOG v3.0.0).
-
----
+| Document | What it covers |
+|----------|----------------|
+| [`privacy.html`](privacy.html) | exactly what the site sends and stores |
+| [`LEGAL.md`](LEGAL.md) | intended use, user responsibility, DMCA / takedown |
+| [`faq.html`](faq.html) | usage questions |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | planned work, non-goals, reference projects |
+| [`docs/benchmarks/`](docs/benchmarks/traverse-handle.md) | folder-scan performance measurements |
+| [`CLAUDE.md`](CLAUDE.md) | architecture and contributor rules |
 
 ## Contributing
 
-Pull requests are welcome. For significant changes, open an issue first to discuss scope and approach.
-
-Before opening a PR, run the same checks CI runs (Node 22+, no install needed):
+Pull requests are welcome; for significant changes, open an issue first. Before opening a PR, run the CI checks (Node 22+, no install needed):
 
 ```bash
 node scripts/check-site.mjs && node --test "tests/*.test.mjs"
 ```
 
-Please do **not** commit actual game assets or encryption keys — even as test fixtures — without explicit permission from the relevant copyright holder.
+Please do **not** commit real game assets or encryption keys, even as test fixtures, without permission from the copyright holder. If you change what the site sends, update `privacy.html` in the same PR.
 
----
+## Acknowledgments
+
+[**RPGMakerDecrypter**](https://github.com/uuksu/RPGMakerDecrypter) by Mikko Uuksulainen (MIT) is the reference implementation for the decryption algorithms; its author explicitly welcomed web UIs built on it. More projects are credited in the [roadmap](docs/ROADMAP.md#references-and-acknowledgements).
 
 ## License
 
