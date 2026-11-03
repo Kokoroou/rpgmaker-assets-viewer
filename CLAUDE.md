@@ -32,13 +32,15 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared g
 
 ## Architecture
 
-`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into nine JS files loaded in order:
+`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into eleven JS files loaded in order:
 
 ```
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
 js/state.js          — global S object
 js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
+js/audio-loop.js    — parseOggLoop(buffer) → {rate,start,length,end}|null (LOOPSTART/LOOPLENGTH Vorbis comments)
+js/sprite.js         — spriteLayout()/spriteFrame(): character sheet grid (`$` = 3×4, else 12×8) and walk cycle
 js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryFile()/entryToURL(), showEmptyState(), Loader (loading overlay)
 js/scan.js           — lazy folder scan: FS_HANDLE/FS_ENTRY adapters, FolderScan, detectLazy(), background-loading chip (Bg)
 js/app.js            — event handlers, runLoad()/loadGameFolder()/loadMVMZFolder()/loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)

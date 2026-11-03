@@ -217,6 +217,7 @@
   </button>
   <div id="lb-img-wrap">
     <img id="lb-img" src="" alt="">
+    <canvas id="lb-sprite-cv" style="display:none"></canvas>
     <audio id="lb-audio" controls></audio>
   </div>
   <button class="lb-nav lb-btn" id="lb-next" title="Next (→)" aria-label="Next">
@@ -225,6 +226,15 @@
   <div id="lb-bar">
     <div id="lb-name"></div>
     <div id="lb-meta"></div>
+    <div id="lb-sprite" style="display:none">
+      <label><input type="checkbox" id="lb-sprite-on"> Walk animation</label>
+      <select id="lb-sprite-char" aria-label="Character"></select>
+      <select id="lb-sprite-dir" aria-label="Direction">
+        <option value="0">Down</option><option value="1">Left</option>
+        <option value="2">Right</option><option value="3">Up</option>
+      </select>
+    </div>
+    <label id="lb-loop" style="display:none"><input type="checkbox" id="lb-loop-on"> <span id="lb-loop-info"></span></label>
   </div>
 </div>
 
@@ -398,6 +408,8 @@
 <script src="js/state.js"></script>
 <script src="js/decrypt-mvmz.js"></script>
 <script src="js/decrypt-rgssad.js"></script>
+<script src="js/audio-loop.js"></script>
+<script src="js/sprite.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/scan.js"></script>
 <script src="js/app.js"></script>

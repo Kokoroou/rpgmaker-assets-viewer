@@ -25,6 +25,14 @@ const EL = {
   lightbox:         $('lightbox'),
   lbImg:            $('lb-img'),
   lbAudio:          $('lb-audio'),
+  lbSprite:         $('lb-sprite'),
+  lbSpriteOn:       $('lb-sprite-on'),
+  lbSpriteChar:     $('lb-sprite-char'),
+  lbSpriteDir:      $('lb-sprite-dir'),
+  lbSpriteCv:       $('lb-sprite-cv'),
+  lbLoop:           $('lb-loop'),
+  lbLoopOn:         $('lb-loop-on'),
+  lbLoopInfo:       $('lb-loop-info'),
   lbName:           $('lb-name'),
   lbMeta:           $('lb-meta'),
   lbImgWrap:        $('lb-img-wrap'),
@@ -107,12 +115,16 @@ async function entryToURL(entry) {
   let data, url;
   if (entry._getData) {
     data = await entry._getData();
+    if (entry.isAudio) entry._loop = parseOggLoop(data);
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
     data = decryptWithKey(await (await entryFile(entry)).arrayBuffer());
+    if (entry.isAudio) entry._loop = parseOggLoop(data);
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else {
-    url = URL.createObjectURL(await entryFile(entry));
+    const file = await entryFile(entry);
+    if (entry.isAudio) entry._loop = parseOggLoop(await file.slice(0, 262144).arrayBuffer());
+    url = URL.createObjectURL(file);
   }
   S.blobCache.set(entry.path, url);
   return url;
@@ -398,6 +410,7 @@ async function openLightbox(idx) {
 }
 
 function closeLightbox() {
+  _spriteStop();
   EL.lbAudio.pause();
   EL.lightbox.classList.remove('open');
   _lbReset();
@@ -447,13 +460,20 @@ async function _loadLbEntry(idx) {
   EL.lbMeta.textContent    = '';
   EL.lbCounter.textContent = `${idx + 1} / ${S.currentMedia.length}`;
   EL.lbDownload.dataset.path = path;
+  _spriteStop();
+  EL.lbSprite.style.display = 'none';
 
   if (entry.isAudio) {
     EL.lbImg.style.display   = 'none';
     EL.lbAudio.style.display = 'block';
     EL.lbAudio.src = '';
+    EL.lbLoop.style.display = 'none';
+    _loopPts = null;
     try {
-      EL.lbAudio.src = await entryToURL(entry);
+      const url = await entryToURL(entry);
+      if (gen !== _lbGeneration) return;
+      _setupLoop(entry._loop);
+      EL.lbAudio.src = url;
       EL.lbAudio.play().catch(() => {});
       EL.lbAudio.addEventListener('loadedmetadata', () => {
         const d = EL.lbAudio.duration;
@@ -468,6 +488,8 @@ async function _loadLbEntry(idx) {
   } else {
     EL.lbAudio.pause();
     EL.lbAudio.style.display = 'none';
+    EL.lbLoop.style.display  = 'none';
+    _loopPts = null;
     EL.lbImg.style.display   = 'block';
     EL.lbImg.style.opacity   = '0';
     try {
@@ -478,6 +500,7 @@ async function _loadLbEntry(idx) {
       if (gen !== _lbGeneration) return;
       EL.lbImg.style.opacity = '1';
       EL.lbMeta.textContent  = `${EL.lbImg.naturalWidth} × ${EL.lbImg.naturalHeight} px`;
+      _spriteOffer(entry);
     } catch (e) {
       if (gen !== _lbGeneration) return;
       EL.lbImg.style.opacity = '1';
@@ -487,6 +510,82 @@ async function _loadLbEntry(idx) {
 
   preloadAround(idx);
 }
+
+// ─── Character sprite animation (js/sprite.js) ───
+let _spriteLayout = null, _spriteRaf = 0, _spriteT0 = 0;
+
+function _spriteOffer(entry) {
+  const name = entry.name.split('/').pop();
+  const inChars = /(^|\/)characters\//i.test(entry.path);
+  _spriteLayout = inChars ? spriteLayout(name, EL.lbImg.naturalWidth, EL.lbImg.naturalHeight) : null;
+  EL.lbSprite.style.display = _spriteLayout ? '' : 'none';
+  if (!_spriteLayout) return;
+  EL.lbSpriteChar.innerHTML = '';
+  for (let i = 0; i < _spriteLayout.chars; i++) EL.lbSpriteChar.add(new Option(`Character ${i + 1}`, i));
+  EL.lbSpriteChar.style.display = _spriteLayout.chars > 1 ? '' : 'none';
+  EL.lbSpriteOn.checked = false;
+}
+
+function _spriteStop() {
+  cancelAnimationFrame(_spriteRaf); _spriteRaf = 0;
+  EL.lbSpriteCv.style.display = 'none';
+  if (EL.lbSpriteOn.checked) EL.lbSpriteOn.checked = false;
+  if (EL.lbAudio.style.display === 'none') EL.lbImg.style.display = 'block';
+}
+
+function _spriteDraw(t) {
+  if (!_spriteLayout) return;
+  const step = Math.floor((t - _spriteT0) / 160);   // ~6 steps/s, cycle 0,1,2,1
+  const f = spriteFrame(_spriteLayout, +EL.lbSpriteChar.value || 0, +EL.lbSpriteDir.value || 0, step);
+  const cv = EL.lbSpriteCv, scale = Math.max(1, Math.floor(Math.min(320 / f.sw, 320 / f.sh)));
+  if (cv.width !== f.sw || cv.height !== f.sh) { cv.width = f.sw; cv.height = f.sh; }
+  cv.style.width = f.sw * scale + 'px'; cv.style.height = f.sh * scale + 'px';
+  const g = cv.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, f.sw, f.sh);
+  g.drawImage(EL.lbImg, f.sx, f.sy, f.sw, f.sh, 0, 0, f.sw, f.sh);
+  _spriteRaf = requestAnimationFrame(_spriteDraw);
+}
+
+EL.lbSpriteOn.addEventListener('change', () => {
+  cancelAnimationFrame(_spriteRaf); _spriteRaf = 0;
+  if (EL.lbSpriteOn.checked && _spriteLayout) {
+    EL.lbImg.style.display = 'none';
+    EL.lbSpriteCv.style.display = 'block';
+    _spriteT0 = performance.now();
+    _spriteRaf = requestAnimationFrame(_spriteDraw);
+  } else {
+    EL.lbSpriteCv.style.display = 'none';
+    EL.lbImg.style.display = 'block';
+  }
+});
+
+// ─── Audio loop points (LOOPSTART / LOOPLENGTH, see js/audio-loop.js) ───
+// Seconds { start, end|null } of the open track, or null when it has none.
+let _loopPts = null, _loopRaf = 0;
+
+function _setupLoop(lp) {
+  _loopPts = lp ? { start: lp.start / lp.rate, end: lp.end === null ? null : lp.end / lp.rate } : null;
+  if (!_loopPts) { EL.lbLoop.style.display = 'none'; return; }
+  EL.lbLoopInfo.textContent = `Loop ${fmtLoopTime(_loopPts.start)} → ` +
+    (_loopPts.end === null ? 'end' : fmtLoopTime(_loopPts.end));
+  EL.lbLoop.style.display = '';
+}
+
+function _loopTick() {
+  _loopRaf = 0;
+  const a = EL.lbAudio;
+  if (_loopPts && EL.lbLoopOn.checked && !a.paused) {
+    const end = _loopPts.end ?? a.duration;
+    if (a.currentTime >= end) a.currentTime = _loopPts.start;
+    _loopRaf = requestAnimationFrame(_loopTick);
+  }
+}
+EL.lbAudio.addEventListener('play', () => { if (!_loopRaf) _loopRaf = requestAnimationFrame(_loopTick); });
+EL.lbAudio.addEventListener('ended', () => {
+  if (_loopPts && EL.lbLoopOn.checked) { EL.lbAudio.currentTime = _loopPts.start; EL.lbAudio.play().catch(() => {}); }
+});
+EL.lbLoopOn.addEventListener('change', () => { if (!_loopRaf) _loopRaf = requestAnimationFrame(_loopTick); });
 
 // ─── Lightbox zoom (wheel + drag) ────────────────────
 EL.lightbox.addEventListener('wheel', e => {
