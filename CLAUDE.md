@@ -32,7 +32,7 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared g
 
 ## Architecture
 
-`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into eleven JS files loaded in order:
+`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into twelve JS files loaded in order:
 
 ```
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
@@ -43,6 +43,7 @@ js/audio-loop.js    — parseOggLoop(buffer) → {rate,start,length,end}|null (L
 js/sprite.js         — spriteLayout()/spriteFrame(): character sheet grid (`$` = 3×4, else 12×8) and walk cycle
 js/ui.js             — DOM refs (EL), rendering, sidebar tree, lightbox, entryFile()/entryToURL(), showEmptyState(), Loader (loading overlay)
 js/scan.js           — lazy folder scan: FS_HANDLE/FS_ENTRY adapters, FolderScan, detectLazy(), background-loading chip (Bg)
+js/dupes.js          — Dupes: opt-in SHA-256 (crypto.subtle) of decrypted bytes in the background (yields to Fg.active), "Unique only" filter, ×N badges, virtual "Duplicates" folder (DUPES_KEY); pure helpers dupeGroups()/uniquePaths()/dupeList()
 js/app.js            — event handlers, runLoad()/loadGameFolder()/loadMVMZFolder()/loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
 js/feedback.js       — Feedback: one-time 1-tap star prompt (from the 2nd opened game, via commitLibrary → noteOpen), optional follow-up comment, and the About bug/idea form (#feedback)
 js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params) + countEvent() for the fixed feedback-* events
@@ -69,7 +70,7 @@ All files share a single global scope — no modules.
 { name, path, isAudio, isImage, _getData: () => ArrayBuffer }
 ```
 
-`entryFile(entry)` resolves the File once (shared promise); `entryToURL(entry)` handles all types with blob cache.
+`entryFile(entry)` resolves the File once (shared promise); `entryToURL(entry)` handles all types with blob cache; `entryBytes(entry)` returns the decrypted bytes uncached (ZIP export, duplicate hashing).
 
 **Loading flows:**
 1. **Folder via directory handle/entry** (picker, drag & drop) — `openFolderLazy(name, sources)` lists only the root, runs `detectLazy()` (archive at root → RGSSAD flow; else `data/System.json` key, engine), then starts a `FolderScan` and closes the overlay as soon as the first media folder is listed. The scan keeps listing directories (media dirs first) and resolving `getFile()` ("indexing": metadata only, no content read) in the background, the folder on screen first (`showFolder()` calls `Bg.scan.prioritize()`). While a thumbnail or the lightbox reads a file (`Fg.active`, `fgStart()` in `ui.js`) indexing pauses and listing drops to 1 request, so slow disks serve the user first; the `getFile()` pool starts at 4 and grows to 16 only when measured latency shows a fast disk. The status view's "Thumbnails on screen" row counts `Thumbs` (cards scrolled into view / decoded), not the whole folder. It fills the committed `S.files`/`S.folders` Maps in place; `S.folderStats` holds per-folder `{total, ready}` for the sidebar fill. The header chip `#bg-load` shows progress and reopens the loader as a status view (`Loader.open({view: true})`, button = Hide).

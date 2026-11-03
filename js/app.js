@@ -41,6 +41,8 @@ function commitLibrary(files, folders, key, scan = null) {
   S.folderStats = scan ? scan.stats : null;
   S.currentFolder = null;
   S.sidebarPath = null;
+  S.hiddenCopies = 0;
+  Dupes.reset();   // hashes belong to the old library; restarts if "Unique only" is on
   EL.grid.innerHTML = '';
   EL.folderPath.innerHTML = '';
   EL.countBadge.textContent = '';
@@ -493,6 +495,9 @@ $('about-modal').addEventListener('click', e => { if (e.target === $('about-moda
 // ─── Events: Download folder ──────────────────────────
 $('dl-folder-btn').addEventListener('click', downloadFolder);
 
+// ─── Events: Unique only (js/dupes.js) ────────────────
+EL.dupeBtn.addEventListener('click', () => Dupes.setOn(!Dupes.on));
+
 // ─── Events: Sidebar toggle ───────────────────────────
 $('sidebar-toggle').addEventListener('click', () => {
   const hidden = EL.sidebar.classList.toggle('hidden');
@@ -662,7 +667,9 @@ function failureReport(failed) {
 async function downloadFolder() {
   const key = S.currentFolder;
   if (!key) return;
-  const paths = S.folders.get(key) || [];
+  // With "Unique only" on, the ZIP gets one file per content, like the grid.
+  const all   = folderPaths(key);
+  const paths = Dupes.on ? uniquePaths(all, Dupes.hashes) : all;
   if (!paths.length) return;
 
   const btn = $('dl-folder-btn');
@@ -676,14 +683,7 @@ async function downloadFolder() {
       const entry = S.files.get(path);
       if (!entry) continue;
       try {
-        let data;
-        if (entry._getData) {
-          data = new Uint8Array(await entry._getData());
-        } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
-          data = new Uint8Array(decryptWithKey(await (await entryFile(entry)).arrayBuffer()));
-        } else {
-          data = new Uint8Array(await (await entryFile(entry)).arrayBuffer());
-        }
+        const data = await entryBytes(entry);
         items.push({ name: '', data });
         rawNames.push(canonicalExt(entry.name));
       } catch (e) {
@@ -699,7 +699,7 @@ async function downloadFolder() {
     items.forEach((it, i) => { it.name = zipNames[i]; });
 
     const zip = buildZip(items);
-    const folderName = key === '__root__' ? 'assets' : key.split('/').pop();
+    const folderName = key === '__root__' ? 'assets' : key === DUPES_KEY ? 'duplicates' : key.split('/').pop();
     const a = document.createElement('a');
     a.href = URL.createObjectURL(zip);
     a.download = `${folderName}.zip`;

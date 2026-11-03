@@ -6,6 +6,7 @@ const S = {
   currentFolder: null,
   sidebarPath:   null,       // folder key currently shown in sidebar (null = root level)
   currentMedia:  [],         // paths of visible entries (images + audio)
+  hiddenCopies:  0,          // entries of the folder hidden by "Unique only" (js/dupes.js)
   lbIdx:         0,
   blobCache:     new Map(),  // path → objectURL
   query:         '',
