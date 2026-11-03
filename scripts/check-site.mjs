@@ -18,8 +18,8 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGES = ['index.html', 'privacy.html', 'faq.html'];
 const ALLOWED_HOSTS = new Set(['kokoroou.goatcounter.com']);
-// The feedback endpoint (feedback-worker/), only on the page that has the form.
-const FEEDBACK_HOST = 'makerlens-feedback.kokoroou.workers.dev';
+// The feedback inbox (private repo Kokoroou/feedbacks), only on the page that has the form.
+const FEEDBACK_HOST = 'feedback.kokoroou.workers.dev';
 const pageHosts = page => page === 'index.html' ? new Set([...ALLOWED_HOSTS, FEEDBACK_HOST]) : ALLOWED_HOSTS;
 
 const errors = [];

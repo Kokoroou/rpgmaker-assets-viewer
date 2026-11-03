@@ -11,13 +11,15 @@
 //   { v: 1, opens, done, skips, nextAt }
 // A "don't ask again" flag like the theme preference, not an identifier.
 //
-// Sent ONLY when the user presses Send (worker source: feedback-worker/):
-//   { kind, rating, comment, lang, opens (bucket), browser (only if ticked) }
+// Sent ONLY when the user presses Send, to the developer's feedback inbox
+// (Cloudflare Worker at feedback.kokoroou.workers.dev, which validates exactly
+// these fields and stores no IP or identifier):
+//   { project, kind, rating, comment, lang, meta: { opens (bucket), browser (only if ticked) } }
 // NEVER sent: file or folder names, game titles, engine, keys, contents.
 // Do not add any of those — see "Legal constraints" in CLAUDE.md. The endpoint
 // host is the only one besides GoatCounter in the CSP of index.html.
 const Feedback = (() => {
-  const ENDPOINT  = 'https://makerlens-feedback.kokoroou.workers.dev/api/feedback';
+  const ENDPOINT  = 'https://feedback.kokoroou.workers.dev/api/submit';
   const STORE_KEY = 'feedback';
   const ASK_AT    = 2;   // ask on the 2nd successful open
   const SKIP_GAP  = 5;   // "Not now" → ask again 5 opens later…
@@ -162,13 +164,14 @@ const Feedback = (() => {
   async function send() {
     if (sendBtn.disabled) return;
     const s = load() || {};
+    const browser = mode === 'report' && $f('fb-browser').checked ? browserInfo() : '';
     const body = {
+      project: 'makerlens',
       kind: mode === 'rating' ? 'rating' : ($f('fb-kind-bug').checked ? 'bug' : 'idea'),
       rating: mode === 'rating' ? rating : null,
       comment: comment.value.trim().slice(0, MAX_LEN),
       lang: (navigator.language || '').slice(0, 2).toLowerCase().replace(/[^a-z]/g, ''),
-      opens: bucket(s.opens || 0),
-      browser: mode === 'report' && $f('fb-browser').checked ? browserInfo() : '',
+      meta: { opens: bucket(s.opens || 0), browser },
       website: $f('fb-website').value,   // honeypot, empty for humans
     };
     errEl.textContent = '';
