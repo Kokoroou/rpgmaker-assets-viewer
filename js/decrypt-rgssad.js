@@ -47,6 +47,7 @@ function parseRGSSADv1(buf) {
     const name   = nextName(nameLen);
     const size   = nextInt();
     const offset = pos;
+    if (offset + size > buf.byteLength) break; // truncated/corrupt: keep what was read
     const fKey   = key;
     entries.push({ name: name.replace(/\\/g, '/'), size, offset, fKey });
     pos += size;
@@ -77,9 +78,11 @@ function parseRGSSADv3(buf) {
     const fKey    = xInt() >>> 0;
     const nameLen = xInt();
     if (offset === 0) break;
+    if (nameLen < 0 || pos + nameLen > buf.byteLength) break;
     const nb = new Uint8Array(nameLen);
     for (let i = 0; i < nameLen; i++) nb[i] = raw[pos + i] ^ mkb[i % 4];
     pos += nameLen;
+    if (size < 0 || (offset >>> 0) + size > buf.byteLength) continue; // entry points outside the file
     entries.push({
       name:   dec.decode(nb).replace(/\\/g, '/'),
       size,
@@ -93,6 +96,7 @@ function parseRGSSADv3(buf) {
 
 function parseRGSSAD(buf) {
   const raw = new Uint8Array(buf);
+  if (raw.length < 12) throw new Error('Not a valid RGSSAD file (too short)');
   if (String.fromCharCode(...raw.slice(0, 6)) !== 'RGSSAD')
     throw new Error('Not a valid RGSSAD file');
   const ver = raw[7];

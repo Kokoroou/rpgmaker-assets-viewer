@@ -34,3 +34,34 @@ const HTML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => HTML_ESC[c]);
 }
+
+// ZIP entry names come from the opened game/archive, so they are untrusted. Keep only the
+// last path segment (no "..", no absolute or drive paths), drop characters Windows forbids,
+// control characters and trailing dots/spaces, and avoid reserved device names.
+const WIN_RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+function sanitizeFileName(name) {
+  let n = String(name ?? '').split(/[\\/]/).pop();
+  n = n.replace(/[\x00-\x1f\x7f<>:"|?*]/g, '_').replace(/[. ]+$/, '').replace(/^ +/, '');
+  if (!n || /^\.+$/.test(n)) n = 'file';
+  const dot = n.lastIndexOf('.');
+  const stem = dot > 0 ? n.slice(0, dot) : n;
+  if (WIN_RESERVED.test(stem)) n = '_' + n;
+  return n.length > 200 ? n.slice(0, 200) : n;
+}
+
+// Sanitize every name and make them unique (case-insensitively, as Windows/macOS
+// extract) by adding " (2)", " (3)"... before the extension.
+function uniqueZipNames(names) {
+  const seen = new Set();
+  return names.map(raw => {
+    const base = sanitizeFileName(raw);
+    let name = base, i = 2;
+    while (seen.has(name.toLowerCase())) {
+      const dot = base.lastIndexOf('.');
+      name = dot > 0 ? `${base.slice(0, dot)} (${i})${base.slice(dot)}` : `${base} (${i})`;
+      i++;
+    }
+    seen.add(name.toLowerCase());
+    return name;
+  });
+}
