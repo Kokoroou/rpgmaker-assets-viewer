@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- browser UI colour = --bg of tokens.css (light / dark) -->
+<meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)">
 <!-- Content-Security-Policy: the page may only send requests to itself, to the
      anonymous page counter (js/analytics.js) and to the feedback endpoint, which is only
      called when the user taps a star or presses Send (js/feedback.js). Game files and keys cannot leave the browser.
@@ -92,8 +95,8 @@
 <header id="header">
   <div id="logo">
     <span class="logo-mark"><svg width="18" height="18" aria-hidden="true"><use href="#i-logo"/></svg></span>
-    <span class="logo-full">Maker<span>Lens</span></span>
-    <span class="logo-abbr">M<span>L</span></span>
+    <span class="logo-full">Maker<span>Lens</span><em class="logo-sub">Assets</em></span>
+    <span class="logo-abbr">M<span>L</span><em class="logo-sub">Assets</em></span>
   </div>
 
   <div id="search-wrap" role="search">
@@ -296,9 +299,9 @@
 
     <h2 class="about-logo" id="about-title">
       <span class="logo-mark"><svg width="18" height="18" aria-hidden="true"><use href="#i-logo"/></svg></span>
-      <span>Maker<span>Lens</span></span>
+      <span>Maker<span>Lens</span><em class="logo-sub">Assets</em></span>
     </h2>
-    <div class="about-sub">Browser-based viewer &amp; extractor for RPG Maker game assets</div>
+    <div class="about-sub">Browser-based viewer &amp; extractor for RPG Maker game assets — part of <a href="https://makerlens.kokoroou.workers.dev/">MakerLens</a></div>
 
     <div class="about-section">
       <div class="about-section-title">Supported engines</div>
