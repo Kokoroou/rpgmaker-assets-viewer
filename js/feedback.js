@@ -164,7 +164,7 @@ const Feedback = (() => {
   async function post(fields) {
     const s = load() || {};
     const body = {
-      project: 'makerlens',
+      project: 'makerlens-assets',
       lang: (navigator.language || '').slice(0, 2).toLowerCase().replace(/[^a-z]/g, ''),
       website: $f('fb-website').value,   // honeypot, empty for humans
       ...fields,
