@@ -17,6 +17,7 @@
 <link rel="canonical" href="https://makerlens.kokoroou.workers.dev/assets/"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -- a canonical URL, not a fetched resource -->
 <meta name="google-site-verification" content="D46-YM3xEG9mxpWY-GFgkCDtK37Q7nqxAwHNLEpttl8" />
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="MakerLens">
 <meta property="og:url" content="https://makerlens.kokoroou.workers.dev/assets/">
 <meta property="og:title" content="RPG Maker Extractor &amp; Asset Viewer — MakerLens">
 <meta property="og:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Runs in your browser — your files are never uploaded.">
@@ -32,16 +33,18 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "MakerLens",
-  "alternateName": "MakerLens RPG Maker Extractor",
+  "@type": "WebApplication",
+  "@id": "https://makerlens.kokoroou.workers.dev/assets/#app",
+  "name": "MakerLens Assets",
+  "alternateName": ["MakerLens RPG Maker Extractor", "MakerLens"],
   "description": "Browser-based tool to view, preview, and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX, and VX Ace games. Supports .rpgmvp, .png_, .rpgmvo, .ogg_, RGSSAD archives. Files are processed locally and never uploaded.",
   "url": "https://makerlens.kokoroou.workers.dev/assets/",
   "image": "https://makerlens.kokoroou.workers.dev/assets/og-image.png",
   "screenshot": "https://makerlens.kokoroou.workers.dev/assets/screenshots/start-laptop.png",
   "isAccessibleForFree": true,
-  "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "Web Browser",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "isPartOf": { "@type": "WebSite", "@id": "https://makerlens.kokoroou.workers.dev/#website", "name": "MakerLens", "url": "https://makerlens.kokoroou.workers.dev/" },
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "featureList": [
     "View and extract RPG Maker MV/MZ encrypted assets (.rpgmvp, .png_, .rpgmvo, .ogg_)",
@@ -53,6 +56,7 @@
   ],
   "author": {
     "@type": "Person",
+    "@id": "https://makerlens.kokoroou.workers.dev/#author",
     "name": "Trương Tuấn Anh",
     "url": "https://github.com/Kokoroou"
   },
