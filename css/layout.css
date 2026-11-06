@@ -35,6 +35,8 @@
 }
 .logo-mark svg { color: var(--a); }
 .logo-abbr { display: none; }
+/* product suffix: "Maker**Lens** Assets" (same as MakerLens Events) */
+.logo-sub { font-style: normal; font-weight: 600; color: var(--t2); margin-left: 6px; }
 
 #search-wrap {
   flex: 1;
