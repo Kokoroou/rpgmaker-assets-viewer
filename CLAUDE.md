@@ -27,12 +27,14 @@ node --test "tests/*.test.mjs"     # decrypt-mvmz / decrypt-rgssad / constants o
 Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared global scope, like the browser); fixtures are built in the test, never real game assets.
 
 - `.github/workflows/ci.yml` — calls `kokoroou/agent-toolkit/.github/workflows/quality.yml@v0` (lint = `check-site.mjs`, test = `node --test`, plus Gitleaks + Semgrep) on PRs and pushes to `main`.
-- `.github/workflows/deploy.yml` — on a push to `main`, reruns the two checks above, then publishes the public files (pages, `css/`, `js/`, images, `sitemap.xml`, `llms.txt`, `screenshots/`, LICENSE/LEGAL/README) to GitHub Pages. Requires Settings → Pages → Source = "GitHub Actions". A new top-level file the site serves must be added to its "Assemble site" step.
+- **Public home:** `https://makerlens.kokoroou.workers.dev/assets/` (one Cloudflare Worker for the whole MakerLens family, built and deployed by the `Kokoroou/makerlens` repo, which runs `scripts/assemble-site.sh` from this repo into `/assets/`). Canonical, `og:*`, JSON-LD, `sitemap.xml` and `llms.txt` use that URL.
+- `scripts/assemble-site.sh <dir>` — copies the public files (pages, `css/`, `js/`, images, `sitemap.xml`, `llms.txt`, `screenshots/`, LICENSE/LEGAL/README). A new top-level file the site serves must be added there.
+- `.github/workflows/deploy.yml` — on a push to `main`, reruns the two checks above, then publishes the **legacy** copy to GitHub Pages (`kokoroou.github.io/rpgmaker-assets-viewer/`), which keeps old links working and shows the "moved" banner from `js/site.js`. Requires Settings → Pages → Source = "GitHub Actions".
 - `.github/dependabot.yml` — weekly updates of the pinned actions.
 
 ## Architecture
 
-`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into thirteen JS files loaded in order:
+`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`. Logic is split into fourteen JS files loaded in order:
 
 ```
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
@@ -46,6 +48,7 @@ js/scan.js           — lazy folder scan: FS_HANDLE/FS_ENTRY adapters, FolderSc
 js/dupes.js          — Dupes: opt-in SHA-256 (crypto.subtle) of decrypted bytes in the background (yields to Fg.active), "Unique only" filter, ×N badges, virtual "Duplicates" folder (DUPES_KEY); pure helpers dupeGroups()/uniquePaths()/dupeList()
 js/filters.js        — Filter: toolbar filter panel (#filter-panel: type, image width/height, audio length); reads only headers of the folder on screen in the background (yields to Fg.active); pure helpers imageSize()/oggDuration()/mp4Duration()/parseDuration()/filterMatch(); showFolder() and downloadFolder() go through Filter.apply()
 js/app.js            — event handlers, runLoad()/loadGameFolder()/loadMVMZFolder()/loadRGSSAD(), ZIP writer (crc32, buildZip, downloadFolder)
+js/site.js           — SITE: public hosts (isPublic/isLegacy), homeURL() mapping legacy GitHub Pages URLs to /assets/ on the new home; on the legacy host inserts the "moved" banner (#moved, css/moved.css). Loaded on all three pages before feedback/analytics
 js/feedback.js       — Feedback: one-time 1-tap star prompt (from the 2nd opened game, via commitLibrary → noteOpen), optional follow-up comment, and the About bug/idea form (#feedback)
 js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params) + countEvent() for the fixed feedback-* events
 ```
@@ -80,7 +83,7 @@ All files share a single global scope — no modules.
 
 **Loading overlay:** every open action goes through `runLoad(task)` in `app.js`, which drives `Loader` (`#loader`, `css/loader.css`): named steps (`detect`/`scan`/`load`/`current` for lazy folders, `scan`/`detect`/`index` for file lists, `read`/`table`/`index` for archives), a determinate or sweeping progress bar, Cancel and an error state. Loaders build into new Maps and only `commitLibrary()` swaps them into `S` (and aborts the previous background scan), so Cancel or a failure keeps the previously open game. Long loops call `Loader.check()` (throws `AbortError` after Cancel) at their yield points.
 
-**Feedback:** `js/feedback.js` POSTs to the shared feedback inbox `https://feedback.kokoroou.workers.dev/api/submit` (Cloudflare Worker + D1 in the private repo `Kokoroou/feedbacks`, project key `makerlens`) only when the user taps a star (the rating is sent at once and the Worker answers with a signed `ref` to that entry; the optional follow-up comment goes as kind `idea` with the same stars plus that `ref`, so both become one entry and ratings are not counted twice; `ref` lives in a variable only) or presses Send. That Worker's `src/projects.js` allow-lists this site's origin and the `meta` fields (`opens`, `browser`); a new field must be added there too. The answered state lives in `localStorage['feedback']` (`{opens, done, skips, nextAt}`), never sent.
+**Feedback:** `js/feedback.js` POSTs to the shared feedback inbox `https://feedback.kokoroou.workers.dev/api/submit` (Cloudflare Worker + D1 in the private repo `Kokoroou/feedbacks`, project key `makerlens`) only when the user taps a star (the rating is sent at once and the Worker answers with a signed `ref` to that entry; the optional follow-up comment goes as kind `idea` with the same stars plus that `ref`, so both become one entry and ratings are not counted twice; `ref` lives in a variable only) or presses Send. That Worker's `src/projects.js` allow-lists this site's origins (new home and legacy GitHub Pages) and the `meta` fields (`opens`, `browser`); a new field must be added there too. The answered state lives in `localStorage['feedback']` (`{opens, done, skips, nextAt}`), never sent.
 
 **ZIP download:** `downloadFolder()` in `app.js` reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
 

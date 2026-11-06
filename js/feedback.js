@@ -41,7 +41,7 @@ const Feedback = (() => {
   const IDLE_MS   = 45000;   // untouched prompt slips away
   const FOLLOW_MS = 20000;   // untouched comment box closes
 
-  const publicSite = location.hostname === 'kokoroou.github.io';
+  const publicSite = SITE.isPublic;   // js/site.js
   const forced     = new URLSearchParams(location.search).has('feedback'); // test the prompt anywhere
   const noTrack    = navigator.doNotTrack === '1' || !!navigator.globalPrivacyControl;
   const event      = name => { if (typeof countEvent === 'function') countEvent(name); };

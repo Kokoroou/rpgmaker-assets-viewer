@@ -23,8 +23,8 @@ var countEvent = function () {};
   // Anything else in the URL is not sent.
   var SOURCE_PARAMS = ['utm_source', 'ref', 'src', 'source', 'utm_campaign', 'campaign'];
 
-  // Only count the public site, not local copies or previews.
-  if (location.hostname !== 'kokoroou.github.io') return;
+  // Only count the public site (js/site.js), not local copies or previews.
+  if (!SITE.isPublic) return;
   // Respect Do Not Track / Global Privacy Control.
   if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
 

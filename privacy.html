@@ -7,8 +7,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Privacy — MakerLens</title>
 <meta name="description" content="How MakerLens handles your files and what anonymous usage data it counts.">
-<link rel="canonical" href="https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -- a canonical URL, not a fetched resource -->
+<link rel="canonical" href="https://makerlens.kokoroou.workers.dev/assets/privacy.html"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -- a canonical URL, not a fetched resource -->
 <link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/moved.css">
 <script>(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
 <style>
   body { margin: 0; background: var(--bg); color: var(--t); font: 16px/1.7 var(--font); -webkit-font-smoothing: antialiased; }
@@ -45,7 +46,7 @@
   <h2>Anonymous usage count</h2>
   <p>To know how many people use the tool and how they find it, each page load sends one request to <a href="https://www.goatcounter.com" rel="noopener">GoatCounter</a> containing:</p>
   <ul>
-    <li>the page path (e.g. <code>/rpgmaker-assets-viewer/</code>),</li>
+    <li>the page path (e.g. <code>/assets/</code>),</li>
     <li>the referring site (e.g. Google), and</li>
     <li>traffic-source link parameters such as <code>utm_source=chatgpt.com</code>.</li>
   </ul>
@@ -69,5 +70,6 @@
   <h2>Preferences</h2>
   <p>The theme follows your system setting unless you change it. Your theme choice, sidebar layout and whether you already answered the feedback card (how many games you opened, whether you answered or chose "Not now") are stored in your browser's <code>localStorage</code>. This is not an identifier and never leaves your device; clearing site data resets it.
 </main>
+<script src="js/site.js"></script>
 </body>
 </html>

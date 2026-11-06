@@ -1,0 +1,29 @@
+/* ── "We moved" banner (js/site.js, legacy GitHub Pages site only) ── */
+#moved {
+  position: relative;
+  z-index: 30;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 12px;
+  padding: 8px 16px;
+  background: var(--a-bg);
+  color: var(--a-on);
+  font: 500 14px/1.4 var(--font);
+  text-align: center;
+}
+#moved a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r-sm);
+  background: var(--a-on);
+  color: var(--a-bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+#moved a:hover { filter: brightness(.95); }
+#moved a:focus-visible { outline: 2px solid var(--a-on); outline-offset: 2px; }
