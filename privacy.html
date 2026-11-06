@@ -43,15 +43,15 @@
   <h2>"Upload files to this site?"</h2>
   <p>When you pick a folder, some browsers (e.g. Chrome) show a prompt asking whether to <em>upload</em> files. That is the browser's standard wording for giving a page access to a folder — the files are only read locally. In Chrome and Edge we use a newer folder picker whose prompt says <em>view files</em> instead. Dragging the folder onto the page shows no prompt at all.</p>
 
-  <h2>Anonymous usage count</h2>
-  <p>To know how many people use the tool and how they find it, each page load sends one request to <a href="https://www.goatcounter.com" rel="noopener">GoatCounter</a> containing:</p>
+  <h2 id="analytics">Anonymous usage count</h2>
+  <p>To know how many people use the tools and how they find them, each page load on the MakerLens site (home page, MakerLens Assets and MakerLens Events) sends one request to <a href="https://www.goatcounter.com" rel="noopener">GoatCounter</a> containing:</p>
   <ul>
-    <li>the page path (e.g. <code>/assets/</code>),</li>
+    <li>the page path (e.g. <code>/assets/</code> or <code>/events/</code>),</li>
     <li>the referring site (e.g. Google), and</li>
     <li>traffic-source link parameters such as <code>utm_source=chatgpt.com</code>.</li>
   </ul>
-  <p>Never sent: file or folder names, game titles, keys or file contents. No cookies or local identifiers are used, and GoatCounter does not store IP addresses. Nothing is sent if your browser has Do Not Track or Global Privacy Control enabled, or if you open a local copy of the tool. If the request is blocked (ad blocker, firewall), the tool works exactly the same.</p>
-  <p>The code is short and public: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/analytics.js" rel="noopener">js/analytics.js</a>.</p>
+  <p>Never sent: file or folder names, game titles, keys, file contents, or map, event and dialogue text. No cookies or local identifiers are used, and GoatCounter does not store IP addresses. Nothing is sent if your browser has Do Not Track or Global Privacy Control enabled, or if you open a local copy of the tool. If the request is blocked (ad blocker, firewall), the tool works exactly the same.</p>
+  <p>The code is short and public: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/analytics.js" rel="noopener">js/analytics.js</a> (Assets and home page) and <a href="https://github.com/Kokoroou/rpgmaker-events-viewer/blob/main/js/analytics.js" rel="noopener">js/analytics.js</a> (Events).</p>
 
   <h2 id="feedback">Feedback (optional)</h2>
   <p>After you open a second game, a small card may ask you to rate MakerLens from 1 to 5 stars. <strong>Tapping a star sends that rating</strong>; you can then add a short comment, sent only if you press Enter or the send button. You can also send a bug report or idea at any time from <strong>About → Report a bug or idea</strong>. Nothing is sent unless you tap a star or press Send; closing or ignoring the card sends nothing.</p>
