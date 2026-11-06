@@ -19,6 +19,50 @@ Effort: **S** (≤ 1 day), **M** (a few days), **L** (more than a week).
 
 ---
 
+## 0. Positioning, audience and how we measure (idea evaluation, 2026-11-05)
+
+**Verdict:** keep going, as a **free community tool**, not a business. Running cost is 0; there is no technical
+moat (MV/MZ decryption is a 16-byte XOR), so the advantage is experience and trust: no install, no upload, the
+whole game at once, preview and filter before downloading.
+
+> For people who want to look at the assets of an RPG Maker game without installing unknown software,
+> **MakerLens Assets** is an asset browser that runs in the browser and opens a whole game with one drag and
+> drop. Unlike RPGMakerDecrypter and other desktop or CLI tools, it needs no install, lets you preview and
+> filter before downloading, and files never leave the machine.
+
+| Audience | Need | Role in messaging |
+|----------|------|-------------------|
+| Modders and translators working with permission | Get the images and audio they are allowed to edit or localize | **Primary** (largest legitimate group) |
+| Developers and artists who lost their project | Recover their own work from a build | Secondary (legitimate but rare) |
+| Anyone checking a game's assets | See every image and track without installing an unknown `.exe` | The main job the tool does; message it as "view", not "rip" |
+| Players and fans (wikis, fan art) | Sprites and music | Large traffic but outside the intended use (`LEGAL.md`); do not target |
+| CLI / batch users | Mass conversion | Not our audience (rpgm-asset-decrypter-rs, RPGMakerDecrypter serve them) |
+
+What sets it apart (keep investing here): walking-sprite animation, music loop points, duplicate finder,
+size/length filters, ZIP that follows the filter, per-file error reports, speed on large games.
+
+**Money:** no paid tier and no ads. Charging for an asset tool weakens the legal argument in `LEGAL.md`;
+at most a donate link shared with the rest of MakerLens.
+
+**Family:** MakerLens Assets is one tool of the MakerLens family
+(<https://makerlens.kokoroou.workers.dev/>); MakerLens Events reads the same game's event flow. Cross-link both
+ways (item 17), share no data between them.
+
+### Measurement and stop rule
+
+Weeks 1–2: read GoatCounter (views/month, referrers) and the `makerlens` feedback inbox; post on
+forums.rpgmakerweb.com, r/RPGMaker and one game-translation group. Weeks 3–8: track views/month, star ratings
+(the prompt only appears from the 2nd opened game, so ratings mean returning users), average stars and requests.
+
+| After 8 weeks | Then |
+|---------------|------|
+| ≥ 2,000 views/month **or** ≥ 30 ratings averaging ≥ 4, **and** ≥ 3 requests for the same format | Start section 3 with that format |
+| < 500 views/month **and** < 10 ratings | Stop adding features: keep the site online, fix bugs only |
+
+Long-term watch: RPG Maker Unite runs on Unity, so new games will slowly stop using the formats supported here.
+
+---
+
 ## 1. Do first (high priority)
 
 Large impact, small effort, within the current scope.
@@ -55,7 +99,7 @@ Reasonable, but needs confirmation that real users want it, or widens the scope 
 | 14 | **Wolf RPG archives** | `rpga` can extract them; several encryption variants exist. Only if there is a clear request and trustworthy format documentation | L |
 | 15 | **Detect and clearly report games with custom encryption** (decryption plugins, altered headers) | Say "not supported because ..." instead of failing silently. Do not try to break plugins | S–M |
 | 16 | **PWA / offline** (service worker) | Fits the privacy promise, but needs a CSP update and a change to the deploy "Assemble site" step | M |
-| 17 | **Cross-link with LoreInsight** (event flow ↔ asset viewing) | Only a link / guide, no data shared between the two sites | S |
+| 17 ✅ | **Cross-link with MakerLens Events** (formerly LoreInsight; event flow ↔ asset viewing) | Only a link / guide, no data shared between the two sites. Done: link in the About dialog; Events links back from its setup screen and About | S |
 | 18 | **ZIP compression (deflate)** with `CompressionStream` instead of "store" only | Smaller downloads; CRC must be computed for the compressed data as it is today. Limited gain because PNG/OGG are already compressed | S–M |
 
 ## 4. Do not do

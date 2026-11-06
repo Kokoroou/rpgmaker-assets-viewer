@@ -9,6 +9,10 @@ MakerLens lets you open encrypted RPG Maker game files directly in your browser 
 - **RPG Maker MV / MZ**: open the game folder; the encryption key is auto-read from `data/System.json`. Supports `.rpgmvp`, `.png_` (images) and `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_` (audio).
 - **RPG Maker XP / VX / VX Ace**: open a `.rgssad`, `.rgss2a`, or `.rgss3a` archive directly. No key needed — it's embedded in the archive.
 
+## Who it's for
+
+Modders and translators working with the rights holder's permission, developers and artists recovering their own work, and anyone who wants to look at a game's images and music without installing software. Not a batch/CLI converter. Part of the MakerLens family (https://makerlens.kokoroou.workers.dev/); MakerLens Events (https://makerlens.kokoroou.workers.dev/events/) shows the same game's event flow.
+
 ## Key features
 
 - Zero install — open `index.html` in any modern browser
