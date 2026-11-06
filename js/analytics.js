@@ -17,7 +17,7 @@
 // feedback endpoint, called only when the user presses Send).
 var countEvent = function () {};
 (function () {
-  var GC_ENDPOINT = 'https://kokoroou.goatcounter.com/count';
+  var GC_ENDPOINT = 'https://makerlens.goatcounter.com/count';
   var EVENTS = ['feedback-shown', 'feedback-skipped', 'feedback-sent'];
   // Query params GoatCounter reads as traffic source / campaign.
   // Anything else in the URL is not sent.
