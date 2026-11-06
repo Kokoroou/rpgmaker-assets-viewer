@@ -2,7 +2,7 @@
 
 A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX and VX Ace**. Runs entirely client-side: no server, no uploads; your game files and keys never leave your machine.
 
-**[Try it live →](https://kokoroou.github.io/rpgmaker-assets-viewer/)**
+**[Try it live →](https://makerlens.kokoroou.workers.dev/assets/)**
 
 <video src="https://github.com/user-attachments/assets/aa643c3b-81a1-4a13-936a-ebf4ea69e886" controls width="100%"></video>
 
@@ -33,15 +33,15 @@ Algorithms and their sources are documented in the code comments (`js/decrypt-*.
 
 ## Getting started
 
-1. Open **[MakerLens](https://kokoroou.github.io/rpgmaker-assets-viewer/)**.
+1. Open **[MakerLens](https://makerlens.kokoroou.workers.dev/assets/)**.
 2. Click **Select Game Folder** (or drop the folder anywhere on the page) and choose the game's root directory. For XP / VX / VX Ace you can also click **Select archive**.
 3. Browse, search, click an asset to preview it, or use **Download folder**.
 
-Desktop Chrome, Edge, Firefox and Brave work best; mobile browsers may not support folder selection. More help (where the key is, offline use, supported versions): [FAQ](https://kokoroou.github.io/rpgmaker-assets-viewer/faq.html).
+Desktop Chrome, Edge, Firefox and Brave work best; mobile browsers may not support folder selection. More help (where the key is, offline use, supported versions): [FAQ](https://makerlens.kokoroou.workers.dev/assets/faq.html).
 
 ## Privacy and legal
 
-- **Privacy:** your files are processed only in your browser. The public site counts anonymous page visits (GoatCounter) and sends feedback only when you choose to. What is sent, and what never is, is defined in [`privacy.html`](https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html), the single source of truth. A Content-Security-Policy makes the browser block every other host.
+- **Privacy:** your files are processed only in your browser. The public site counts anonymous page visits (GoatCounter) and sends feedback only when you choose to. What is sent, and what never is, is defined in [`privacy.html`](https://makerlens.kokoroou.workers.dev/assets/privacy.html), the single source of truth. A Content-Security-Policy makes the browser block every other host.
 - **Legal:** intended for your own assets or work done with the rights holder's permission. See [`LEGAL.md`](LEGAL.md) for intended use, user responsibility and takedown policy.
 
 ## Documentation

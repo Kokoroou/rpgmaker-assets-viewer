@@ -22,11 +22,11 @@ MakerLens lets you open encrypted RPG Maker game files directly in your browser 
 
 ## FAQ
 
-How to open .rpgmvp / .png_ / .rgss3a files, where the key comes from, ZIP export, supported versions and legal notes: https://kokoroou.github.io/rpgmaker-assets-viewer/faq.html
+How to open .rpgmvp / .png_ / .rgss3a files, where the key comes from, ZIP export, supported versions and legal notes: https://makerlens.kokoroou.workers.dev/assets/faq.html
 
 ## Privacy
 
-All processing happens inside your browser. No files or keys are ever uploaded or sent to any server. The public site counts anonymous page visits (page path and referrer only, no cookies) with GoatCounter. Details: https://kokoroou.github.io/rpgmaker-assets-viewer/privacy.html
+All processing happens inside your browser. No files or keys are ever uploaded or sent to any server. The public site counts anonymous page visits (page path and referrer only, no cookies) with GoatCounter. Details: https://makerlens.kokoroou.workers.dev/assets/privacy.html
 
 ## Supported formats
 
