@@ -4,6 +4,8 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX and 
 
 **[Try it live →](https://makerlens.kokoroou.workers.dev/assets/)**
 
+**Who it's for:** modders and translators working with permission, developers and artists recovering their own work, and anyone who wants to look at a game's images and music without installing unknown software. Free, no account, no ads. Part of the [MakerLens](https://makerlens.kokoroou.workers.dev/) family — [MakerLens Events](https://makerlens.kokoroou.workers.dev/events/) shows the same game's event flow.
+
 <video src="https://github.com/user-attachments/assets/aa643c3b-81a1-4a13-936a-ebf4ea69e886" controls width="100%"></video>
 
 ## Features
