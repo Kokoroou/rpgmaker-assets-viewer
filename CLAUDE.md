@@ -30,6 +30,7 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared g
 - **Public home:** `https://makerlens.kokoroou.workers.dev/assets/` (one Cloudflare Worker for the whole MakerLens family, built and deployed by the `Kokoroou/makerlens` repo, which runs `scripts/assemble-site.sh` from this repo into `/assets/`). Canonical, `og:*`, JSON-LD, `sitemap.xml` and `llms.txt` use that URL.
 - `scripts/assemble-site.sh <dir>` — copies the public files (pages, `css/`, `js/`, images, `sitemap.xml`, `llms.txt`, `screenshots/`, LICENSE/LEGAL/README). A new top-level file the site serves must be added there.
 - `.github/workflows/deploy.yml` — on a push to `main`, reruns the two checks above, then publishes the **legacy** copy to GitHub Pages (`kokoroou.github.io/rpgmaker-assets-viewer/`), which keeps old links working and shows the "moved" banner from `js/site.js`. Requires Settings → Pages → Source = "GitHub Actions".
+- `.github/workflows/notify-makerlens.yml` — after a push to `main`, sends `repository_dispatch` (`tool-updated`) to `Kokoroou/makerlens` so the new home redeploys; needs the secret `MAKERLENS_DISPATCH_TOKEN` (skips with a notice without it).
 - `.github/dependabot.yml` — weekly updates of the pinned actions.
 
 ## Architecture

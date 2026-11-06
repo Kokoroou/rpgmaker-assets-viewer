@@ -157,7 +157,7 @@ source"). The "Used for" column points back to the item numbers above.
 | Project | Idea |
 |---------|------|
 | [magcius/noclip.website](https://github.com/magcius/noclip.website) | A game viewer running entirely in the browser |
-| [Kokoroou/lore-insight](https://github.com/Kokoroou/lore-insight) | Item 17: a tool by the same author with the same offline principles |
+| [Kokoroou/rpgmaker-events-viewer](https://github.com/Kokoroou/rpgmaker-events-viewer) (formerly lore-insight) | Item 17: a tool by the same author with the same offline principles |
 | [steffest/DPaint-js](https://github.com/steffest/DPaint-js) | Example of an old format read in pure JavaScript |
 | [InvoxiPlayGames/stfs-webjs](https://github.com/InvoxiPlayGames/stfs-webjs) | Example of reading a binary container in the browser |
 
