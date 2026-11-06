@@ -72,7 +72,14 @@
   <p>The card is not shown if your browser has Do Not Track or Global Privacy Control enabled, or on local copies of the tool, and after you answer it never appears again. Whether it was shown, skipped or answered is also counted as an anonymous GoatCounter event (only that word, no content). Events does not count these events. Code that sends it: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/feedback.js" rel="noopener">js/feedback.js</a> (Assets) and <a href="https://github.com/Kokoroou/rpgmaker-events-viewer/blob/main/js/feedback.js" rel="noopener">js/feedback.js</a> (Events). Only the developer can read the messages; the inbox is behind a login, and Worker request logs are turned off.</p>
 
   <h2>Preferences</h2>
-  <p>The theme follows your system setting unless you change it. Your theme choice, sidebar layout and whether you already answered the feedback card in each tool (how many games you opened, whether you answered or chose "Not now") are stored in your browser's <code>localStorage</code>. This is not an identifier and never leaves your device; clearing site data resets it.
+  <p>The theme follows your system setting unless you change it. Your theme choice, sidebar layout and whether you already answered the feedback card in each tool (how many games you opened, whether you answered or chose "Not now") are stored in your browser's <code>localStorage</code>. This is not an identifier and never leaves your device; clearing site data resets it.</p>
+
+  <h2 id="hosting">Hosting</h2>
+  <p>The site is served by Cloudflare Workers at <code>makerlens.kokoroou.workers.dev</code>. The old address, <code>kokoroou.github.io/rpgmaker-assets-viewer/</code>, is served by GitHub Pages and keeps an older copy of MakerLens Assets with a link to the new address. Like any web host, Cloudflare and GitHub see your IP address and browser in order to deliver the pages, under their own privacy policies (<a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare</a>, <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub</a>). That data is not passed on to us: request logs for the MakerLens Worker are turned off, and its only code picks which static page to return.</p>
+
+  <h2 id="contact">Who runs MakerLens</h2>
+  <p>MakerLens is a personal open-source project by Trương Tuấn Anh (<a href="https://github.com/Kokoroou" rel="noopener">Kokoroou on GitHub</a>), who is responsible for the counter and the feedback inbox described above. For a privacy question or request, such as removing a comment you sent, <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/issues" rel="noopener">open a GitHub issue</a>. Changes to this page are listed in its <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/commits/main/privacy.html" rel="noopener">history on GitHub</a>.</p>
+  <p>Last updated: 6 November 2026.</p>
 </main>
 <script src="js/site.js"></script>
 </body>
