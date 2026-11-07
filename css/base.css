@@ -37,7 +37,7 @@ body::before {
 ::-webkit-scrollbar-thumb:hover { background-color: var(--t3); }
 
 /* ── Hidden file inputs ──────────────────────────────── */
-#folder-input, #sys-json-modal-input, #rgssad-input { display: none; }
+#folder-input, #sys-json-modal-input, #rgssad-input, #files-input { display: none; }
 
 /* ── Focus ───────────────────────────────────────────── */
 :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; border-radius: var(--r-sm); }

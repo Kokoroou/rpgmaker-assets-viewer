@@ -6,6 +6,7 @@ const EL = {
   themeToggle:      $('theme-toggle'),
   folderInput:      $('folder-input'),
   rgssadInput:      $('rgssad-input'),
+  filesInput:       $('files-input'),
   sidebar:          $('sidebar'),
   setup:            $('setup'),
   setupStatus:      $('setup-status'),
@@ -969,6 +970,14 @@ const LOADER_STEPS = {
   read:   'Read archive',
   table:  'Decrypt file table',
   index:  'Index media',
+  connect:'Connect to the game',
+};
+
+const LOADER_KINDS = {
+  folder:  ['Opening game folder', '#i-folder'],
+  archive: ['Opening archive', '#i-archive'],
+  files:   ['Opening files', '#i-file'],
+  remote:  ['Opening game link', '#i-link'],
 };
 
 const Loader = (() => {
@@ -1053,8 +1062,9 @@ const Loader = (() => {
     active = true; cancelled = false; view = isView; owner = null;
     prevFocus = document.activeElement;
     root.classList.remove('failed');
-    titleEl.textContent = kind === 'archive' ? 'Opening archive' : 'Opening game folder';
-    iconUse.setAttribute('href', kind === 'archive' ? '#i-archive' : '#i-folder');
+    const look = LOADER_KINDS[kind] || LOADER_KINDS.folder;
+    titleEl.textContent = look[0];
+    iconUse.setAttribute('href', look[1]);
     nameEl.textContent = name || '';
     errEl.textContent = '';
     fill.style.width = '0';

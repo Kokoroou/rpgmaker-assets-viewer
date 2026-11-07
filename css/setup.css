@@ -130,3 +130,47 @@
 .privacy-note a:hover, .about-note a:hover, .about-more a:hover, .about-sub a:hover { text-decoration-color: currentColor; }
 .privacy-note strong { color: var(--t); font-weight: 600; }
 .privacy-note .sep { color: var(--bd2); }
+
+/* ── View another way (dialog) ───────────────────────── */
+.alt-dialog {
+  margin: auto;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 20px;
+  border: 1px solid var(--bd);
+  border-radius: var(--r-lg);
+  background: var(--s1);
+  color: var(--t);
+  box-shadow: var(--shadow-lg, 0 20px 50px rgba(0,0,0,.35));
+  overflow-y: auto;
+}
+.alt-dialog::backdrop { background: rgba(2, 6, 23, .55); }
+.alt-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.alt-head h2 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+.alt-list { display: flex; flex-direction: column; gap: 8px; }
+.alt-opt {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; padding: 12px 14px;
+  background: var(--s2, var(--s1)); color: var(--t);
+  border: 1px solid var(--bd); border-radius: var(--r);
+  text-align: left; cursor: pointer; font: inherit;
+  transition: border-color .15s var(--ease), background .15s var(--ease);
+}
+.alt-opt:hover, .alt-opt:focus-visible { border-color: var(--a40); background: var(--a10); outline: none; }
+.alt-opt svg { flex: none; color: var(--a); }
+.alt-opt strong { display: block; font-size: 14px; font-weight: 600; }
+.alt-opt small { display: block; margin-top: 2px; font-size: 12px; color: var(--t2); line-height: 1.4; }
+.alt-opt code, .alt-dialog label code { font-family: var(--mono); font-size: 11.5px; }
+#alt-link-panel label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+#alt-link-input {
+  width: 100%; height: 40px; padding: 0 12px;
+  background: var(--bg); color: var(--t);
+  border: 1px solid var(--bd2); border-radius: var(--r);
+  font: 13px var(--mono);
+}
+#alt-link-input:focus-visible { outline: 2px solid var(--a); outline-offset: 1px; }
+.alt-hint { margin-top: 10px; font-size: 12.5px; line-height: 1.5; color: var(--t2); }
+.alt-error { min-height: 18px; margin-top: 8px; font-size: 12.5px; color: var(--err, #ef4444); }
+.alt-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.alt-hint a { color: var(--a); }
+.alt-list[hidden], #alt-link-panel[hidden] { display: none; }
