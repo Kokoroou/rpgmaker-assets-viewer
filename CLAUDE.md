@@ -56,7 +56,7 @@ js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, t
 
 All files share a single global scope — no modules.
 
-The header logo is a link to `./`; a plain click runs `goHome()` (app.js): closes the open game and shows the start page again.
+The header logo is a plain link to the MakerLens home page (`https://makerlens.kokoroou.workers.dev/`); the open game is not kept (everything is in memory).
 
 **State object `S`** (global, in-memory):
 - `S.key` — fallback hex encryption key (single game at the root, or derived from a PNG header); in memory only (never persisted)
