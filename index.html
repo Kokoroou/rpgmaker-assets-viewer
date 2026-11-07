@@ -11,7 +11,7 @@
      called when the user taps a star or presses Send (js/feedback.js). Game files and keys cannot leave the browser.
      If you edit the inline theme script below, update its sha256 hash here. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://makerlens.goatcounter.com; media-src 'self' blob:; connect-src 'self' https://feedback.kokoroou.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
-<title>RPG Maker Extractor &amp; Asset Viewer — MV, MZ, XP, VX Ace | MakerLens</title>
+<title>RPG Maker Asset Extractor — MV, MZ, XP, VX Ace | MakerLens</title>
 <meta name="description" content="Free online RPG Maker extractor, no download needed. Extract images and audio from MV, MZ, XP, VX and VX Ace games in your browser. Files are never uploaded.">
 <meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker MV MZ XP VX asset viewer">
 <link rel="canonical" href="https://makerlens.kokoroou.workers.dev/assets/"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -- a canonical URL, not a fetched resource -->
@@ -19,14 +19,14 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MakerLens">
 <meta property="og:url" content="https://makerlens.kokoroou.workers.dev/assets/">
-<meta property="og:title" content="RPG Maker Extractor &amp; Asset Viewer — MakerLens">
+<meta property="og:title" content="RPG Maker Asset Extractor — MV, MZ, XP, VX Ace | MakerLens">
 <meta property="og:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Runs in your browser — your files are never uploaded.">
 <meta property="og:image" content="https://makerlens.kokoroou.workers.dev/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="MakerLens — view and extract RPG Maker assets in your browser">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="RPG Maker Extractor &amp; Asset Viewer — MakerLens">
+<meta name="twitter:title" content="RPG Maker Asset Extractor — MV, MZ, XP, VX Ace | MakerLens">
 <meta name="twitter:description" content="View and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX and VX Ace games. Free, browser-based, files never uploaded.">
 <meta name="twitter:image" content="https://makerlens.kokoroou.workers.dev/assets/og-image.png">
 <meta name="twitter:image:alt" content="MakerLens — view and extract RPG Maker assets in your browser">
@@ -63,10 +63,12 @@
   "license": "https://opensource.org/licenses/MIT"
 }
 </script>
+<link rel="stylesheet" href="css/moved.css">
 <link rel="stylesheet" href="css/style.css">
 <script>(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
 </head>
 <body>
+<script src="js/site.js"></script>
 
 <!-- Icon sprite (Lucide-style strokes, inline so the CSP needs no extra host) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -472,7 +474,6 @@
 <script src="js/dupes.js"></script>
 <script src="js/filters.js"></script>
 <script src="js/app.js"></script>
-<script src="js/site.js"></script>
 <script src="js/feedback.js"></script>
 <script src="js/analytics.js"></script>
 </body>
