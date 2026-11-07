@@ -330,7 +330,7 @@ function openFolderLazy(name, sources) {
 // audio then reuses it. Files that fail later show the usual per-file error.
 function openLooseFiles(files) {
   return runLoad(async () => {
-    Loader.open({ kind: 'folder', name: `${files.length} file${files.length === 1 ? '' : 's'}`, steps: ['index'] });
+    Loader.open({ kind: 'files', name: `${files.length} file${files.length === 1 ? '' : 's'}`, steps: ['index'] });
     Loader.step('index', 'active', `0 / ${fmtNum(files.length)}`);
     const map = new Map(), list = [];
     let key = '';
@@ -356,6 +356,64 @@ function openArchive(file) {
     await loadRGSSAD(file);
   });
 }
+
+// ─── Game link (js/remote.js) ─────────────────────────
+// A game published with rpgmaker-web-toolkit, opened through the read-only link
+// `rwk lens` makes. The files are listed from the game's manifest and each one is
+// fetched when first shown, like a lazy folder; nothing leaves this browser but
+// the requests to the game's own site.
+const REMOTE_STEPS = ['connect', 'detect', 'index'];
+
+function openRemote(link) {
+  return runLoad(async () => {
+    const api = Remote.client(link);
+    Loader.open({ kind: 'remote', name: api.host, steps: REMOTE_STEPS });
+    Loader.step('connect', 'active');
+    await api.ping();
+    Loader.check();
+    Loader.step('connect', 'done', api.host);
+
+    Loader.step('detect', 'active');
+    const manifest = await api.manifest();
+    Loader.check();
+    let key = '';
+    if (manifest.files['data/System.json'] !== undefined) {
+      key = (await api.json('data/System.json')).encryptionKey || '';
+      Loader.check();
+    }
+    const engine = manifest.engine ? `RPG Maker ${manifest.engine}` : 'RPG Maker MV/MZ';
+    Loader.step('detect', 'done', `${engine} · ${key ? 'encrypted' : 'not encrypted'}`);
+
+    Loader.step('index', 'active');
+    const files = new Map(), folders = new Map();
+    const tick = makeYielder();
+    for (const rel of Object.keys(manifest.files)) {
+      const name = rel.split('/').pop();
+      if (!MEDIA_EXT.test(name)) continue;
+      const folder = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '__root__';
+      const isAudio = AUDIO_EXT.test(name);
+      files.set(rel, { name, path: rel, isAudio, isImage: !isAudio, _resolve: () => api.file(rel) });
+      if (!folders.has(folder)) folders.set(folder, []);
+      folders.get(folder).push(rel);
+      await tick();
+    }
+    if (!files.size) throw new Error('This game lists no images or audio.');
+    Loader.progress(1, 1);
+    Loader.step('index', 'done', mediaSummary(files));
+    await nextFrame();
+    Loader.check();
+    commitLibrary(files, folders, key);
+  });
+}
+
+// Link in the address (the one `rwk lens` prints): open it and take the token
+// out of the address bar and the history.
+(function openFromAddress() {
+  const link = Remote.fromLocation(location.hash);
+  if (!link) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  openRemote(link);
+})();
 
 // ─── Grid activation ──────────────────────────────────
 function showGrid() {
@@ -436,12 +494,61 @@ EL.folderInput.addEventListener('change', async () => {
 });
 
 // ─── Events: RGSSAD archive ───────────────────────────
-$('load-rgssad-btn').addEventListener('click', () => { if (!_loading) EL.rgssadInput.click(); });
 EL.rgssadInput.addEventListener('change', async () => {
   const f = EL.rgssadInput.files[0];
   if (!f) return;
   EL.rgssadInput.value = '';
   await openArchive(f);
+});
+
+// ─── Events: View another way ─────────────────────────
+// One button on the start screen; the dialog asks which way: archive, single files, game link.
+const _alt = $('alt-dialog');
+const _altLinkInput = $('alt-link-input');
+const _altLinkError = $('alt-link-error');
+
+function altShow(panel) {
+  $('alt-menu').hidden = panel !== 'menu';
+  $('alt-link-panel').hidden = panel !== 'link';
+  $('alt-title').textContent = panel === 'link' ? 'Open a game link' : 'View another way';
+  _altLinkError.textContent = '';
+  if (panel === 'link') _altLinkInput.focus();
+}
+function altOpen() {
+  if (_loading || Loader.active) return;
+  altShow('menu');
+  if (!_alt.open) _alt.showModal();
+}
+$('alt-btn').addEventListener('click', altOpen);
+$('alt-close').addEventListener('click', () => _alt.close());
+// A click on the backdrop (the dialog element itself) closes it.
+_alt.addEventListener('click', e => { if (e.target === _alt) _alt.close(); });
+$('alt-archive').addEventListener('click', () => { _alt.close(); EL.rgssadInput.click(); });
+$('alt-files').addEventListener('click', () => { _alt.close(); EL.filesInput.click(); });
+$('alt-link').addEventListener('click', () => altShow('link'));
+$('alt-back').addEventListener('click', () => altShow('menu'));
+
+function altSubmitLink() {
+  let link;
+  try { link = Remote.parseLink(_altLinkInput.value); }
+  catch (e) { _altLinkError.textContent = e.message; return; }
+  _alt.close();
+  _altLinkInput.value = '';
+  openRemote(link);
+}
+$('alt-open').addEventListener('click', altSubmitLink);
+_altLinkInput.addEventListener('keydown', e => { if (e.key === 'Enter') altSubmitLink(); });
+
+EL.filesInput.addEventListener('change', async () => {
+  const picked = Array.from(EL.filesInput.files);
+  EL.filesInput.value = '';
+  if (!picked.length) return;
+  const media = picked.filter(f => MEDIA_EXT.test(f.name));
+  if (!media.length) {
+    setStatus(EL.setupStatus, 'err', '✕ None of these files is an image or audio file the viewer knows (.png_, .ogg_, .rpgmvp, .png, .ogg…).');
+    return;
+  }
+  await openLooseFiles(media);
 });
 
 // ─── Events: Lightbox ─────────────────────────────────

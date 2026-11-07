@@ -20,7 +20,9 @@ const PAGES = ['index.html', 'privacy.html', 'faq.html'];
 const ALLOWED_HOSTS = new Set(['makerlens.goatcounter.com']);
 // The feedback inbox (private repo Kokoroou/feedbacks), only on the page that has the form.
 const FEEDBACK_HOST = 'feedback.kokoroou.workers.dev';
-const pageHosts = page => page === 'index.html' ? new Set([...ALLOWED_HOSTS, FEEDBACK_HOST]) : ALLOWED_HOSTS;
+// Game links (js/remote.js): games published with rpgmaker-web-toolkit live on workers.dev.
+const GAME_HOSTS = '*.workers.dev';
+const pageHosts = page => page === 'index.html' ? new Set([...ALLOWED_HOSTS, FEEDBACK_HOST, GAME_HOSTS]) : ALLOWED_HOSTS;
 
 const errors = [];
 const fail = (file, msg) => errors.push(`${file}: ${msg}`);
@@ -59,7 +61,7 @@ for (const page of PAGES) {
 
   // 3. External hosts in the CSP
   for (const m of policy.matchAll(/https?:\/\/([^\s;'"]+)/g)) {
-    if (!pageHosts(page).has(m[1])) fail(page, `CSP allows external host '${m[1]}' (only GoatCounter, and the feedback Worker in index.html, are allowed)`);
+    if (!pageHosts(page).has(m[1])) fail(page, `CSP allows external host '${m[1]}' (only GoatCounter, and in index.html the feedback Worker and *.workers.dev game links, are allowed)`);
   }
 
   // 4. Local references

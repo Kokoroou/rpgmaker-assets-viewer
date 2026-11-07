@@ -41,7 +41,16 @@
   <ul>
     <li>Game files are read and decrypted entirely inside your browser. No file, key or file name is ever sent to any server.</li>
     <li>Try it: once the page has loaded, disconnect from the internet — opening, previewing and downloading still work.</li>
-    <li>A Content-Security-Policy tells your browser to block requests to any host except the page itself, the anonymous counter and the feedback form below, so this is enforced by the browser, not just promised.</li>
+    <li>A Content-Security-Policy tells your browser to block requests to any host except the page itself, the anonymous counter, the feedback form below and, only if you open a game link (see below), a <code>workers.dev</code> game site, so this is enforced by the browser, not just promised.</li>
+  </ul>
+
+  <h2 id="game-link">Game links</h2>
+  <p>"View another way → Game link" opens a game that its owner published with <a href="https://github.com/Kokoroou/rpgmaker-web-toolkit">rpgmaker-web-toolkit</a>, using the read-only link the owner made with <code>rwk lens</code> (the game does not have to be public).</p>
+  <ul>
+    <li>The link carries a key after the <code>#</code>, a part of the address that browsers never send to any server, so MakerLens never receives it. Your browser sends the key only to the game's own site, in a header, with no cookies, and the page forgets it when you close the tab.</li>
+    <li>The files travel from the game's site straight into your browser. Nothing goes through MakerLens, and nothing is written to the game: the tool stays read-only.</li>
+    <li>The usage count and feedback never include the link, the game's address or any file name.</li>
+    <li>The key only opens the game's data, pictures and audio, expires (24 hours unless the owner chose otherwise) and the owner can stop it at any time. It does not open the game's saves.</li>
   </ul>
 
   <h2>"Upload files to this site?"</h2>
