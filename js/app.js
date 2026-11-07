@@ -384,49 +384,6 @@ function showGrid() {
   }
 }
 
-// ─── Home ─────────────────────────────────────────────
-// Logo click: close the open game and show the start page again. A plain
-// click is handled here (nothing reloads, the choice of folder is not asked
-// again); modified clicks keep the link's default (new tab).
-function goHome() {
-  if (_loading) return;
-  if (EL.lightbox.classList.contains('open')) closeLightbox();
-  closeMobileSearch();
-  dropScan();
-  clearBlobCache();
-  S.key = '';
-  S.keys = new Map();
-  S.files = new Map();
-  S.folders = new Map();
-  S.folderStats = null;
-  S.currentFolder = null;
-  S.currentMedia = [];
-  S.sidebarPath = null;
-  S.hiddenCopies = 0;
-  S.userNav = false;
-  S.query = '';
-  Dupes.reset();
-  Filter.reset();
-  EL.searchBox.value = '';
-  EL.grid.innerHTML = '';
-  EL.folderPath.innerHTML = '';
-  EL.countBadge.textContent = '';
-  EL.emptySearch.style.display = 'none';
-  document.body.classList.remove('has-files');
-  EL.toolbar.classList.remove('show');
-  EL.gridWrap.style.display = 'none';
-  EL.sidebar.classList.add('hidden');
-  $('sidebar-resizer').classList.add('hidden');
-  EL.setup.style.display = '';
-  setStatus(EL.setupStatus, '', '');
-}
-
-$('logo').addEventListener('click', e => {
-  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
-  e.preventDefault();
-  goHome();
-});
-
 // ─── Events: Theme toggle ─────────────────────────────
 // Default follows the OS (prefers-color-scheme). Clicking flips to the other
 // theme; picking the one the OS already uses clears the override again, so the
