@@ -59,6 +59,7 @@ const SLOW_DISK_MS          = 15;   // average disk time per getFile()
 const MEDIA_DIR = /^(img|audio|movies|graphics)$/i;           // children listed early too
 const FIRST_DIR = /^(www|img|audio|movies|graphics)$/i;
 const LAST_DIR  = /^(\..*|js|data|save|fonts|locales|css|node_modules|swiftshader|lib|plugins)$/i;
+const PICTURES_DIR = /(^|\/)img\/pictures$/i;
 const ARCHIVE_RE = /\.(rgssad|rgss2a|rgss3a)$/i;
 
 class FolderScan {
@@ -78,11 +79,11 @@ class FolderScan {
     this.listed  = false;       // every directory has been listed
     this.done    = false;       // listed and every file resolved
     this.aborted = false;
-    this.key = '';
-    this.keyChecked = false;
+    this.key = '';              // key of a game at the root (fallback)
+    this.keys = new Map();      // game folder path → key, one per System.json found
     this.detectLabel = '';
     this.onChange = null;       // throttled UI hook
-    this.onKey    = null;       // key found late (game nested deeper than expected)
+    this.onKey    = null;       // a game's key found late (game nested deeper than the root)
     this._timer = 0;
   }
 
@@ -134,15 +135,17 @@ class FolderScan {
       const name = fs.name(it);
       if (fs.isDir(it)) {
         const rank = FIRST_DIR.test(name) ? 0 : LAST_DIR.test(name) ? 2 : inMedia ? 0 : 1;
-        this.queues[rank].push({ dir: it, path: `${dirPath}/${name}`, media: inMedia || MEDIA_DIR.test(name) });
+        const job = { dir: it, path: `${dirPath}/${name}`, media: inMedia || MEDIA_DIR.test(name) };
+        // img/pictures is what people open first: list it ahead of everything else.
+        if (PICTURES_DIR.test(job.path)) this.queues[0].unshift(job); else this.queues[rank].push(job);
       } else if (MEDIA_EXT.test(name)) {
         const path = `${dirPath}/${name}`;
         const isAudio = AUDIO_EXT.test(name);
         const entry = { name, path, isAudio, isImage: !isAudio, _resolve: () => this._resolve(it, folder) };
         this.files.set(path, entry);
         added.push(entry);
-      } else if (name === 'System.json' && !this.keyChecked && /^data$/i.test(rel[rel.length - 1] || '')) {
-        this._readKey(it);
+      } else if (name === 'System.json' && /^data$/i.test(rel[rel.length - 1] || '')) {
+        this._readKey(it, dirPath.slice(0, dirPath.lastIndexOf('/')));
       }
     }
     if (added.length) {
@@ -156,14 +159,16 @@ class FolderScan {
     this._changed();
   }
 
-  async _readKey(item) {
-    this.keyChecked = true;
+  // `game` is the folder holding data/: files under it use this key. A folder
+  // with several games finds one System.json per game.
+  async _readKey(item, game) {
     try {
       const json = JSON.parse(await (await this.fs.file(item)).text());
-      if (json.encryptionKey && !this.key && !this.aborted) {
-        this.key = json.encryptionKey;
-        this.onKey?.(this.key);
-      }
+      if (this.aborted) return;
+      const key = json.encryptionKey || '';
+      if (this.keys.get(game) === key) return;   // already known from detection
+      this.keys.set(game, key);
+      if (key) this.onKey?.(key);
     } catch {}
   }
 
@@ -259,7 +264,7 @@ async function detectLazy(fs, root, rootItems) {
       if (json.encryptionKey) key = json.encryptionKey;
     } catch {}
   }
-  return { engine, key, hasSystem: !!sys };
+  return { engine, key, hasSystem: !!sys, inWww: base === www && !!www };
 }
 
 // ─── Background loading UI ────────────────────────────
@@ -319,14 +324,19 @@ function onScanChange(scan) {
   updateBgChip(scan);
   EL.countBadge.textContent = S.files.size ? `${S.files.size} items` : '';
   refreshSidebar();
-  if (!S.currentFolder && scan.hasFolder) showFolder(S.folders.keys().next().value);
+  // Show the first media folder, and move to img/pictures when it turns up
+  // (unless the user already chose a folder).
+  if (!S.userNav && !EL.lightbox.classList.contains('open')) {
+    const want = pickStartFolder(S.folders);
+    if (want && want !== S.currentFolder) showFolder(want);
+  }
 }
 
 // Makes `scan` the background job of the library just committed.
 function adoptScan(scan) {
   if (Bg.scan && Bg.scan !== scan) Bg.scan.abort();
   Bg.scan = scan;
-  scan.onKey = key => { if (S.files === scan.files) applyKey(key); };
+  scan.onKey = () => { if (S.files === scan.files) applyKey(); };
   updateBgChip(scan);
 }
 

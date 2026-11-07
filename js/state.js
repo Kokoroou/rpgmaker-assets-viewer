@@ -1,5 +1,7 @@
 const S = {
-  key:           '',
+  key:           '',        // fallback key (single game / loose files)
+  keys:          new Map(),  // game folder path → key (several games in one folder)
+  userNav:       false,      // the user picked a folder, so auto-selection stops
   files:         new Map(),  // path → entry {name, path, isAudio, isImage, _file? | _resolve? | _getData?}
   folders:       new Map(),  // folderKey → [path]
   folderStats:   null,       // folderKey → {total, ready} while a lazy scan loads files (js/scan.js)
