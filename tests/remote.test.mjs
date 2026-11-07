@@ -12,7 +12,7 @@ const LINK = `https://makerlens.kokoroou.workers.dev/assets/#game=${encodeURICom
 
 const code = fn => { try { fn(); } catch (e) { return e.code; } return null; };
 
-test('parseLink: a link from rwk lens, whole or just its # part', () => {
+test('parseLink: a link made in the game, whole or just its # part', () => {
   const want = { origin: 'https://my-game.alice.workers.dev', token: TOKEN };
   assert.deepEqual({ ...Remote.parseLink(LINK) }, want);
   assert.deepEqual({ ...Remote.parseLink(LINK.slice(LINK.indexOf('#'))) }, want);

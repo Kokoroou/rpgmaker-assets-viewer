@@ -359,7 +359,7 @@ function openArchive(file) {
 
 // ─── Game link (js/remote.js) ─────────────────────────
 // A game published with rpgmaker-web-toolkit, opened through the read-only link
-// `rwk lens` makes. The files are listed from the game's manifest and each one is
+// the game’s Share menu makes. The files are listed from the game's manifest and each one is
 // fetched when first shown, like a lazy folder; nothing leaves this browser but
 // the requests to the game's own site.
 const REMOTE_STEPS = ['connect', 'detect', 'index'];
@@ -406,7 +406,7 @@ function openRemote(link) {
   });
 }
 
-// Link in the address (the one `rwk lens` prints): open it and take the token
+// Link in the address (the one the game’s Share menu shows): open it and take the token
 // out of the address bar and the history.
 (function openFromAddress() {
   const link = Remote.fromLocation(location.hash);

@@ -1,4 +1,4 @@
-// Open a game published with rpgmaker-web-toolkit through a share link (`rwk lens`).
+// Open a game published with rpgmaker-web-toolkit through a share link (⚙ → Share → MakerLens link in the game).
 // No DOM here (tested in node). The same file lives in MakerLens Events.
 //
 // The link looks like  https://makerlens…/assets/#game=<https://site.workers.dev>&t=<token>
@@ -44,7 +44,7 @@ const Remote = (() => {
     return { origin: url.origin, token };
   }
 
-  // Link in the page address (opened from `rwk lens`) -> { origin, token } | null.
+  // Link in the page address (opened from the game’s Share menu) -> { origin, token } | null.
   // Does not throw: a page opened without a link is the normal case.
   function fromLocation(hash) {
     if (!/(^|[#&])game=/.test(hash || '')) return null;
@@ -67,7 +67,7 @@ const Remote = (() => {
         throw new RemoteError('network', 'Could not reach the game. Check the link and your connection.');
       }
       if (res.type === 'opaqueredirect' || (res.status >= 300 && res.status < 400)) {
-        throw new RemoteError('access', 'The game’s sign-in page answered instead of the game. Ask its owner for a new link (rwk lens), made after updating the toolkit.');
+        throw new RemoteError('access', 'The game’s sign-in page answered instead of the game. Ask its owner for a new link (made in the game: ⚙ → Share → MakerLens link; the owner may need to run rwk deploy once more).');
       }
       if (res.status === 401) throw new RemoteError('expired', 'This link has expired or was stopped. Ask the owner of the game for a new one.');
       if (res.status === 404) throw new RemoteError('missing', 'This game does not support MakerLens links yet. Its owner has to update the toolkit and publish it again.');
