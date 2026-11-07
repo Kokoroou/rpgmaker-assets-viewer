@@ -120,7 +120,7 @@ async function entryToURL(entry) {
     if (entry.isAudio) entry._loop = parseOggLoop(data);
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
-    data = decryptWithKey(await (await entryFile(entry)).arrayBuffer());
+    data = decryptWithKey(await (await entryFile(entry)).arrayBuffer(), entry.path);
     if (entry.isAudio) entry._loop = parseOggLoop(data);
     url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
   } else {
@@ -138,19 +138,39 @@ async function entryBytes(entry) {
   if (entry._getData) return new Uint8Array(await entry._getData());
   const buf = await (await entryFile(entry)).arrayBuffer();
   if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name))
-    return new Uint8Array(decryptWithKey(buf));
+    return new Uint8Array(decryptWithKey(buf, entry.path));
   return new Uint8Array(buf);
 }
 
-// Decrypt an MV/MZ buffer with S.key. If no key is known (System.json missing), derive
-// it from this file when it is an encrypted image; the key stays in memory only.
-function decryptWithKey(buffer) {
-  if (!S.key) {
-    const k = deriveKeyFromPNG(buffer);
-    if (!k) throw new Error('No encryption key set');
-    S.key = k;
+// Encryption key for a file. A folder may hold several games, each with its own
+// key (S.keys: game folder path → key, from its data/System.json); the deepest
+// game folder containing the path wins, S.key is the fallback.
+function keyFor(path) {
+  let best = -1, key = S.key;
+  for (const [prefix, k] of S.keys) {
+    if (prefix.length > best && path.startsWith(prefix + '/')) { best = prefix.length; key = k; }
   }
-  return decryptMVMZ(buffer, S.key);
+  return key;
+}
+
+// Game folder a derived key belongs to: everything before [www/]img|audio.
+function gameFolderOf(path) {
+  const m = /^(.*?)\/(?:www\/)?(?:img|audio)\//i.exec(path);
+  return m ? m[1] : null;
+}
+
+// Decrypt an MV/MZ buffer with the key of `path`'s game. If no key is known
+// (System.json missing), derive it from this file when it is an encrypted
+// image; the key stays in memory only.
+function decryptWithKey(buffer, path) {
+  let key = path == null ? S.key : keyFor(path);
+  if (!key) {
+    key = deriveKeyFromPNG(buffer);
+    if (!key) throw new Error('No encryption key set');
+    const game = path == null ? null : gameFolderOf(path);
+    if (game != null) S.keys.set(game, key); else S.key = key;
+  }
+  return decryptMVMZ(buffer, key);
 }
 
 function clearBlobCache() {
@@ -160,8 +180,9 @@ function clearBlobCache() {
 }
 
 // ─── Key ──────────────────────────────────────────────
+// A game's key turned up after its files were listed: redraw with it.
 function applyKey(key) {
-  S.key = key;
+  if (key) S.key = key;
   clearBlobCache();
   Dupes.reset();   // encrypted files hash differently once decrypted with the right key
   Filter.reset();
@@ -279,7 +300,7 @@ function renderSidebar() {
     cur.className = 'folder-item folder-current';
     cur.dataset.folder = sPath;
     cur.innerHTML = `<span class="f-icon">${ICONS.folderOpen}</span><span class="f-name">${escapeHtml(lbl)}</span>${cnt ? `<span class="f-count">${cnt}</span>` : ''}`;
-    cur.addEventListener('click', () => showFolder(sPath));
+    cur.addEventListener('click', () => { S.userNav = true; showFolder(sPath); });
     if (S.currentFolder === sPath) cur.classList.add('active');
     EL.sidebar.appendChild(cur);
 
@@ -303,7 +324,7 @@ function renderSidebar() {
     item.innerHTML = `<span class="f-icon">${ICONS.copies}</span>`
       + `<span class="f-name">Duplicates${sub ? `<span class="f-sub">${escapeHtml(sub)}</span>` : ''}</span>${count}`;
     item.title = 'Files whose content also exists at another path';
-    item.addEventListener('click', () => showFolder(DUPES_KEY));
+    item.addEventListener('click', () => { S.userNav = true; showFolder(DUPES_KEY); });
     if (S.currentFolder === DUPES_KEY) item.classList.add('active');
     EL.sidebar.appendChild(item);
     const div = document.createElement('div');
@@ -326,6 +347,7 @@ function renderSidebar() {
       ${cnt ? `<span class="f-count">${cnt}</span>` : ''}
       ${hasKids ? `<svg class="f-drill" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 2l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}`;
     item.addEventListener('click', () => {
+      S.userNav = true;
       showFolder(key);
       if (hasKids) { S.sidebarPath = key; renderSidebar(); }
     });

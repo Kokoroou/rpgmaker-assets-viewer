@@ -32,10 +32,17 @@ function makeYielder() {
 // Loading builds into new Maps and only swaps them in here, so a cancelled or
 // failed load leaves whatever was open before untouched. A lazy folder scan
 // keeps filling the same Maps after the swap, in the background.
-function commitLibrary(files, folders, key, scan = null) {
+function pickStartFolder(folders) {
+  for (const k of folders.keys()) if (PICTURES_DIR.test(k)) return k;
+  return folders.keys().next().value;
+}
+
+function commitLibrary(files, folders, key, scan = null, keys = null) {
   clearBlobCache();
   if (scan) adoptScan(scan); else dropScan();
   S.key = key || '';
+  S.keys = scan ? scan.keys : keys || new Map();
+  S.userNav = false;
   S.files   = files;
   S.folders = folders;
   S.folderStats = scan ? scan.stats : null;
@@ -66,7 +73,7 @@ function mediaSummary(files) {
 }
 
 // ─── MV/MZ folder loading ─────────────────────────────
-async function loadMVMZFolder(allFiles, key) {
+async function loadMVMZFolder(allFiles, key, keys) {
   const files = new Map(), folders = new Map();
   const total = allFiles.length;
   const tick  = makeYielder();
@@ -93,7 +100,7 @@ async function loadMVMZFolder(allFiles, key) {
   await nextFrame();
   Loader.check();
 
-  commitLibrary(files, folders, key);
+  commitLibrary(files, folders, key, null, keys);
 }
 
 // ─── RGSSAD archive loading ───────────────────────────
@@ -196,25 +203,26 @@ async function loadGameFolder(allFiles) {
     return;
   }
 
-  const sysJson = allFiles.find(f =>
-    f.name === 'System.json' &&
-    (f.webkitRelativePath || '').toLowerCase().includes('/data/')
-  );
-  let key = '';
-  if (sysJson) {
+  // One System.json per game: a folder may hold several, each with its own key.
+  const sysFiles = allFiles.filter(f => /\/data\/System\.json$/i.test(f.webkitRelativePath || ''));
+  const keys = new Map();
+  for (const f of sysFiles) {
     try {
-      const json = JSON.parse(await sysJson.text());
-      if (json.encryptionKey) key = json.encryptionKey;
+      const json = JSON.parse(await f.text());
+      keys.set(f.webkitRelativePath.replace(/\/data\/System\.json$/i, ''), json.encryptionKey || '');
     } catch {}
+    Loader.check();
   }
-  Loader.check();
+  const key = keys.size === 1 ? [...keys.values()][0] : '';
+  const sysJson = sysFiles.length > 0;
 
   const engine = detectFolderEngine(allFiles);
+  const games = [...keys.values()].filter(Boolean).length;
   Loader.step('detect', 'done',
-    engine || sysJson ? `${engine || 'RPG Maker MV/MZ'} · ${key ? 'encrypted' : 'not encrypted'}`
+    engine || sysJson ? `${engine || 'RPG Maker MV/MZ'} · ${games > 1 ? `${games} games, ${games} keys` : key ? 'encrypted' : 'not encrypted'}`
                       : 'Unknown layout, scanning for media');
 
-  await loadMVMZFolder(allFiles, key);
+  await loadMVMZFolder(allFiles, key, keys);
 }
 
 // ─── Load lifecycle ───────────────────────────────────
@@ -296,7 +304,7 @@ function openFolderLazy(name, sources) {
     Loader.check();
     const scan = new FolderScan(fs, name);
     scan.key = info.key;
-    scan.keyChecked = info.hasSystem;
+    if (info.hasSystem) scan.keys.set(info.inWww ? `${name}/www` : name, info.key);
     scan.detectLabel = info.engine || info.hasSystem
       ? `${info.engine || 'RPG Maker MV/MZ'} · ${info.key ? 'encrypted' : 'not encrypted'}`
       : 'Unknown layout, scanning for media';
@@ -362,7 +370,7 @@ function showGrid() {
   EL.setup.style.display    = 'none';
   EL.toolbar.classList.add('show');
   EL.gridWrap.style.display = 'block';
-  const first = S.folders.keys().next().value;
+  const first = pickStartFolder(S.folders);
   if (first) {
     showFolder(first);
   } else {
@@ -375,6 +383,49 @@ function showGrid() {
       'Make sure you selected a valid RPG Maker game folder');
   }
 }
+
+// ─── Home ─────────────────────────────────────────────
+// Logo click: close the open game and show the start page again. A plain
+// click is handled here (nothing reloads, the choice of folder is not asked
+// again); modified clicks keep the link's default (new tab).
+function goHome() {
+  if (_loading) return;
+  if (EL.lightbox.classList.contains('open')) closeLightbox();
+  closeMobileSearch();
+  dropScan();
+  clearBlobCache();
+  S.key = '';
+  S.keys = new Map();
+  S.files = new Map();
+  S.folders = new Map();
+  S.folderStats = null;
+  S.currentFolder = null;
+  S.currentMedia = [];
+  S.sidebarPath = null;
+  S.hiddenCopies = 0;
+  S.userNav = false;
+  S.query = '';
+  Dupes.reset();
+  Filter.reset();
+  EL.searchBox.value = '';
+  EL.grid.innerHTML = '';
+  EL.folderPath.innerHTML = '';
+  EL.countBadge.textContent = '';
+  EL.emptySearch.style.display = 'none';
+  document.body.classList.remove('has-files');
+  EL.toolbar.classList.remove('show');
+  EL.gridWrap.style.display = 'none';
+  EL.sidebar.classList.add('hidden');
+  $('sidebar-resizer').classList.add('hidden');
+  EL.setup.style.display = '';
+  setStatus(EL.setupStatus, '', '');
+}
+
+$('logo').addEventListener('click', e => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+  e.preventDefault();
+  goHome();
+});
 
 // ─── Events: Theme toggle ─────────────────────────────
 // Default follows the OS (prefers-color-scheme). Clicking flips to the other

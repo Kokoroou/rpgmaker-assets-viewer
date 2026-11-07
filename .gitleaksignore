@@ -3,3 +3,5 @@
 # before the test built it at runtime. It is not a secret.
 e923ad61e6e95dbc39170645a4529c2f0d80877d:tests/decrypt.test.mjs:generic-api-key:46
 595fed340da20efdc3b70554106596afd39b3263:tests/decrypt.test.mjs:generic-api-key:46
+# Synthetic test key in tests/multigame.test.mjs (later built at runtime). Not a secret.
+a9e935058cee1399a4e7c43ceb113ac2dbed71ac:tests/multigame.test.mjs:generic-api-key:19

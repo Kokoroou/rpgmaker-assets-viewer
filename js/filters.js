@@ -210,7 +210,7 @@ async function entryReader(entry) {
     size,
     read: async (o, n) => {
       n = Math.max(0, Math.min(n, size - o));
-      if (enc && o < 16) return new Uint8Array(decryptWithKey(await file.slice(0, base + o + n).arrayBuffer())).subarray(o, o + n);
+      if (enc && o < 16) return new Uint8Array(decryptWithKey(await file.slice(0, base + o + n).arrayBuffer(), entry.path)).subarray(o, o + n);
       return new Uint8Array(await file.slice(base + o, base + o + n).arrayBuffer());
     },
   };
