@@ -38,6 +38,7 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared g
 `index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`; `css/tokens.css` is the MakerLens family's design system (Events keeps a verbatim copy and the makerlens build checks they match, so after editing it, copy it to `rpgmaker-events-viewer/css/tokens.css`). Logic is split into fourteen JS files loaded in order:
 
 ```
+js/preboot.js        — first script: Select Game Folder, folder input and drops work before the rest has loaded; Preboot.attach() at the end of app.js takes over what was picked
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
 js/state.js          — global S object
 js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)

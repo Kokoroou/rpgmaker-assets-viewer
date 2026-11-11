@@ -658,14 +658,18 @@ document.addEventListener('mouseup', () => {
 // Directory walking and lazy loading live in js/scan.js.
 
 async function handleDrop(dataTransfer) {
-  if (_loading) return;
-
   // Collect entries synchronously before any await
   const pairs = [];
   for (const item of dataTransfer.items) {
     if (item.kind !== 'file') continue;
     pairs.push({ item, entry: item.webkitGetAsEntry?.(), file: item.getAsFile?.() });
   }
+  await handleDropPairs(pairs);
+}
+
+// Also used for a drop made before this script was ready (js/preboot.js collected the pairs).
+async function handleDropPairs(pairs) {
+  if (_loading) return;
 
   // Archive drop
   const arch = pairs.find(p => p.entry?.isFile !== false && /\.(rgssad|rgss2a|rgss3a)$/i.test(p.entry?.name || p.file?.name || ''));
@@ -840,3 +844,9 @@ async function downloadFolder() {
   }
 }
 
+// Take over what the user picked or dropped while the scripts were loading (js/preboot.js).
+Preboot.attach({
+  dir:   dir => openFolderLazy(dir.name, [{ fs: FS_HANDLE, root: dir }]),
+  files: files => openFileList(files),
+  drop:  pairs => handleDropPairs(pairs),
+});
