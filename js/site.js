@@ -16,10 +16,15 @@ var SITE = (function () {
     return 'https://' + HOME.host + HOME.base + rest + (search || '') + (hash || '');
   }
 
+  // The GitHub Pages copy is retired after this day; the page then becomes the user guide
+  // (with how to move to the new link). Shown in the "moved" banner.
+  var RETIRE = { iso: '2026-11-30', text: '30 November 2026' };
+
   var host = typeof location === 'undefined' ? '' : location.hostname;
   return {
     isPublic: host === HOME.host || host === LEGACY.host,
     isLegacy: host === LEGACY.host,
+    retireDate: RETIRE,
     homeURL: homeURL
   };
 }());
@@ -32,7 +37,8 @@ var SITE = (function () {
   bar.setAttribute('role', 'region');
   bar.setAttribute('aria-label', 'New address');
   var text = document.createElement('span');
-  text.textContent = 'MakerLens has moved to a new address.';
+  text.textContent = 'MakerLens has moved to a new address. This GitHub Pages site stops being used after ' +
+    SITE.retireDate.text + '; it will then only be the user guide, which explains how to switch to the new link.';
   var link = document.createElement('a');
   link.textContent = 'Open the new site →';
   var sync = function () { link.href = SITE.homeURL(location.pathname, location.search, location.hash); };

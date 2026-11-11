@@ -108,6 +108,7 @@
   white-space: nowrap;
 }
 .btn-ghost svg { color: var(--t2); }
+.btn-ghost[hidden] { display: none; }
 .btn-ghost:hover { border-color: var(--a40); background: var(--a10); }
 .btn-ghost:hover svg { color: var(--a); }
 

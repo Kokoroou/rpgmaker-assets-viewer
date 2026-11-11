@@ -22,6 +22,7 @@ const EL = {
   sizeSlider:       $('size-slider'),
   countBadge:       $('count-badge'),
   bgLoad:           $('bg-load'),
+  switchTool:       $('switch-tool'),
   dlFolderBtn:      $('dl-folder-btn'),
   dupeBtn:          $('dupe-btn'),
   lightbox:         $('lightbox'),

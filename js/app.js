@@ -41,6 +41,8 @@ function commitLibrary(files, folders, key, scan = null, keys = null) {
   clearBlobCache();
   if (scan) adoptScan(scan); else dropScan();
   S.key = key || '';
+  S.remoteLink = null;          // only a game link keeps one (openRemote)
+  EL.switchTool.hidden = true;
   S.keys = scan ? scan.keys : keys || new Map();
   S.userNav = false;
   S.files   = files;
@@ -403,8 +405,15 @@ function openRemote(link) {
     await nextFrame();
     Loader.check();
     commitLibrary(files, folders, key);
+    S.remoteLink = link;
+    EL.switchTool.hidden = false;
   });
 }
+
+// One link for both tools: the same game opens in MakerLens Events with the link kept in memory.
+EL.switchTool.addEventListener('click', () => {
+  if (S.remoteLink) location.href = Remote.switchURL(S.remoteLink, 'events');
+});
 
 // Link in the address (the one the game’s Share menu shows): open it and take the token
 // out of the address bar and the history.

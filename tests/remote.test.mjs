@@ -79,3 +79,12 @@ test('client: a manifest without files is refused', async () => {
   const ok = api(() => Response.json({ title: 'x', engine: 'MZ', files: { 'img/a.png_': 1 } }));
   assert.deepEqual({ ...(await ok.c.manifest()).files }, { 'img/a.png_': 1 });
 });
+
+test('switchURL: the same link for the other tool, token only after the #', () => {
+  const link = Remote.parseLink(LINK);
+  const events = Remote.switchURL(link, 'events');
+  assert.equal(events, `https://makerlens.kokoroou.workers.dev/events/#game=${encodeURIComponent('https://my-game.alice.workers.dev')}&t=${TOKEN}`);
+  assert.deepEqual({ ...Remote.parseLink(events) }, { ...link }, 'round trip');
+  assert.equal(new URL(events).search, '');
+  assert.equal(code(() => Remote.switchURL(link, 'elsewhere')), 'link');
+});

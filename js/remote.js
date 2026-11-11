@@ -1,7 +1,10 @@
 // Open a game published with rpgmaker-web-toolkit through a share link (⚙ → Share → MakerLens link in the game).
 // No DOM here (tested in node). The same file lives in MakerLens Events.
 //
-// The link looks like  https://makerlens…/assets/#game=<https://site.workers.dev>&t=<token>
+// One link opens both tools, as the toolkit makes it:
+//   https://makerlens…/assets/#game=<https://site.workers.dev>&t=<token>
+// Either tool reads it whatever its path (…/assets/ or …/events/), and switchURL() makes the
+// same link for the other tool, so the viewer can offer "Open in Events" / "Open in Assets".
 // The token sits after the "#", so it never goes to MakerLens; the page sends it only to the
 // game's own site, as `Authorization: Bearer`, without cookies. It is kept in memory only.
 //
@@ -51,6 +54,16 @@ const Remote = (() => {
     try { return parseLink(hash); } catch { return null; }
   }
 
+  const HOME = 'https://makerlens.kokoroou.workers.dev/';
+  const TOOLS = ['assets', 'events'];
+
+  // { origin, token } -> the link for `tool` ('assets' | 'events'), for the button that switches
+  // tools. The token goes after the "#" only, like the link the game made.
+  function switchURL({ origin, token }, tool) {
+    if (!TOOLS.includes(tool)) throw new RemoteError('link', 'Unknown tool.');
+    return `${HOME}${tool}/#game=${encodeURIComponent(origin)}&t=${encodeURIComponent(token)}`;
+  }
+
   const pathOf = rel => rel.split('/').map(encodeURIComponent).join('/');
 
   function client({ origin, token }, fetchImpl = (...a) => fetch(...a)) {
@@ -94,5 +107,5 @@ const Remote = (() => {
     };
   }
 
-  return { parseLink, fromLocation, client };
+  return { parseLink, fromLocation, switchURL, client };
 })();

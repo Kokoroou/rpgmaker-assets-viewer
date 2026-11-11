@@ -1,4 +1,5 @@
 const S = {
+  remoteLink:    null,       // { origin, token } of an open game link (memory only; js/remote.js)
   key:           '',        // fallback key (single game / loose files)
   keys:          new Map(),  // game folder path → key (several games in one folder)
   userNav:       false,      // the user picked a folder, so auto-selection stops
