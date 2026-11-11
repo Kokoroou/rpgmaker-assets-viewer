@@ -511,46 +511,10 @@ EL.rgssadInput.addEventListener('change', async () => {
 });
 
 // ─── Events: View another way ─────────────────────────
-// One button on the start screen; the dialog asks which way: archive, single files, game link.
-const _alt = $('alt-dialog');
-const _altLinkInput = $('alt-link-input');
-const _altLinkError = $('alt-link-error');
+// The dialog itself lives in js/preboot.js (it works before this file has run); the three
+// ways end here: archive, single files (below) and a game link (Preboot.attach at the end).
 
-function altShow(panel) {
-  $('alt-menu').hidden = panel !== 'menu';
-  $('alt-link-panel').hidden = panel !== 'link';
-  $('alt-title').textContent = panel === 'link' ? 'Open a game link' : 'View another way';
-  _altLinkError.textContent = '';
-  if (panel === 'link') _altLinkInput.focus();
-}
-function altOpen() {
-  if (_loading || Loader.active) return;
-  altShow('menu');
-  if (!_alt.open) _alt.showModal();
-}
-$('alt-btn').addEventListener('click', altOpen);
-$('alt-close').addEventListener('click', () => _alt.close());
-// A click on the backdrop (the dialog element itself) closes it.
-_alt.addEventListener('click', e => { if (e.target === _alt) _alt.close(); });
-$('alt-archive').addEventListener('click', () => { _alt.close(); EL.rgssadInput.click(); });
-$('alt-files').addEventListener('click', () => { _alt.close(); EL.filesInput.click(); });
-$('alt-link').addEventListener('click', () => altShow('link'));
-$('alt-back').addEventListener('click', () => altShow('menu'));
-
-function altSubmitLink() {
-  let link;
-  try { link = Remote.parseLink(_altLinkInput.value); }
-  catch (e) { _altLinkError.textContent = e.message; return; }
-  _alt.close();
-  _altLinkInput.value = '';
-  openRemote(link);
-}
-$('alt-open').addEventListener('click', altSubmitLink);
-_altLinkInput.addEventListener('keydown', e => { if (e.key === 'Enter') altSubmitLink(); });
-
-EL.filesInput.addEventListener('change', async () => {
-  const picked = Array.from(EL.filesInput.files);
-  EL.filesInput.value = '';
+async function openPickedFiles(picked) {
   if (!picked.length) return;
   const media = picked.filter(f => MEDIA_EXT.test(f.name));
   if (!media.length) {
@@ -558,6 +522,11 @@ EL.filesInput.addEventListener('change', async () => {
     return;
   }
   await openLooseFiles(media);
+}
+EL.filesInput.addEventListener('change', () => {
+  const picked = Array.from(EL.filesInput.files);
+  EL.filesInput.value = '';
+  openPickedFiles(picked);
 });
 
 // ─── Events: Lightbox ─────────────────────────────────
@@ -849,4 +818,13 @@ Preboot.attach({
   dir:   dir => openFolderLazy(dir.name, [{ fs: FS_HANDLE, root: dir }]),
   files: files => openFileList(files),
   drop:  pairs => handleDropPairs(pairs),
+  loose: files => openPickedFiles(files),
+  archive: file => openArchive(file),
+  busy: () => _loading || Loader.active,
+  link: text => {
+    let link;
+    try { link = Remote.parseLink(text); } catch (e) { return e.message; }
+    openRemote(link);
+    return null;
+  },
 });
