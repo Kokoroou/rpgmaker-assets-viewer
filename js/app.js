@@ -42,7 +42,8 @@ function commitLibrary(files, folders, key, scan = null, keys = null) {
   if (scan) adoptScan(scan); else dropScan();
   S.key = key || '';
   S.remoteLink = null;          // only a game link keeps one (openRemote)
-  EL.switchTool.hidden = true;
+  S.folderHandle = null;        // only a folder opened with a directory handle keeps one
+  syncSwitch();
   S.keys = scan ? scan.keys : keys || new Map();
   S.userNav = false;
   S.files   = files;
@@ -324,6 +325,8 @@ function openFolderLazy(name, sources) {
     } catch (e) { scan.abort(); throw e; }
 
     commitLibrary(scan.files, scan.folders, scan.key, scan);
+    // An MV/MZ folder behind a handle can move to MakerLens Events without being picked again.
+    if (fs === FS_HANDLE && info.hasSystem) { S.folderHandle = root; syncSwitch(); }
   });
 }
 
@@ -406,14 +409,65 @@ function openRemote(link) {
     Loader.check();
     commitLibrary(files, folders, key);
     S.remoteLink = link;
-    EL.switchTool.hidden = false;
+    syncSwitch();
   });
 }
 
-// One link for both tools: the same game opens in MakerLens Events with the link kept in memory.
-EL.switchTool.addEventListener('click', () => {
-  if (S.remoteLink) location.href = Remote.switchURL(S.remoteLink, 'events');
+// ─── Switch to MakerLens Events ───────────────────────
+// A game link moves as the same link (kept in memory). A folder moves as its directory handle
+// through IndexedDB (js/handoff.js): no new pick, and the receiving page deletes it at once.
+// Not offered on the legacy GitHub Pages copy.
+function syncSwitch() {
+  const can = !SITE.isLegacy && !!(S.remoteLink || (S.folderHandle && Handoff.ready('events', location.pathname)));
+  EL.switchTool.hidden = !can;
+  EL.switchGo.removeAttribute('aria-busy');
+}
+
+// Counted by name only in GoatCounter ('switch-to-events', js/analytics.js); the request gets
+// a moment to leave before the page navigates.
+const countSwitch = () => (typeof countEvent === 'function' ? countEvent('switch-to-events') : Promise.resolve());
+
+EL.switchGo.addEventListener('click', async () => {
+  if (S.remoteLink) {
+    const to = Remote.switchURL(S.remoteLink, 'events');
+    EL.switchGo.setAttribute('aria-busy', 'true');
+    await countSwitch();
+    location.href = to;
+    return;
+  }
+  const to = Handoff.peerURL('events', location.pathname);
+  if (!S.folderHandle || !to) return;
+  EL.switchGo.setAttribute('aria-busy', 'true');
+  try {
+    await Handoff.send(S.folderHandle);
+    await countSwitch();
+    location.href = to;
+  } catch (e) {
+    S.folderHandle = null;      // this browser cannot hand the folder over: stop offering it
+    syncSwitch();
+    alert('Could not hand this folder to MakerLens Events. Open it there with Select Game Folder.');
+  }
 });
+
+// Arriving from MakerLens Events: its folder is waiting in the handover. If the browser still
+// grants read access, open it; if it wants a click first, offer one on the start screen.
+async function openHandoff() {
+  const handle = await Handoff.receive();
+  if (!handle || _loading || Loader.active || S.files.size) return;
+  const open = () => openFolderLazy(handle.name, [{ fs: FS_HANDLE, root: handle }]);
+  if (await Handoff.permission(handle, false) === 'granted') { open(); return; }
+  EL.handoffName.textContent = handle.name;
+  EL.handoff.hidden = false;
+  EL.handoffGo.onclick = async () => {
+    EL.handoffGo.disabled = true;
+    const state = await Handoff.permission(handle, true);
+    EL.handoffGo.disabled = false;
+    if (state === 'granted') { EL.handoff.hidden = true; open(); return; }
+    EL.handoffNote.textContent = 'Access was not allowed. Choose the folder with Select Game Folder instead.';
+    EL.handoffNote.className = 'handoff-note err';
+  };
+  EL.handoffGo.focus();
+}
 
 // Link in the address (the one the game’s Share menu shows): open it and take the token
 // out of the address bar and the history.
@@ -828,3 +882,4 @@ Preboot.attach({
     return null;
   },
 });
+openHandoff();
