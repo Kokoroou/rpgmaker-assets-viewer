@@ -1,4 +1,5 @@
 const S = {
+  folderHandle:  null,       // directory handle of the open folder, for the switch to Events (memory only; js/handoff.js)
   remoteLink:    null,       // { origin, token } of an open game link (memory only; js/remote.js)
   key:           '',        // fallback key (single game / loose files)
   keys:          new Map(),  // game folder path → key (several games in one folder)

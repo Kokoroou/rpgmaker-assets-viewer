@@ -45,12 +45,20 @@
   </ul>
 
   <h2 id="game-link">Game links</h2>
-  <p>"View another way → Game link" opens a game that its owner published with <a href="https://github.com/Kokoroou/rpgmaker-web-toolkit">rpgmaker-web-toolkit</a>, using the read-only link the owner made inside the game (⚙ → Share → MakerLens link) (the game does not have to be public). One link opens both Assets and Events: the "Open in Events" button reopens the same game there, passing the link in the address after the <code>#</code>, so still no server receives it.</p>
+  <p>"View another way → Game link" opens a game that its owner published with <a href="https://github.com/Kokoroou/rpgmaker-web-toolkit">rpgmaker-web-toolkit</a>, using the read-only link the owner made inside the game (⚙ → Share → MakerLens link) (the game does not have to be public). One link opens both Assets and Events: the Assets | Events switch in the header reopens the same game there, passing the link in the address after the <code>#</code>, so still no server receives it.</p>
   <ul>
     <li>The link carries a key after the <code>#</code>, a part of the address that browsers never send to any server, so MakerLens never receives it. Your browser sends the key only to the game's own site, in a header, with no cookies, and the page forgets it when you close the tab.</li>
     <li>The files travel from the game's site straight into your browser. Nothing goes through MakerLens, and nothing is written to the game: the tool stays read-only.</li>
     <li>The usage count and feedback never include the link, the game's address or any file name.</li>
     <li>The key only opens the game's data, pictures and audio, expires (24 hours unless the owner chose otherwise) and the owner can stop it at any time. It does not open the game's saves.</li>
+  </ul>
+
+  <h2 id="switch">Switching between Assets and Events</h2>
+  <p>When a folder is open, the Assets | Events switch in the header opens the same game in the other tool without choosing the folder again. It works for a folder you picked with the folder picker (or dropped) in Chrome or Edge, on this site only.</p>
+  <ul>
+    <li>Your browser gives the page a <em>handle</em> to the folder. The switch puts that handle in your browser's own storage (IndexedDB) for a moment, and the other tool takes it out and <strong>deletes it right away</strong>; one that is not taken within 2 minutes is ignored and deleted the next time it is looked at. No file name, path or content is copied, and nothing is sent anywhere.</li>
+    <li>The handle gives no access by itself: the browser still decides whether the other tool may read the folder. If it asks again, you see one button to confirm, and the access is read-only like before.</li>
+    <li>Nothing is written to your game, and the switch does not exist on the old GitHub Pages address.</li>
   </ul>
 
   <h2>"Upload files to this site?"</h2>
