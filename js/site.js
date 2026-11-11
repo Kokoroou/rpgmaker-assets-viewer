@@ -37,8 +37,7 @@ var SITE = (function () {
   bar.setAttribute('role', 'region');
   bar.setAttribute('aria-label', 'New address');
   var text = document.createElement('span');
-  text.textContent = 'MakerLens has moved to a new address. This GitHub Pages site stops being used after ' +
-    SITE.retireDate.text + '; it will then only be the user guide, which explains how to switch to the new link.';
+  text.textContent = 'MakerLens has a new home. Update your bookmarks before ' + SITE.retireDate.text + '.';
   var link = document.createElement('a');
   link.textContent = 'Open the new site →';
   var sync = function () { link.href = SITE.homeURL(location.pathname, location.search, location.hash); };
