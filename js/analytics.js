@@ -9,16 +9,18 @@
 // NEVER sent: file names, folder names, game titles, keys, file contents.
 // Do not add any of those here — see "Legal constraints" in CLAUDE.md.
 //
-// Events: countEvent(name) counts one of the fixed names in EVENTS (used by
-// js/feedback.js to measure how many asked users answer). Only the event name
-// is sent — no rating, no comment, nothing about files.
+// Events: countEvent(name) counts one of the fixed names in EVENTS (js/feedback.js:
+// how many asked users answer; js/app.js: someone switched to MakerLens Events).
+// Only the event name is sent — no rating, no comment, nothing about files.
+// It returns a Promise that resolves once the request has been answered (or after
+// 400 ms), so a page that navigates right after can wait for it.
 //
 // The Content-Security-Policy in index.html only allows this host (and the
 // feedback endpoint, called only when the user presses Send).
-var countEvent = function () {};
+var countEvent = function () { return Promise.resolve(); };
 (function () {
   var GC_ENDPOINT = 'https://makerlens.goatcounter.com/count';
-  var EVENTS = ['feedback-shown', 'feedback-skipped', 'feedback-sent'];
+  var EVENTS = ['feedback-shown', 'feedback-skipped', 'feedback-sent', 'switch-to-events'];
   // Query params GoatCounter reads as traffic source / campaign.
   // Anything else in the URL is not sent.
   var SOURCE_PARAMS = ['utm_source', 'ref', 'src', 'source', 'utm_campaign', 'campaign'];
@@ -40,9 +42,14 @@ var countEvent = function () {};
   new Image().src = GC_ENDPOINT + '?' + params.toString();
 
   countEvent = function (name) {
-    if (EVENTS.indexOf(name) < 0) return;
-    new Image().src = GC_ENDPOINT + '?' + new URLSearchParams({
-      p: name, t: name, e: 'true', rnd: Math.random().toString(36).slice(2)
-    }).toString();
+    if (EVENTS.indexOf(name) < 0) return Promise.resolve();
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = img.onerror = function () { resolve(); };
+      setTimeout(resolve, 400);
+      img.src = GC_ENDPOINT + '?' + new URLSearchParams({
+        p: name, t: name, e: 'true', rnd: Math.random().toString(36).slice(2)
+      }).toString();
+    });
   };
 }());

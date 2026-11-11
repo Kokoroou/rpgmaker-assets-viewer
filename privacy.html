@@ -35,69 +35,26 @@
 <main>
   <a class="back" href="./">← Back to MakerLens</a>
   <h1>Privacy</h1>
-  <p><strong>Your files never leave your device.</strong> Everything below explains how that works and what little we do count.</p>
+  <p><strong>Your files never leave your device.</strong> MakerLens Assets and MakerLens Events read and decrypt your game in your browser. No file, folder name or key is sent anywhere, and your browser enforces it with a Content-Security-Policy. Once the page has loaded it works offline.</p>
 
-  <h2>Your files</h2>
+  <h2 id="files">Your files</h2>
   <ul>
-    <li>Game files are read and decrypted entirely inside your browser. No file, key or file name is ever sent to any server.</li>
-    <li>Try it: once the page has loaded, disconnect from the internet — opening, previewing and downloading still work.</li>
-    <li>A Content-Security-Policy tells your browser to block requests to any host except the page itself, the anonymous counter, the feedback form below and, only if you open a game link (see below), a <code>workers.dev</code> game site, so this is enforced by the browser, not just promised.</li>
+    <li>Nothing is uploaded. When you pick a folder, Chrome may say "upload": that is its standard wording for giving a page access to a folder. The files are only read locally.</li>
+    <li>A game link (made inside a game published with <a href="https://github.com/Kokoroou/rpgmaker-web-toolkit">rpgmaker-web-toolkit</a>) carries its key after the <code>#</code>, which browsers never send to a server. Your browser sends it only to that game's own site. The files go straight from there into your browser, not through MakerLens.</li>
+    <li>The Assets | Events switch passes the open folder to the other tool inside your browser only. Nothing is sent.</li>
+    <li>The tools only read: your game is never modified.</li>
+    <li>Your theme, sidebar size and whether you answered the feedback card are kept in your browser's <code>localStorage</code>. They never leave your device.</li>
   </ul>
-
-  <h2 id="game-link">Game links</h2>
-  <p>"View another way → Game link" opens a game that its owner published with <a href="https://github.com/Kokoroou/rpgmaker-web-toolkit">rpgmaker-web-toolkit</a>, using the read-only link the owner made inside the game (⚙ → Share → MakerLens link) (the game does not have to be public). One link opens both Assets and Events: the Assets | Events switch in the header reopens the same game there, passing the link in the address after the <code>#</code>, so still no server receives it.</p>
-  <ul>
-    <li>The link carries a key after the <code>#</code>, a part of the address that browsers never send to any server, so MakerLens never receives it. Your browser sends the key only to the game's own site, in a header, with no cookies, and the page forgets it when you close the tab.</li>
-    <li>The files travel from the game's site straight into your browser. Nothing goes through MakerLens, and nothing is written to the game: the tool stays read-only.</li>
-    <li>The usage count and feedback never include the link, the game's address or any file name.</li>
-    <li>The key only opens the game's data, pictures and audio, expires (24 hours unless the owner chose otherwise) and the owner can stop it at any time. It does not open the game's saves.</li>
-  </ul>
-
-  <h2 id="switch">Switching between Assets and Events</h2>
-  <p>When a folder is open, the Assets | Events switch in the header opens the same game in the other tool without choosing the folder again. It works for a folder you picked with the folder picker (or dropped) in Chrome or Edge, on this site only.</p>
-  <ul>
-    <li>Your browser gives the page a <em>handle</em> to the folder. The switch puts that handle in your browser's own storage (IndexedDB) for a moment, and the other tool takes it out and <strong>deletes it right away</strong>; one that is not taken within 2 minutes is ignored and deleted the next time it is looked at. No file name, path or content is copied, and nothing is sent anywhere.</li>
-    <li>The handle gives no access by itself: the browser still decides whether the other tool may read the folder. If it asks again, you see one button to confirm, and the access is read-only like before.</li>
-    <li>Nothing is written to your game, and the switch does not exist on the old GitHub Pages address.</li>
-  </ul>
-
-  <h2>"Upload files to this site?"</h2>
-  <p>When you pick a folder, some browsers (e.g. Chrome) show a prompt asking whether to <em>upload</em> files. That is the browser's standard wording for giving a page access to a folder — the files are only read locally. In Chrome and Edge we use a newer folder picker whose prompt says <em>view files</em> instead. Dragging the folder onto the page shows no prompt at all.</p>
 
   <h2 id="analytics">Anonymous usage count</h2>
-  <p>To know how many people use the tools and how they find them, each page load on the MakerLens site (home page, MakerLens Assets and MakerLens Events) sends one request to <a href="https://www.goatcounter.com" rel="noopener">GoatCounter</a> containing:</p>
-  <ul>
-    <li>the page path (e.g. <code>/assets/</code> or <code>/events/</code>),</li>
-    <li>the referring site (e.g. Google), and</li>
-    <li>traffic-source link parameters such as <code>utm_source=chatgpt.com</code>.</li>
-  </ul>
-  <p>Never sent: file or folder names, game titles, keys, file contents, or map, event and dialogue text. No cookies or local identifiers are used, and GoatCounter does not store IP addresses. Nothing is sent if your browser has Do Not Track or Global Privacy Control enabled, or if you open a local copy of the tool. If the request is blocked (ad blocker, firewall), the tool works exactly the same.</p>
-  <p>The code is short and public: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/analytics.js" rel="noopener">js/analytics.js</a> (Assets and home page) and <a href="https://github.com/Kokoroou/rpgmaker-events-viewer/blob/main/js/analytics.js" rel="noopener">js/analytics.js</a> (Events).</p>
+  <p>Each page load on the MakerLens site sends one request to <a href="https://www.goatcounter.com" rel="noopener">GoatCounter</a>: the page path, the referring site and any campaign parameter such as <code>utm_source</code>. A few actions are also counted by name only: the feedback card was shown, skipped or answered, and someone switched between Assets and Events. No cookies or identifiers, no IP address stored. Nothing is sent with Do Not Track or Global Privacy Control, or on a local copy. If it is blocked, the tools work the same.</p>
 
   <h2 id="feedback">Feedback (optional)</h2>
-  <p>After you open a second game, a small card may ask you to rate MakerLens from 1 to 5 stars. <strong>Tapping a star sends that rating</strong>; you can then add a short comment, sent only if you press Enter or the send button. You can also send a bug report or idea at any time from <strong>About → Report a bug or idea</strong>. Nothing is sent unless you tap a star or press Send; closing or ignoring the card sends nothing.</p>
-  <p id="feedback-events"><a href="https://makerlens.kokoroou.workers.dev/events/">MakerLens Events</a> has the same card and form, with the same rules and the same fields listed below; it asks separately, after you open a second game in Events, and remembers its answer under its own key. Messages from each tool are kept apart so each can be rated on its own.</p>
-  <p>Each message is one request to our own feedback endpoint (a Cloudflare Worker) with:</p>
-  <ul>
-    <li>the type (rating, bug or idea) and the star rating,</li>
-    <li>the comment you typed (up to 1000 characters),</li>
-    <li>your browser language (e.g. <code>vi</code>), so the comment can be read correctly,</li>
-    <li>for a comment added right after a star: a one-time reference to the star you just sent (kept only in the open tab, never in your browser storage), so the star and the comment are shown as one entry, and</li>
-    <li>roughly how many games you have opened (<code>1</code>, <code>2</code>, <code>3-5</code>, <code>6-10</code>, <code>11+</code>), and</li>
-    <li>for bug reports only, unless you remove it: your browser and system, e.g. <code>Chrome 131 · Windows</code>, shown in the form before sending (tap it to leave it out).</li>
-  </ul>
-  <p>Never sent: file or folder names, game titles, the engine, keys or file contents. We store the date (without time) but no IP address, cookie or identifier, so a message cannot be linked to you. The only link is the one-time reference above, which joins a star to the comment you add to it right away; it names that entry, not you, and is not stored. Messages are kept with no end date: they are not deleted automatically. So <strong>please don't put personal or sensitive information in a comment</strong> (your name, email address, account names or anything else that identifies you). If you want a reply, <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/issues" rel="noopener">open a GitHub issue</a> instead. To have a comment you sent removed, open an issue quoting it.</p>
-  <p>The card is not shown if your browser has Do Not Track or Global Privacy Control enabled, or on local copies of the tool, and after you answer it never appears again. Whether it was shown, skipped or answered is also counted as an anonymous GoatCounter event (only that word, no content). Events does not count these events. Code that sends it: <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/js/feedback.js" rel="noopener">js/feedback.js</a> (Assets) and <a href="https://github.com/Kokoroou/rpgmaker-events-viewer/blob/main/js/feedback.js" rel="noopener">js/feedback.js</a> (Events). Only the developer can read the messages; the inbox is behind a login, and Worker request logs are turned off.</p>
+  <p>Nothing is sent unless you tap a star or press Send. A message contains the rating, the comment you typed, your browser language, roughly how many games you have opened and, for bug reports only (you can remove it), your browser and system. Never file or folder names, game titles or keys. The message is stored with its date but no IP address or identifier, and is kept until deleted. <strong>Please don't put personal information in a comment.</strong> To get a reply or have a comment removed, <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/issues" rel="noopener">open a GitHub issue</a>.</p>
 
-  <h2>Preferences</h2>
-  <p>The theme follows your system setting unless you change it. Your theme choice, sidebar layout and whether you already answered the feedback card in each tool (how many games you opened, whether you answered or chose "Not now") are stored in your browser's <code>localStorage</code>. This is not an identifier and never leaves your device; clearing site data resets it.</p>
-
-  <h2 id="hosting">Hosting</h2>
-  <p>The site is served by Cloudflare Workers at <code>makerlens.kokoroou.workers.dev</code>. The old address, <code>kokoroou.github.io/rpgmaker-assets-viewer/</code>, is served by GitHub Pages and keeps an older copy of MakerLens Assets with a link to the new address. Like any web host, Cloudflare and GitHub see your IP address and browser in order to deliver the pages, under their own privacy policies (<a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare</a>, <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub</a>). That data is not passed on to us: request logs for the MakerLens Worker are turned off, and its only code picks which static page to return.</p>
-
-  <h2 id="contact">Who runs MakerLens</h2>
-  <p>MakerLens is a personal open-source project by Trương Tuấn Anh (<a href="https://github.com/Kokoroou" rel="noopener">Kokoroou on GitHub</a>), who is responsible for the counter and the feedback inbox described above. For a privacy question or request, such as removing a comment you sent, <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/issues" rel="noopener">open a GitHub issue</a>. Changes to this page are listed in its <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/commits/main/privacy.html" rel="noopener">history on GitHub</a>.</p>
-  <p>Last updated: 6 November 2026.</p>
+  <h2 id="hosting">Hosting and contact</h2>
+  <p>The site is served by Cloudflare Workers (the old address by GitHub Pages). Like any host, they see your IP address to deliver the pages, under their own privacy policies; request logs for the MakerLens Worker are off. MakerLens is a personal open-source project by Trương Tuấn Anh (<a href="https://github.com/Kokoroou" rel="noopener">Kokoroou</a>). The code, including what is sent above, is public on <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer" rel="noopener">GitHub</a> (<a href="https://github.com/Kokoroou/rpgmaker-events-viewer" rel="noopener">Events</a>). For a privacy question or request, open an issue there.</p>
+  <p>Last updated: 11 November 2026.</p>
 </main>
 </body>
 </html>

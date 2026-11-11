@@ -423,13 +423,24 @@ function syncSwitch() {
   EL.switchGo.removeAttribute('aria-busy');
 }
 
+// Counted by name only in GoatCounter ('switch-to-events', js/analytics.js); the request gets
+// a moment to leave before the page navigates.
+const countSwitch = () => (typeof countEvent === 'function' ? countEvent('switch-to-events') : Promise.resolve());
+
 EL.switchGo.addEventListener('click', async () => {
-  if (S.remoteLink) { location.href = Remote.switchURL(S.remoteLink, 'events'); return; }
+  if (S.remoteLink) {
+    const to = Remote.switchURL(S.remoteLink, 'events');
+    EL.switchGo.setAttribute('aria-busy', 'true');
+    await countSwitch();
+    location.href = to;
+    return;
+  }
   const to = Handoff.peerURL('events', location.pathname);
   if (!S.folderHandle || !to) return;
   EL.switchGo.setAttribute('aria-busy', 'true');
   try {
     await Handoff.send(S.folderHandle);
+    await countSwitch();
     location.href = to;
   } catch (e) {
     S.folderHandle = null;      // this browser cannot hand the folder over: stop offering it
