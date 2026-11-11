@@ -25,3 +25,10 @@ test('homeURL keeps traffic-source params and falls back to the tool root', () =
   assert.equal(SITE.homeURL('/rpgmaker-assets-viewer/', '?utm_source=chatgpt.com'), home + '?utm_source=chatgpt.com');
   assert.equal(SITE.homeURL('/somewhere-else/x.html', '?a=1'), home + '?a=1');
 });
+
+test('the retirement date of the GitHub Pages copy is a real calendar day', () => {
+  const { iso, text } = SITE.retireDate;
+  const d = new Date(iso + 'T00:00:00Z');
+  assert.equal(d.toISOString().slice(0, 10), iso);
+  assert.match(text, /^\d{1,2} \w+ 2026$/);
+});
