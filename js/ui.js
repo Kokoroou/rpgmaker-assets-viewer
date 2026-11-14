@@ -531,6 +531,7 @@ window.addEventListener('popstate', () => {
 function _lbClose() {
   _lbSwipeEnd();
   _spriteStop();
+  _preloadGen++;   // stop preloading neighbours
   EL.lbAudio.pause();
   EL.lightbox.classList.remove('open');
   _lbReset();
@@ -545,23 +546,40 @@ function lbMove(d) {
   loadLbEntry(S.lbIdx);
 }
 
+// Preload the PRELOAD_RADIUS images before and after the open one, nearest
+// first (+1, -1, +2, -2…). A newer call (the user moved on) stops the older
+// loop at its next step, and images outside the new window leave the pool.
+const PRELOAD_RADIUS = 5;
+let _preloadGen = 0;
+
 async function preloadAround(idx) {
+  const gen = ++_preloadGen;
   const n = S.currentMedia.length;
-  for (let d = 1; d <= 3; d++) {
-    for (const sign of [-1, 1]) {
-      const i = (idx + d * sign + n) % n;
-      const path = S.currentMedia[i];
-      if (_preloadPool.has(path)) continue;
-      const entry = S.files.get(path);
-      if (!entry || entry.isAudio) continue;
-      try {
-        const url = await entryToURL(entry);
-        const img = new Image();
-        img.src = url;
-        img.decode().catch(() => {});
-        _preloadPool.set(path, img);
-      } catch (_) {}
+  const want = [];
+  for (let d = 1; d <= PRELOAD_RADIUS && want.length < n - 1; d++) {
+    for (const sign of [1, -1]) {
+      const path = S.currentMedia[(idx + d * sign + n * PRELOAD_RADIUS) % n];
+      if (path && path !== S.currentMedia[idx] && !want.includes(path)) want.push(path);
     }
+  }
+  const keep = new Set(want);
+  for (const p of [..._preloadPool.keys()]) if (!keep.has(p)) _preloadPool.delete(p);
+
+  for (const path of want) {
+    if (gen !== _preloadGen) return;
+    if (_preloadPool.has(path)) continue;
+    const entry = S.files.get(path);
+    if (!entry || entry.isAudio) continue;
+    const end = fgStart();   // reads here count as foreground, like the lightbox itself
+    try {
+      const url = await entryToURL(entry);
+      if (gen !== _preloadGen) return;
+      const img = new Image();
+      img.src = url;
+      _preloadPool.set(path, img);
+      await img.decode().catch(() => {});
+    } catch (_) {
+    } finally { end(); }
   }
 }
 
