@@ -123,6 +123,10 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 
 `references/RPGMakerDecrypter/` contains a local clone of [uuksu/RPGMakerDecrypter](https://github.com/uuksu/RPGMakerDecrypter) (MIT, C#) kept for offline reference. It is excluded from git via `.gitignore`. Do not commit files from it; cite it in comments or docs instead.
 
+## Which site to build for
+
+New features target only the Cloudflare home (`https://makerlens.kokoroou.workers.dev/assets/`). The legacy GitHub Pages copy (`kokoroou.github.io/rpgmaker-assets-viewer/`) is changed only when the owner asks for it by name: no legacy-specific code, banners or workflow edits (`deploy.yml`, `js/site.js`) on our own initiative. The code is shared, so the legacy copy still receives common `js/`/`css/` changes on deploy; a feature that should not run there is gated with `SITE.isLegacy`.
+
 ## Legal constraints
 
 - **Do not add server-side upload functionality.** All processing must stay client-side (File API only). This is a hard constraint for DMCA safety — the tool must never receive or store user game files on a server.
