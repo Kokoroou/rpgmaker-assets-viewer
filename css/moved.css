@@ -27,3 +27,44 @@
 }
 #moved a:hover { filter: brightness(.95); }
 #moved a:focus-visible { outline: 2px solid var(--a-on); outline-offset: 2px; }
+
+/* ── "Try MakerLens Events" promo (js/site.js, legacy GitHub Pages site only) ── */
+#promo {
+  position: relative;
+  z-index: 30;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  padding: 10px 16px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-bottom: 1px solid #1e293b;
+  font: 500 14px/1.4 var(--font);
+  text-align: center;
+}
+#promo .promo-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  color: #052e16;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+#promo a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r-sm);
+  background: #22c55e;
+  color: #052e16;
+  font-weight: 600;
+  text-decoration: none;
+}
+#promo a:hover { filter: brightness(1.08); }
+#promo a:focus-visible { outline: 2px solid #86efac; outline-offset: 2px; }

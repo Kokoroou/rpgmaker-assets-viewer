@@ -50,3 +50,26 @@ var SITE = (function () {
   bar.appendChild(link);
   document.body.insertBefore(bar, document.body.firstChild);
 }());
+
+// "Try MakerLens Events" promo banner, on the legacy site only (under the "moved" banner).
+(function () {
+  if (!SITE.isLegacy || typeof document === 'undefined') return;
+  var bar = document.createElement('div');
+  bar.id = 'promo';
+  bar.setAttribute('role', 'region');
+  bar.setAttribute('aria-label', 'MakerLens Events');
+  var badge = document.createElement('span');
+  badge.className = 'promo-badge';
+  badge.textContent = 'New';
+  var text = document.createElement('span');
+  text.className = 'promo-text';
+  text.textContent = 'Try MakerLens Events: read a game\u2019s dialogue and event flow as an interactive graph, right in your browser.';
+  var link = document.createElement('a');
+  link.href = 'https://makerlens.kokoroou.workers.dev/events/';
+  link.textContent = 'Open MakerLens Events \u2192';
+  bar.appendChild(badge);
+  bar.appendChild(text);
+  bar.appendChild(link);
+  var moved = document.getElementById('moved');
+  document.body.insertBefore(bar, moved ? moved.nextSibling : document.body.firstChild);
+}());
