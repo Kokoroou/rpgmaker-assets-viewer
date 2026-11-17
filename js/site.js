@@ -86,12 +86,12 @@ var SITE = (function () {
   badge.textContent = 'New';
   var title = document.createElement('strong');
   title.className = 'promo-title';
-  title.textContent = 'See the hidden scenes';
+  title.textContent = 'See the Hidden Scenes';
   var text = document.createElement('p');
   text.textContent = 'MakerLens Events plays every scene in a game\u2019s data, even the ones you never unlocked. Free, in your browser.';
   var link = document.createElement('a');
   link.href = 'https://makerlens.kokoroou.workers.dev/events/';
-  link.textContent = 'Watch hidden scenes \u2192';
+  link.textContent = 'Watch Hidden Scenes \u2192';
 
   card.appendChild(close);
   card.appendChild(art);
