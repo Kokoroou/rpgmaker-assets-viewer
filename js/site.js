@@ -25,6 +25,10 @@ var SITE = (function () {
     isPublic: host === HOME.host || host === LEGACY.host,
     isLegacy: host === LEGACY.host,
     retireDate: RETIRE,
+    hidePromo: function () {
+      var p = typeof document === 'undefined' ? null : document.getElementById('promo');
+      if (p) p.remove();
+    },
     homeURL: homeURL
   };
 }());
@@ -49,4 +53,55 @@ var SITE = (function () {
   bar.appendChild(document.createTextNode(' '));
   bar.appendChild(link);
   document.body.insertBefore(bar, document.body.firstChild);
+}());
+
+// "Try MakerLens Events" promo card, on the legacy site only: a square card in the
+// bottom corner, so it does not compete with the "moved" banner at the top.
+(function () {
+  if (!SITE.isLegacy || typeof document === 'undefined') return;
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  var card = document.createElement('aside');
+  card.id = 'promo';
+  card.setAttribute('aria-label', 'MakerLens Events');
+
+  var close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'promo-close';
+  close.setAttribute('aria-label', 'Close');
+  close.textContent = '\u00d7';
+  close.addEventListener('click', function () { card.remove(); });
+
+  // Little event graph: three nodes joined by edges.
+  var art = el('svg', { 'class': 'promo-art', viewBox: '0 0 160 64', 'aria-hidden': 'true' });
+  el('path', { d: 'M38 32 H62 M98 32 H122 M80 20 V8', fill: 'none', stroke: '#22c55e', 'stroke-width': '2', 'stroke-linecap': 'round' }, art);
+  el('rect', { x: 8, y: 20, width: 30, height: 24, rx: 6, fill: '#1e293b', stroke: '#22c55e', 'stroke-width': '2' }, art);
+  el('rect', { x: 62, y: 20, width: 36, height: 24, rx: 6, fill: '#22c55e' }, art);
+  el('rect', { x: 122, y: 20, width: 30, height: 24, rx: 6, fill: '#1e293b', stroke: '#22c55e', 'stroke-width': '2' }, art);
+  el('circle', { cx: 80, cy: 6, r: 4, fill: '#86efac' }, art);
+
+  var badge = document.createElement('span');
+  badge.className = 'promo-badge';
+  badge.textContent = 'New';
+  var title = document.createElement('strong');
+  title.className = 'promo-title';
+  title.textContent = 'See the Hidden Scenes';
+  var text = document.createElement('p');
+  text.textContent = 'MakerLens Events plays every scene in a game\u2019s data, even the ones you never unlocked. Free, in your browser.';
+  var link = document.createElement('a');
+  link.href = 'https://makerlens.kokoroou.workers.dev/events/';
+  link.textContent = 'Watch Hidden Scenes \u2192';
+
+  card.appendChild(close);
+  card.appendChild(art);
+  card.appendChild(badge);
+  card.appendChild(title);
+  card.appendChild(text);
+  card.appendChild(link);
+  document.body.appendChild(card);
 }());
