@@ -39,6 +39,7 @@ function pickStartFolder(folders) {
 
 function commitLibrary(files, folders, key, scan = null, keys = null) {
   clearBlobCache();
+  SITE.hidePromo();             // the Events promo (legacy site) goes away once a game is open
   if (scan) adoptScan(scan); else dropScan();
   S.key = key || '';
   S.remoteLink = null;          // only a game link keeps one (openRemote)

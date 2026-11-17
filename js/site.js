@@ -25,6 +25,10 @@ var SITE = (function () {
     isPublic: host === HOME.host || host === LEGACY.host,
     isLegacy: host === LEGACY.host,
     retireDate: RETIRE,
+    hidePromo: function () {
+      var p = typeof document === 'undefined' ? null : document.getElementById('promo');
+      if (p) p.remove();
+    },
     homeURL: homeURL
   };
 }());
