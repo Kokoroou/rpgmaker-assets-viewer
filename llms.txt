@@ -1,10 +1,10 @@
-# MakerLens
+# MakerLens Assets
 
 > Free, browser-based RPG Maker asset viewer and extractor. Runs 100% client-side — files are never uploaded.
 
 ## What it does
 
-MakerLens lets you open encrypted RPG Maker game files directly in your browser and preview or download the images and audio inside.
+MakerLens Assets lets you open encrypted RPG Maker game files directly in your browser and preview or download the images and audio inside.
 
 - **RPG Maker MV / MZ**: open the game folder; the encryption key is auto-read from `data/System.json`. Supports `.rpgmvp`, `.png_` (images) and `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_` (audio).
 - **RPG Maker XP / VX / VX Ace**: open a `.rgssad`, `.rgss2a`, or `.rgss3a` archive directly. No key needed — it's embedded in the archive.
@@ -15,7 +15,7 @@ Modders and translators working with the rights holder's permission, developers 
 
 ## Key features
 
-- Zero install — open `index.html` in any modern browser
+- Zero install — runs in any modern browser at https://makerlens.kokoroou.workers.dev/assets/
 - Auto key detection from `System.json`
 - Audio preview with duration display
 - Lightbox image viewer with keyboard navigation
@@ -23,6 +23,10 @@ Modders and translators working with the rights holder's permission, developers 
 - Search files by name; filter by type, image size and audio length
 - Drag-and-drop support
 - Light/dark theme (follows your system setting by default)
+
+## Use it
+
+https://makerlens.kokoroou.workers.dev/assets/ — select the game folder (MV/MZ) or the archive (XP/VX/VX Ace), or paste a game link made by rpgmaker-web-toolkit. Chrome and Edge open folders directly; other browsers pick the folder through the file dialog.
 
 ## FAQ
 
