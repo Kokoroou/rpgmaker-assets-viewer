@@ -17,6 +17,13 @@ function load(...files) {
     ctx);
 }
 const js = load('constants.js', 'decrypt-mvmz.js', 'decrypt-rgssad.js');
+
+// The legacy GitHub Pages copy (SITE.isLegacy) keeps the old formats and typing by name.
+function loadLegacy() {
+  const ctx = vm.createContext({ TextDecoder, TextEncoder, SITE: { isLegacy: true } });
+  vm.runInContext(readFileSync(new URL('../js/constants.js', import.meta.url), 'utf8'), ctx);
+  return vm.runInContext('({ MEDIA_EXT, AUDIO_EXT, mimeFor, savedName })', ctx);
+}
 const enc = new TextEncoder();
 const bytes = buf => [...new Uint8Array(buf)];
 
@@ -58,6 +65,15 @@ test('XP/VX audio (mp3, wav, mid) is listed as audio', () => {
   assert.equal(js.getMimeType('a.mp3'), 'audio/mpeg');
   assert.equal(js.getMimeType('a.wav'), 'audio/wav');
   assert.equal(js.getMimeType('a.mid'), 'audio/midi');
+});
+
+test('legacy copy: no mp3/wav/mid, no typing by bytes', () => {
+  const old = loadLegacy();
+  for (const n of ['a.mp3', 'a.wav', 'a.mid']) assert.ok(!old.MEDIA_EXT.test(n) && !old.AUDIO_EXT.test(n), n);
+  assert.ok(old.MEDIA_EXT.test('a.ogg_') && old.AUDIO_EXT.test('a.rpgmvo'));
+  const webp = new Uint8Array([...enc.encode('RIFF'), 0, 0, 0, 0, ...enc.encode('WEBP')]);
+  assert.equal(old.mimeFor('a.png_', webp), 'image/png');
+  assert.equal(old.savedName('a.png_', 'image/webp'), 'a.png');
 });
 
 test('sniffMime types bytes by their signature', () => {

@@ -1,10 +1,17 @@
 const RPG_HEADER = [0x52, 0x50, 0x47, 0x4d, 0x56, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0];
 
 const IMAGE_EXT = /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp)$/i;
+// Features that run only on the MakerLens home, never on the legacy GitHub Pages copy
+// (CLAUDE.md, "Which site to build for"): mp3/wav/mid listing and typing by bytes.
+// js/site.js loads first; without it (tests, local copies) they are on.
+const NEW_FEATURES = !(typeof SITE !== 'undefined' && SITE.isLegacy);
+
 // mp3 / wav / mid: XP, VX and VX Ace games (RGSS) ship them next to ogg, as plain
 // files or inside the archive (see mkxp's audio loaders, references/RPGMakerDecrypter).
-const AUDIO_EXT = /\.(ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a|mp3|wav|midi?)$/i;
-const MEDIA_EXT = /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp|ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a|mp3|wav|midi?)$/i;
+const AUDIO_EXT = NEW_FEATURES ? /\.(ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a|mp3|wav|midi?)$/i
+  : /\.(ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a)$/i;
+const MEDIA_EXT = NEW_FEATURES ? /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp|ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a|mp3|wav|midi?)$/i
+  : /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp|ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a)$/i;
 // Browsers have no MIDI synthesizer: such files are listed and downloaded, not played.
 const MIDI_EXT = /\.midi?$/i;
 
@@ -58,14 +65,14 @@ function sniffMime(data) {
 
 // Blob type for an entry's bytes: the signature wins over the name.
 function mimeFor(name, data) {
-  return sniffMime(data) || getMimeType(name);
+  return (NEW_FEATURES && sniffMime(data)) || getMimeType(name);
 }
 
 // Name to save decrypted bytes under: the real extension (canonicalExt), or the one
 // their type (sniffMime) shows when they disagree (a WebP shipped as .png_ → .webp).
 function savedName(name, mime) {
   const out = canonicalExt(name);
-  const ext = SNIFF_EXT[mime];
+  const ext = NEW_FEATURES && SNIFF_EXT[mime];
   if (!ext) return out;
   const cur = (out.match(/\.([^./]+)$/) || [])[1]?.toLowerCase();
   const same = cur === ext || (ext === 'jpg' && cur === 'jpeg') || (ext === 'mid' && cur === 'midi');

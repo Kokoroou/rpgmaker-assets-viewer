@@ -250,7 +250,7 @@ async function readMeta(entry) {
     return s ? { w: s.w, h: s.h } : null;
   }
   let dur = null;
-  if (head[0] === 0x52 && head[1] === 0x49) {     // "RI": RIFF WAVE
+  if (NEW_FEATURES && head[0] === 0x52 && head[1] === 0x49) {     // "RI": RIFF WAVE (not on the legacy copy)
     dur = wavDuration(head, r.size);
   } else if (head[0] === 0x4f && head[1] === 0x67) {     // "Og": Ogg
     const tail = r.size <= META_HEAD ? head : await r.read(Math.max(0, r.size - META_TAIL), META_TAIL);
