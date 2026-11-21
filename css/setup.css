@@ -2,13 +2,14 @@
 #setup {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;   /* centred by #setup-inner's auto margins, which never push the */
+  justify-content: center;   /* top out of reach when the screen is shorter than the content */
   padding: 40px 16px;
   overflow-y: auto;
 }
 
 #setup-inner {
+  margin: auto 0;
   width: 100%;
   max-width: 600px;
   display: flex;
