@@ -13,10 +13,17 @@ function load(...files) {
   }
   // Top-level const/let live in the script scope, not on the global object: expose them.
   return vm.runInContext(
-    '({ RPG_HEADER, EXT_REMAP, canonicalExt, getMimeType, MEDIA_EXT, escapeHtml, decryptMVMZ, deriveKeyFromPNG, sanitizeFileName, uniqueZipNames, parseRGSSAD, rgssDecryptData })',
+    '({ RPG_HEADER, EXT_REMAP, canonicalExt, getMimeType, MEDIA_EXT, AUDIO_EXT, MIDI_EXT, sniffMime, mimeFor, savedName, escapeHtml, decryptMVMZ, deriveKeyFromPNG, sanitizeFileName, uniqueZipNames, parseRGSSAD, rgssDecryptData })',
     ctx);
 }
 const js = load('constants.js', 'decrypt-mvmz.js', 'decrypt-rgssad.js');
+
+// The legacy GitHub Pages copy (SITE.isLegacy) keeps the old formats and typing by name.
+function loadLegacy() {
+  const ctx = vm.createContext({ TextDecoder, TextEncoder, SITE: { isLegacy: true } });
+  vm.runInContext(readFileSync(new URL('../js/constants.js', import.meta.url), 'utf8'), ctx);
+  return vm.runInContext('({ MEDIA_EXT, AUDIO_EXT, mimeFor, savedName })', ctx);
+}
 const enc = new TextEncoder();
 const bytes = buf => [...new Uint8Array(buf)];
 
@@ -47,6 +54,57 @@ test('getMimeType follows EXT_REMAP', () => {
 test('MEDIA_EXT accepts media and rejects data files', () => {
   for (const n of ['a.png_', 'a.rpgmvp', 'a.ogg', 'a.m4a_', 'a.webp']) assert.ok(js.MEDIA_EXT.test(n), n);
   for (const n of ['System.json', 'Game.rgss3a', 'a.png.bak']) assert.ok(!js.MEDIA_EXT.test(n), n);
+});
+
+test('XP/VX audio (mp3, wav, mid) is listed as audio', () => {
+  for (const n of ['Audio/SE/001-System01.ogg', 'Audio/SE/Cursor.wav', 'Audio/BGM/Theme.mp3', 'Audio/BGM/001-Battle01.mid', 'a.MIDI']) {
+    assert.ok(js.MEDIA_EXT.test(n), n);
+    assert.ok(js.AUDIO_EXT.test(n), n);
+  }
+  assert.ok(js.MIDI_EXT.test('a.mid') && !js.MIDI_EXT.test('a.mp3'));
+  assert.equal(js.getMimeType('a.mp3'), 'audio/mpeg');
+  assert.equal(js.getMimeType('a.wav'), 'audio/wav');
+  assert.equal(js.getMimeType('a.mid'), 'audio/midi');
+});
+
+test('legacy copy: no mp3/wav/mid, no typing by bytes', () => {
+  const old = loadLegacy();
+  for (const n of ['a.mp3', 'a.wav', 'a.mid']) assert.ok(!old.MEDIA_EXT.test(n) && !old.AUDIO_EXT.test(n), n);
+  assert.ok(old.MEDIA_EXT.test('a.ogg_') && old.AUDIO_EXT.test('a.rpgmvo'));
+  const webp = new Uint8Array([...enc.encode('RIFF'), 0, 0, 0, 0, ...enc.encode('WEBP')]);
+  assert.equal(old.mimeFor('a.png_', webp), 'image/png');
+  assert.equal(old.savedName('a.png_', 'image/webp'), 'a.png');
+});
+
+test('sniffMime types bytes by their signature', () => {
+  const sig = (...p) => { const out = []; for (const x of p) typeof x === 'string' ? out.push(...enc.encode(x)) : out.push(...x); return new Uint8Array([...out, ...new Array(12).fill(0)]); };
+  assert.equal(js.sniffMime(sig([0x89], 'PNG\r\n')), 'image/png');
+  assert.equal(js.sniffMime(sig([0xff, 0xd8, 0xff, 0xe0])), 'image/jpeg');
+  assert.equal(js.sniffMime(sig('GIF89a')), 'image/gif');
+  assert.equal(js.sniffMime(sig('RIFF', [0, 0, 0, 0], 'WEBP')), 'image/webp');
+  assert.equal(js.sniffMime(sig('RIFF', [0, 0, 0, 0], 'WAVE')), 'audio/wav');
+  assert.equal(js.sniffMime(sig('BM')), 'image/bmp');
+  assert.equal(js.sniffMime(sig('OggS')), 'audio/ogg');
+  assert.equal(js.sniffMime(sig([0, 0, 0, 0x20], 'ftypM4A ')), 'audio/mp4');
+  assert.equal(js.sniffMime(sig('MThd')), 'audio/midi');
+  assert.equal(js.sniffMime(sig('ID3')), 'audio/mpeg');
+  assert.equal(js.sniffMime(sig([0xff, 0xfb, 0x90])), 'audio/mpeg');
+  assert.equal(js.sniffMime(sig('garbage!')), '');
+  assert.equal(js.sniffMime(new Uint8Array(0)), '');
+  assert.equal(js.sniffMime(sig('OggS').buffer), 'audio/ogg', 'ArrayBuffer input');
+});
+
+test('mimeFor and savedName trust the bytes over the name', () => {
+  const webp = new Uint8Array([...enc.encode('RIFF'), 0, 0, 0, 0, ...enc.encode('WEBP')]);
+  assert.equal(js.mimeFor('a.png_', webp), 'image/webp');
+  assert.equal(js.mimeFor('a.png_', new Uint8Array(4)), 'image/png', 'unknown bytes: by name');
+  assert.equal(js.savedName('img/pictures/a.png_', 'image/webp'), 'img/pictures/a.webp');
+  assert.equal(js.savedName('a.rpgmvp', 'image/png'), 'a.png');
+  assert.equal(js.savedName('a.rpgmvp', ''), 'a.png');
+  assert.equal(js.savedName('a.rpgmvp', undefined), 'a.png');
+  assert.equal(js.savedName('a.jpeg', 'image/jpeg'), 'a.jpeg');
+  assert.equal(js.savedName('a.midi', 'audio/midi'), 'a.midi');
+  assert.equal(js.savedName('Battle.ogg_', 'audio/mp4'), 'Battle.m4a');
 });
 
 // ── MV / MZ ───────────────────────────────────────────────────────────────────

@@ -839,7 +839,7 @@ async function downloadFolder() {
       try {
         const data = await entryBytes(entry);
         items.push({ name: '', data });
-        rawNames.push(canonicalExt(entry.name));
+        rawNames.push(savedName(entry.name, sniffMime(data)));
       } catch (e) {
         failed.push({ name: entry.name, reason: e?.message || String(e) });
       }

@@ -8,7 +8,7 @@ const ctx = vm.createContext({ $: () => null, document: null });
 for (const f of ['constants.js', 'decrypt-mvmz.js', 'filters.js'])
   vm.runInContext(readFileSync(new URL(`../js/${f}`, import.meta.url), 'utf8'), ctx, { filename: f });
 const js = vm.runInContext(`({ imageSize, oggDuration, mp4Duration, parseDuration, fmtDuration,
-  filterMatch, filterSummary, NO_FILTER, entryReader, readMeta,
+  filterMatch, filterSummary, NO_FILTER, entryReader, readMeta, wavDuration,
   setKey: k => { S.key = k; } })`, Object.assign(ctx, {
   S: { key: '' },
   entryFile: e => Promise.resolve(e._file),
@@ -146,6 +146,25 @@ test('readMeta decrypts MV/MZ files and reads only their headers', async () => {
   assert.deepEqual({ ...await js.readMeta(arch) }, { w: 640, h: 480 });
 
   assert.equal(await js.readMeta({ name: 'e.png', isImage: true, _file: file(bytes('garbage', new Array(30).fill(0))) }), null);
+
+  const w = wav(200, 600);   // 3 s at 200 bytes/s
+  assert.deepEqual({ ...await js.readMeta({ name: 'f.wav', isAudio: true, _file: file(w) }) }, { dur: 3 });
+});
+
+// RIFF WAVE with a LIST chunk (odd size, padded) before fmt, then data.
+const wav = (byteRate, dataLen, declared = dataLen) => bytes('RIFF', le32(36 + dataLen), 'WAVE',
+  'LIST', le32(3), [1, 2, 3, 0],
+  'fmt ', le32(16), le16(1), le16(1), le32(byteRate / 2), le32(byteRate), le16(2), le16(16),
+  'data', le32(declared), new Uint8Array(dataLen));
+
+test('wavDuration: data size / byte rate', () => {
+  const w = wav(1000, 2000);
+  assert.equal(js.wavDuration(w, w.length), 2);
+  const open = wav(1000, 500, 0xffffffff);   // placeholder size: cut to the file
+  assert.equal(js.wavDuration(open, open.length), 0.5);
+  assert.equal(js.wavDuration(bytes('RIFF', le32(4), 'AVI '), 12), null);
+  assert.equal(js.wavDuration(w.subarray(0, 30), w.length), null, 'fmt cut off');
+  assert.equal(js.wavDuration(bytes('RIFF', le32(12), 'WAVE', 'data', le32(4), [0, 0, 0, 0]), 24), null, 'no fmt');
 });
 
 test('parseDuration accepts seconds and m:ss, rejects the rest', () => {
