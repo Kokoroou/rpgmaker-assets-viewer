@@ -436,7 +436,7 @@ function showFolder(key) {
 
 // Paths of a sidebar folder; the virtual Duplicates folder is computed.
 function folderPaths(key) {
-  return key === DUPES_KEY ? Dupes.list() : S.folders.get(key) || [];
+  return key === DUPES_KEY ? Dupes.list() : byName(S.folders.get(key) || []);
 }
 
 function updateFolderPath() {

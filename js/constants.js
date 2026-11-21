@@ -132,3 +132,7 @@ function noMediaMessage(name) {
   if (name && INNER_DIRS.test(name)) return `"${name}" is a folder inside the game and holds no images or audio. Select the folder above it instead, ${where}.`;
   return `No images or audio found${name ? ` in "${name}"` : ''}. Select ${where}.`;
 }
+
+// File order in the grid: by name, numbers by value (Actor2 before Actor10), case ignored.
+const NAME_ORDER = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+const byName = paths => paths.slice().sort(NAME_ORDER.compare);
