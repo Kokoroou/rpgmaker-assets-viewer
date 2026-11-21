@@ -307,7 +307,7 @@ function renderSidebar() {
   // Current folder row (when drilled in)
   if (sPath) {
     const cur  = document.createElement('div');
-    const lbl  = sPath === '__root__' ? '(root)' : sPath.split('/').pop();
+    const lbl  = sPath === '__root__' ? ROOT_LABEL : sPath.split('/').pop();
     const cnt  = (S.folders.get(sPath) || []).length;
     cur.className = 'folder-item folder-current';
     cur.dataset.folder = sPath;
@@ -347,7 +347,7 @@ function renderSidebar() {
   // Child folders
   for (const key of children) {
     const hasKids = _sbHasKids(key);
-    const lbl     = key === '__root__' ? '(root)' : key.split('/').pop();
+    const lbl     = key === '__root__' ? ROOT_LABEL : key.split('/').pop();
     const cnt     = (S.folders.get(key) || []).length;
 
     const item = document.createElement('div');
@@ -442,7 +442,7 @@ function folderPaths(key) {
 function updateFolderPath() {
   const key = S.currentFolder;
   if (!key) return;
-  const label = key === '__root__' ? 'root' : key === DUPES_KEY ? 'Duplicates' : key;
+  const label = key === '__root__' ? ROOT_LABEL : key === DUPES_KEY ? 'Duplicates' : key;
   const n = S.currentMedia.length;
   const parts = [`${fmtNum(n)} item${n === 1 ? '' : 's'}`];
   if (S.hiddenCopies) parts.push(`${fmtNum(S.hiddenCopies)} cop${S.hiddenCopies === 1 ? 'y' : 'ies'} hidden`);

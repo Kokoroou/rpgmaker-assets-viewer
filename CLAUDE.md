@@ -65,7 +65,7 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 **State object `S`** (global, in-memory):
 - `S.key` — fallback hex encryption key (single game at the root, or derived from a PNG header); in memory only (never persisted)
 - `S.keys` — `Map<game folder path, key>`, one per `data/System.json` found, so a folder holding several games (different keys) works; `keyFor(path)` (ui.js) picks the deepest matching game folder, `decryptWithKey(buf, path)` uses it
-- `S.userNav` — true once the user clicked a folder; until then the grid auto-selects the start folder (`pickStartFolder()` in app.js: `img/pictures` at any depth, else the first media folder). The lazy scan lists `img/pictures` ahead of everything else
+- `S.userNav` — true once the user clicked a folder; until then the grid auto-selects the start folder (`pickStartFolder()` in app.js: `img/pictures` at any depth, or a `pictures` folder when `img/` itself was picked, else the first media folder). A pick with no image or audio (`data/`, a non-game folder) fails in the loader with `noMediaMessage()` (constants.js), which names the folder and says to pick the one above it, so the start screen and the open game stay. The lazy scan lists `img/pictures` ahead of everything else
 - `S.files` — `Map<path, entry>` for all media entries
 - `S.folders` — `Map<folderKey, path[]>` grouping for the sidebar
 - `S.currentFolder` / `S.currentMedia` — active folder key and filtered path list

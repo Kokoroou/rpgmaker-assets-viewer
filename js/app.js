@@ -34,6 +34,7 @@ function makeYielder() {
 // keeps filling the same Maps after the swap, in the background.
 function pickStartFolder(folders) {
   for (const k of folders.keys()) if (PICTURES_DIR.test(k)) return k;
+  if (folders.has('pictures')) return 'pictures';   // img/ itself was picked
   return folders.keys().next().value;
 }
 
@@ -103,6 +104,8 @@ async function loadMVMZFolder(allFiles, key, keys) {
   Loader.step('index', 'done', mediaSummary(files));
   await nextFrame();
   Loader.check();
+  // Nothing to show (data/, a non-game folder): stay on the start screen and say what to pick.
+  if (!files.size) throw new Error(noMediaMessage(folderNameOf(allFiles)));
 
   commitLibrary(files, folders, key, null, keys);
 }
@@ -330,6 +333,7 @@ function openFolderLazy(name, sources) {
         Loader.check();
       }
     } catch (e) { scan.abort(); throw e; }
+    if (!scan.hasFolder) { scan.abort(); throw new Error(noMediaMessage(name)); }
 
     commitLibrary(scan.files, scan.folders, scan.key, scan);
     // An MV/MZ folder behind a handle can move to MakerLens Events without being picked again.
