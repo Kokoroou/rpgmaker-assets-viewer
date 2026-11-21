@@ -1,8 +1,12 @@
 const RPG_HEADER = [0x52, 0x50, 0x47, 0x4d, 0x56, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0];
 
 const IMAGE_EXT = /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp)$/i;
-const AUDIO_EXT = /\.(ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a)$/i;
-const MEDIA_EXT = /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp|ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a)$/i;
+// mp3 / wav / mid: XP, VX and VX Ace games (RGSS) ship them next to ogg, as plain
+// files or inside the archive (see mkxp's audio loaders, references/RPGMakerDecrypter).
+const AUDIO_EXT = /\.(ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a|mp3|wav|midi?)$/i;
+const MEDIA_EXT = /\.(png_|rpgmvp|png|jpe?g|gif|webp|bmp|ogg_|m4a_|rpgmvo|rpgmvm|ogg|m4a|mp3|wav|midi?)$/i;
+// Browsers have no MIDI synthesizer: such files are listed and downloaded, not played.
+const MIDI_EXT = /\.midi?$/i;
 
 const ENC_IMAGE_EXT = /\.(png_|rpgmvp)$/i;
 const ENC_AUDIO_EXT = /\.(ogg_|rpgmvo|m4a_|rpgmvm)$/i;
@@ -23,9 +27,49 @@ function getMimeType(filename) {
   const MAP  = {
     png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
     gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp',
-    ogg: 'audio/ogg', m4a: 'audio/mp4',
+    ogg: 'audio/ogg', m4a: 'audio/mp4', mp3: 'audio/mpeg', wav: 'audio/wav',
+    mid: 'audio/midi', midi: 'audio/midi',
   };
   return MAP[real] || 'application/octet-stream';
+}
+
+// Type of decrypted bytes from their signature ('' when unknown). Some games ship
+// WebP or JPEG under .png_ / .rpgmvp, so the name alone is not enough. Same checks
+// as sniffMime() in MakerLens Events (js/media.js).
+const SNIFF_EXT = {
+  'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/bmp': 'bmp',
+  'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/wav': 'wav', 'audio/mpeg': 'mp3', 'audio/midi': 'mid',
+};
+function sniffMime(data) {
+  const b = data instanceof Uint8Array ? data.subarray(0, 12) : new Uint8Array(data, 0, Math.min(12, data.byteLength));
+  const at = (o, s) => b.length >= o + s.length && [...s].every((c, i) => b[o + i] === c.charCodeAt(0));
+  if (b[0] === 0x89 && at(1, 'PNG')) return 'image/png';
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  if (at(0, 'GIF8')) return 'image/gif';
+  if (at(0, 'RIFF') && at(8, 'WEBP')) return 'image/webp';
+  if (at(0, 'RIFF') && at(8, 'WAVE')) return 'audio/wav';
+  if (at(0, 'BM')) return 'image/bmp';
+  if (at(0, 'OggS')) return 'audio/ogg';
+  if (at(4, 'ftyp')) return 'audio/mp4';
+  if (at(0, 'MThd')) return 'audio/midi';
+  if (at(0, 'ID3') || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0)) return 'audio/mpeg';
+  return '';
+}
+
+// Blob type for an entry's bytes: the signature wins over the name.
+function mimeFor(name, data) {
+  return sniffMime(data) || getMimeType(name);
+}
+
+// Name to save decrypted bytes under: the real extension (canonicalExt), or the one
+// their type (sniffMime) shows when they disagree (a WebP shipped as .png_ → .webp).
+function savedName(name, mime) {
+  const out = canonicalExt(name);
+  const ext = SNIFF_EXT[mime];
+  if (!ext) return out;
+  const cur = (out.match(/\.([^./]+)$/) || [])[1]?.toLowerCase();
+  const same = cur === ext || (ext === 'jpg' && cur === 'jpeg') || (ext === 'mid' && cur === 'midi');
+  return same ? out : out.replace(/(\.[^./]+)?$/, '.' + ext);
 }
 
 // File and folder names come from the opened game, so they are untrusted: escape them

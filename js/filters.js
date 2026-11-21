@@ -18,6 +18,7 @@
 //          Vorbis I spec 4.2.2 (identification header: rate), RFC 7845 (Opus:
 //          48 kHz granules, pre-skip in OpusHead)
 //   MP4  — ISO/IEC 14496-12, 8.2.2 mvhd (timescale, duration) inside moov
+//   WAV  — Microsoft RIFF WAVE: "fmt " chunk (byte rate at body offset 8), "data" chunk size
 
 const META_HEAD = 65536;   // bytes read from the start (image header, Ogg first page)
 const META_TAIL = 65536;   // bytes read from the end of an Ogg file (last page)
@@ -101,6 +102,30 @@ function oggDuration(head, tail) {
     if (lo === 0xffffffff && hi === 0xffffffff) continue;
     const samples = hi * 4294967296 + lo - skip;
     return samples > 0 ? samples / rate : null;
+  }
+  return null;
+}
+
+// Seconds of a WAV from its first bytes (head) and the file size, or null:
+// data size / byte rate. A data size past the end of the file (streams written
+// with a placeholder) is cut to what the file holds.
+function wavDuration(head, size) {
+  if (!head || head.length < 12) return null;
+  const le32 = (i) => (head[i] | (head[i + 1] << 8) | (head[i + 2] << 16)) + ((head[i + 3] << 24) >>> 0);
+  const tag = (i, t) => [...t].every((c, k) => head[i + k] === c.charCodeAt(0));
+  if (!tag(0, 'RIFF') || !tag(8, 'WAVE')) return null;
+  let rate = 0;
+  for (let off = 12; off + 8 <= head.length;) {
+    const len = le32(off + 4);
+    if (tag(off, 'fmt ')) {
+      if (off + 20 > head.length) return null;
+      rate = le32(off + 16);
+    } else if (tag(off, 'data')) {
+      if (!rate) return null;
+      const bytes = Math.min(len, Math.max(0, size - off - 8));
+      return bytes > 0 ? bytes / rate : null;
+    }
+    off += 8 + len + (len & 1);                    // chunks are padded to an even size
   }
   return null;
 }
@@ -225,7 +250,9 @@ async function readMeta(entry) {
     return s ? { w: s.w, h: s.h } : null;
   }
   let dur = null;
-  if (head[0] === 0x4f && head[1] === 0x67) {     // "Og": Ogg
+  if (head[0] === 0x52 && head[1] === 0x49) {     // "RI": RIFF WAVE
+    dur = wavDuration(head, r.size);
+  } else if (head[0] === 0x4f && head[1] === 0x67) {     // "Og": Ogg
     const tail = r.size <= META_HEAD ? head : await r.read(Math.max(0, r.size - META_TAIL), META_TAIL);
     dur = oggDuration(head, tail);
   } else {

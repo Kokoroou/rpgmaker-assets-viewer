@@ -39,7 +39,7 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared g
 
 ```
 js/preboot.js        — first script: Select Game Folder, folder input, drops and the View another way dialog work before the rest has loaded; Preboot.attach() at the end of app.js takes over what was picked
-js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt()
+js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt(), sniffMime()/mimeFor() (type by bytes: some games ship WebP as .png_), savedName() (download name from the real type)
 js/state.js          — global S object
 js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]

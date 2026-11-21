@@ -125,11 +125,11 @@ async function entryToURL(entry) {
   if (entry._getData) {
     data = await entry._getData();
     if (entry.isAudio) entry._loop = parseOggLoop(data);
-    url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
+    url  = URL.createObjectURL(new Blob([data], { type: entry._mime = mimeFor(entry.name, data) }));
   } else if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name)) {
     data = decryptWithKey(await (await entryFile(entry)).arrayBuffer(), entry.path);
     if (entry.isAudio) entry._loop = parseOggLoop(data);
-    url  = URL.createObjectURL(new Blob([data], { type: getMimeType(entry.name) }));
+    url  = URL.createObjectURL(new Blob([data], { type: entry._mime = mimeFor(entry.name, data) }));
   } else {
     const file = await entryFile(entry);
     if (entry.isAudio) entry._loop = parseOggLoop(await file.slice(0, 262144).arrayBuffer());
@@ -605,7 +605,15 @@ async function _loadLbEntry(idx) {
   _spriteStop();
   EL.lbSprite.style.display = 'none';
 
-  if (entry.isAudio) {
+  if (entry.isAudio && MIDI_EXT.test(entry.name)) {
+    // No browser plays MIDI without a synthesizer: offer the download only.
+    EL.lbImg.style.display   = 'none';
+    EL.lbAudio.pause();
+    EL.lbAudio.style.display = 'none';
+    EL.lbLoop.style.display  = 'none';
+    _loopPts = null;
+    EL.lbMeta.textContent = 'MIDI: browsers cannot play it. Download it to play it in a media player.' + copyNote(copies);
+  } else if (entry.isAudio) {
     EL.lbImg.style.display   = 'none';
     EL.lbAudio.style.display = 'block';
     EL.lbAudio.src = '';
@@ -970,7 +978,7 @@ async function downloadEntry(path) {
     const url = await entryToURL(entry);
     const a   = document.createElement('a');
     a.href     = url;
-    a.download = canonicalExt(entry.name.split('/').pop());
+    a.download = savedName(entry.name.split('/').pop(), entry._mime);
     a.click();
   } catch (e) {
     alert(`Download failed: ${e.message}`);
