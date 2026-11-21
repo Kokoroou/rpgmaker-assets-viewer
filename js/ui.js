@@ -312,7 +312,7 @@ function renderSidebar() {
     cur.className = 'folder-item folder-current';
     cur.dataset.folder = sPath;
     cur.innerHTML = `<span class="f-icon">${ICONS.folderOpen}</span><span class="f-name">${escapeHtml(lbl)}</span>${cnt ? `<span class="f-count">${cnt}</span>` : ''}`;
-    cur.addEventListener('click', () => { S.userNav = true; showFolder(sPath); });
+    cur.addEventListener('click', () => { S.userNav = true; showFolder(sPath); if (typeof isPhone === 'function' && isPhone()) setSidebar(false); });
     if (S.currentFolder === sPath) cur.classList.add('active');
     EL.sidebar.appendChild(cur);
 
@@ -362,6 +362,7 @@ function renderSidebar() {
       S.userNav = true;
       showFolder(key);
       if (hasKids) { S.sidebarPath = key; renderSidebar(); }
+      else if (typeof isPhone === 'function' && isPhone()) setSidebar(false);
     });
     if (S.currentFolder === key) item.classList.add('active');
     EL.sidebar.appendChild(item);

@@ -550,4 +550,15 @@ body:not(.has-files) #header-right       { margin-left: auto !important; }
   #count-badge          { display: none; }
   #about-panel          { padding: 22px 18px; }
   .folder-item          { min-height: 44px; }
+
+  /* The sidebar is a drawer over the grid, closed until the menu button opens it */
+  #sidebar {
+    position: absolute; top: 0; bottom: 0; left: 0; z-index: 20;
+    width: min(85vw, 320px) !important;
+    box-shadow: var(--shadow-lg);
+  }
+  #sidebar.hidden { box-shadow: none; }
+  #sidebar-resizer { display: none; }
+  #sidebar-scrim { position: absolute; inset: 0; z-index: 19; background: rgb(0 0 0 / .35); }
 }
+#sidebar-scrim[hidden] { display: none; }
