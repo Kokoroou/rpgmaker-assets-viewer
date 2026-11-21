@@ -184,13 +184,19 @@ async function loadRGSSAD(file) {
 }
 
 // ─── Auto-detect game folder ──────────────────────────
+// RPG Maker 2000/2003: RPG_RT.ldb / RPG_RT.lmt at the game root, no encryption; images
+// may be .xyz (js/xyz.js). The two editors share the format, so they are named together.
+const RM2K_ENGINE = 'RPG Maker 2000/2003';
+const RM2K_DB = /^RPG_RT\.(ldb|lmt)$/i;
+
 function detectFolderEngine(files) {
-  let mz = false, mv = false;
+  let mz = false, mv = false, rm2k = false;
   for (const f of files) {
     if (f.name === 'rmmz_core.js') mz = true;
     else if (f.name === 'rpg_core.js') mv = true;
+    else if (NEW_FEATURES && RM2K_DB.test(f.name)) rm2k = true;
   }
-  return mz ? 'RPG Maker MZ' : mv ? 'RPG Maker MV' : null;
+  return rm2k ? RM2K_ENGINE : mz ? 'RPG Maker MZ' : mv ? 'RPG Maker MV' : null;
 }
 
 async function loadGameFolder(allFiles) {

@@ -30,7 +30,8 @@ A browser-based media viewer for RPG Maker games. Supports **MV, MZ, XP, VX and 
 | XP / VX | `.rgssad`, `.rgss2a` (RGSSAD v1) | key embedded in the archive |
 | VX Ace | `.rgss3a` (RGSSAD v3) | per-file keys embedded in the archive |
 | Any | `.png` `.jpg` `.gif` `.webp` `.bmp` `.ogg` `.m4a` `.mp3` `.wav` | none, shown as is (typed by their bytes, so a WebP saved as `.png_` still shows and downloads as `.webp`) |
-| XP / VX | `.mid` | listed and downloaded; browsers cannot play MIDI |
+| XP / VX / 2000 / 2003 | `.mid` | listed and downloaded; browsers cannot play MIDI |
+| 2000 / 2003 | `.xyz` (image) | none: zlib-compressed 256-colour image, shown and saved as an indexed PNG (`js/xyz.js`) |
 
 Algorithms and their sources are documented in the code comments (`js/decrypt-*.js`).
 

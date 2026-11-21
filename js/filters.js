@@ -14,6 +14,7 @@
 //   BMP  — Microsoft BITMAPCOREHEADER / BITMAPINFOHEADER after the 14-byte file header
 //   JPEG — ITU-T T.81, B.1.1.3 marker segments and B.2.2 frame header (SOFn)
 //   WebP — RFC 9649 (WebP container): VP8 / VP8L / VP8X chunk headers
+//   XYZ  — RPG Maker 2000/2003 (libxyzimage): "XYZ1", width/height u16 LE at bytes 4/6
 //   Ogg  — RFC 3533 page header (granule position = samples at page end),
 //          Vorbis I spec 4.2.2 (identification header: rate), RFC 7845 (Opus:
 //          48 kHz granules, pre-skip in OpusHead)
@@ -37,6 +38,7 @@ function imageSize(u) {
   const at = (i, s) => [...s].every((c, k) => u[i + k] === c.charCodeAt(0));
 
   if (u.length >= 24 && u[0] === 0x89 && at(1, 'PNG') && at(12, 'IHDR')) return ok(be32(16), be32(20));
+  if (NEW_FEATURES && at(0, 'XYZ1')) return ok(le16(4), le16(6));   // RPG Maker 2000/2003 (js/xyz.js)
   if (at(0, 'GIF8')) return ok(le16(6), le16(8));
   if (u.length >= 26 && at(0, 'BM')) {
     const dib = le32(14);

@@ -7,6 +7,9 @@
 // Frame size is derived from the image size, so 32/48 px cells both work.
 
 const SPRITE_WALK = [0, 1, 2, 1];
+// RPG Maker 2000/2003 CharSet rows are up, right, down, left: the sheet row for each
+// direction above (down, left, right, up). Same grid: 288×256 = 12×8 cells of 24×32.
+const RM2K_SPRITE_ROWS = [2, 3, 1, 0];
 
 // Returns null if the name/size does not look like a sheet.
 function spriteLayout(fileName, w, h) {
