@@ -105,7 +105,7 @@ async function loadMVMZFolder(allFiles, key, keys) {
   await nextFrame();
   Loader.check();
   // Nothing to show (data/, a non-game folder): stay on the start screen and say what to pick.
-  if (!files.size) throw new Error(noMediaMessage(folderNameOf(allFiles)));
+  if (!files.size) throw noMediaError(folderNameOf(allFiles));
 
   commitLibrary(files, folders, key, null, keys);
 }
@@ -147,6 +147,7 @@ async function loadRGSSAD(file) {
   Loader.step('read', 'done', fmtBytes(file.size));
 
   Loader.step('table', 'active', archiveEngine(file.name));
+  noteEngine(archiveEngine(file.name));
   await nextFrame();
   Loader.check();
   const parsed = parseRGSSAD(buf);
@@ -235,26 +236,36 @@ async function loadGameFolder(allFiles) {
     engine || sysJson ? `${engine || 'RPG Maker MV/MZ'} · ${games > 1 ? `${games} games, ${games} keys` : key ? 'encrypted' : 'not encrypted'}`
                       : 'Unknown layout, scanning for media');
 
+  noteEngine(engine || (sysJson ? 'MV/MZ' : ''));
   await loadMVMZFolder(allFiles, key, keys);
 }
 
 // ─── Load lifecycle ───────────────────────────────────
 // Wraps one open-folder/archive action: busy UI, loader overlay, cancel and
 // error handling. `task` opens the loader itself once it knows the name.
-let _loading = false;
-async function runLoad(task) {
+// `way` is the open-* event name (js/analytics.js); the loader notes the engine with
+// noteEngine() and it is counted only once the game is open.
+let _loading = false, _openEngine = null;
+const noteEngine = label => { _openEngine = label; };
+async function runLoad(task, way) {
   if (_loading || Loader.active) return;
   _loading = true;
+  _openEngine = null;
+  if (way) track(way);
   const orig = EL.openBtn.innerHTML;
   EL.openBtn.disabled = true;
   EL.openBtn.innerHTML = '<span class="status-spinner"></span><span class="btn-label">Loading…</span>';
   try {
     await task();
     Loader.close();
+    track('open-ok');
+    track(engineEvent(_openEngine));
   } catch (e) {
     if (e?.name === 'AbortError') {
       Loader.close();
+      track('open-cancel');
     } else {
+      track(e?.noMedia ? 'open-fail-nomedia' : 'open-fail-other');
       const msg = e?.message || String(e);
       if (Loader.active) Loader.fail(msg);
       setStatus(EL.setupStatus, 'err', `✕ ${msg}`);
@@ -275,7 +286,7 @@ function openFileList(files) {
   return runLoad(async () => {
     Loader.open({ kind: 'folder', name: folderNameOf(files), steps: FOLDER_STEPS });
     await loadGameFolder(files);
-  });
+  }, 'open-input');
 }
 
 // Folder behind a directory handle or entry (directory picker, drag & drop).
@@ -285,7 +296,7 @@ function openFileList(files) {
 // `sources` is a list of {fs, root} to try in order (handle API, then entries).
 const LAZY_STEPS = ['detect', 'scan', 'load'];
 
-function openFolderLazy(name, sources) {
+function openFolderLazy(name, sources, way = 'open-picker') {
   return runLoad(async () => {
     Loader.open({ kind: 'folder', name, steps: LAZY_STEPS });
     Loader.step('detect', 'active');
@@ -333,12 +344,13 @@ function openFolderLazy(name, sources) {
         Loader.check();
       }
     } catch (e) { scan.abort(); throw e; }
-    if (!scan.hasFolder) { scan.abort(); throw new Error(noMediaMessage(name)); }
+    if (!scan.hasFolder) { scan.abort(); throw noMediaError(name); }
 
+    noteEngine(info.engine || (info.hasSystem ? 'MV/MZ' : ''));
     commitLibrary(scan.files, scan.folders, scan.key, scan);
     // An MV/MZ folder behind a handle can move to MakerLens Events without being picked again.
     if (fs === FS_HANDLE && info.hasSystem) { S.folderHandle = root; syncSwitch(); }
-  });
+  }, way);
 }
 
 // Loose media files dropped without a folder (roadmap item 2). No System.json:
@@ -363,14 +375,14 @@ function openLooseFiles(files) {
     Loader.progress(1, 1);
     Loader.step('index', 'done', mediaSummary(map));
     commitLibrary(map, new Map([['__root__', list]]), key);
-  });
+  }, 'open-files');
 }
 
 function openArchive(file) {
   return runLoad(async () => {
     Loader.open({ kind: 'archive', name: file.name, steps: ARCHIVE_STEPS });
     await loadRGSSAD(file);
-  });
+  }, 'open-archive');
 }
 
 // ─── Game link (js/remote.js) ─────────────────────────
@@ -399,6 +411,7 @@ function openRemote(link) {
     }
     const engine = manifest.engine ? `RPG Maker ${manifest.engine}` : 'RPG Maker MV/MZ';
     Loader.step('detect', 'done', `${engine} · ${key ? 'encrypted' : 'not encrypted'}`);
+    noteEngine(engine);
 
     Loader.step('index', 'active');
     const files = new Map(), folders = new Map();
@@ -421,7 +434,7 @@ function openRemote(link) {
     commitLibrary(files, folders, key);
     S.remoteLink = link;
     syncSwitch();
-  });
+  }, 'open-link');
 }
 
 // ─── Switch to MakerLens Events ───────────────────────
@@ -436,7 +449,7 @@ function syncSwitch() {
 
 // Counted by name only in GoatCounter ('switch-to-events', js/analytics.js); the request gets
 // a moment to leave before the page navigates.
-const countSwitch = () => (typeof countEvent === 'function' ? countEvent('switch-to-events') : Promise.resolve());
+const countSwitch = () => track('switch-to-events');
 
 EL.switchGo.addEventListener('click', async () => {
   if (S.remoteLink) {
@@ -465,7 +478,7 @@ EL.switchGo.addEventListener('click', async () => {
 async function openHandoff() {
   const handle = await Handoff.receive();
   if (!handle || _loading || Loader.active || S.files.size) return;
-  const open = () => openFolderLazy(handle.name, [{ fs: FS_HANDLE, root: handle }]);
+  const open = () => openFolderLazy(handle.name, [{ fs: FS_HANDLE, root: handle }], 'open-handoff');
   if (await Handoff.permission(handle, false) === 'granted') { open(); return; }
   EL.handoffName.textContent = handle.name;
   EL.handoff.hidden = false;
@@ -546,7 +559,7 @@ _syncThemeLabel();
 // files — misleading, since nothing is ever sent. Other browsers fall back.
 async function pickFolder() {
   if (_loading) return;
-  if (!window.showDirectoryPicker) return EL.folderInput.click();
+  if (!window.showDirectoryPicker) { track('picker-unsupported'); return EL.folderInput.click(); }
   let dir;
   try {
     dir = await window.showDirectoryPicker({ id: 'game-folder', mode: 'read' });
@@ -605,6 +618,7 @@ EL.searchBox.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
     S.query = EL.searchBox.value.trim();
+    if (S.query) track('search-used');      // that the box was used, never what was typed
     if (S.currentFolder) showFolder(S.currentFolder);
   }, 240);
 });
@@ -653,7 +667,7 @@ $('about-modal').addEventListener('click', e => { if (e.target === $('about-moda
 $('dl-folder-btn').addEventListener('click', downloadFolder);
 
 // ─── Events: Unique only (js/dupes.js) ────────────────
-EL.dupeBtn.addEventListener('click', () => Dupes.setOn(!Dupes.on));
+EL.dupeBtn.addEventListener('click', () => { if (!Dupes.on) track('dupes-on'); Dupes.setOn(!Dupes.on); });
 
 // ─── Events: Sidebar toggle ───────────────────────────
 const PHONE = matchMedia('(max-width: 600px)');
@@ -741,7 +755,7 @@ async function handleDropPairs(pairs) {
   await openFolderLazy(dirPair.entry.name, [
     { fs: FS_HANDLE, root: handlePromise.then(h => h?.kind === 'directory' ? h : null) },
     { fs: FS_ENTRY,  root: dirPair.entry },
-  ]);
+  ], 'open-drop');
 }
 
 let _dragDepth = 0;

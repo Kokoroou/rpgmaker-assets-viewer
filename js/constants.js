@@ -124,9 +124,21 @@ function uniqueZipNames(names) {
 // Files directly in the picked folder (folder key '__root__'): named for people, not "root".
 const ROOT_LABEL = 'Top folder';
 
+// Anonymous usage count by fixed name (js/analytics.js; no-op until it has loaded, off the
+// public site and with Do Not Track / GPC). Never pass anything built from a file or game.
+const track = name => (typeof countEvent === 'function' ? countEvent(name) : Promise.resolve());
+// Engine label ('RPG Maker VX Ace', 'RPG Maker 2000/2003'…) → the event name of its family.
+function engineEvent(label) {
+  const l = label || '';
+  return /MV\/MZ/.test(l) ? 'engine-mvmz' : /2000|2003/.test(l) ? 'engine-2k' : /VX Ace/i.test(l) ? 'engine-vxace' : /\bVX\b/.test(l) ? 'engine-vx'
+       : /\bXP\b/.test(l) ? 'engine-xp' : /\bMZ\b/.test(l) ? 'engine-mz' : /\bMV\b/.test(l) ? 'engine-mv' : 'engine-other';
+}
+
 // What to say when a picked folder holds no image or audio: name it and say which folder to
 // pick. A folder inside the game (data/, js/, img/pictures…) gets "the folder above it".
 const INNER_DIRS = /^(data|js|fonts|save|movies|effects|icon|css|locales?)$/i;
+// The error a loader throws for it: runLoad counts it apart from other failures.
+function noMediaError(name) { const e = new Error(noMediaMessage(name)); e.noMedia = true; return e; }
 function noMediaMessage(name) {
   const where = "the game's main folder: the one that holds img/ and audio/ (or Graphics/ and Audio/, or an .rgss archive), usually next to Game.exe";
   if (name && INNER_DIRS.test(name)) return `"${name}" is a folder inside the game and holds no images or audio. Select the folder above it instead, ${where}.`;

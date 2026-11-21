@@ -293,6 +293,7 @@ const Filter = {
 
   set(f) {
     this.f = { ...NO_FILTER, ...f };
+    if (this.active) track('filter-used');   // that a filter was set, never its values
     if (needsMeta(this.f)) this.start();
     syncFilterButton();
     if (S.currentFolder) showFolder(S.currentFolder);

@@ -49,7 +49,7 @@ Algorithms and their sources are documented in the code comments (`js/decrypt-*.
 
 ## Privacy and legal
 
-- **Privacy:** your files and keys are processed only in your browser; nothing about them is sent anywhere. The public site does send two things: an anonymous page-visit count (GoatCounter), and feedback only when you choose to send it. What is sent, and what never is, is defined in [`privacy.html`](https://makerlens.kokoroou.workers.dev/assets/privacy.html), the single source of truth. A Content-Security-Policy makes the browser block every other host.
+- **Privacy:** your files and keys are processed only in your browser; nothing about them is sent anywhere. The public site does send two things: an anonymous count of page visits and of a few actions by name (GoatCounter: how a game was opened, which feature was used, never what), and feedback only when you choose to send it. What is sent, and what never is, is defined in [`privacy.html`](https://makerlens.kokoroou.workers.dev/assets/privacy.html), the single source of truth. A Content-Security-Policy makes the browser block every other host.
 - **Legal:** intended for your own assets or work done with the rights holder's permission. See [`LEGAL.md`](LEGAL.md) for intended use, user responsibility and takedown policy.
 
 ## Documentation
