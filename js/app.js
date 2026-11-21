@@ -874,6 +874,9 @@ async function downloadFolder() {
   }
 }
 
+// Engines the legacy copy does not read (NEW_FEATURES) leave the start screen and About.
+if (!NEW_FEATURES) document.querySelectorAll('[data-new]').forEach(n => n.remove());
+
 // Take over what the user picked or dropped while the scripts were loading (js/preboot.js).
 Preboot.attach({
   dir:   dir => openFolderLazy(dir.name, [{ fs: FS_HANDLE, root: dir }]),
