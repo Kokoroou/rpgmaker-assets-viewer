@@ -276,7 +276,7 @@ const Bg = { scan: null, hideTimer: 0 };
 
 const BG_STEPS = ['detect', 'scan', 'load', 'current'];
 
-function folderLabel(key) { return key === '__root__' ? 'root' : key; }
+function folderLabel(key) { return key === '__root__' ? ROOT_LABEL : key; }
 
 // Rebuild the loader rows from the scan's state (the loader may have been
 // reused by another load since, so nothing is assumed about its rows).

@@ -120,3 +120,15 @@ function uniqueZipNames(names) {
     return name;
   });
 }
+
+// Files directly in the picked folder (folder key '__root__'): named for people, not "root".
+const ROOT_LABEL = 'Top folder';
+
+// What to say when a picked folder holds no image or audio: name it and say which folder to
+// pick. A folder inside the game (data/, js/, img/pictures…) gets "the folder above it".
+const INNER_DIRS = /^(data|js|fonts|save|movies|effects|icon|css|locales?)$/i;
+function noMediaMessage(name) {
+  const where = "the game's main folder: the one that holds img/ and audio/ (or Graphics/ and Audio/, or an .rgss archive), usually next to Game.exe";
+  if (name && INNER_DIRS.test(name)) return `"${name}" is a folder inside the game and holds no images or audio. Select the folder above it instead, ${where}.`;
+  return `No images or audio found${name ? ` in "${name}"` : ''}. Select ${where}.`;
+}
