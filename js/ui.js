@@ -522,6 +522,8 @@ async function openLightbox(idx) {
     try { history.pushState(LB_STATE, ''); } catch (_) {}
   }
   EL.lightbox.classList.add('open');
+  const entry = S.files.get(S.currentMedia[idx]);
+  if (entry) track(entry.isAudio ? 'lightbox-audio' : 'lightbox-image');
   await loadLbEntry(idx);
 }
 
@@ -714,6 +716,7 @@ function _spriteDraw(t) {
 EL.lbSpriteOn.addEventListener('change', () => {
   cancelAnimationFrame(_spriteRaf); _spriteRaf = 0;
   if (EL.lbSpriteOn.checked && _spriteLayout) {
+    track('sprite-anim');
     EL.lbImg.style.display = 'none';
     EL.lbSpriteCv.style.display = 'block';
     _spriteT0 = performance.now();
