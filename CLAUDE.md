@@ -68,7 +68,9 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 - `S.userNav` — true once the user clicked a folder; until then the grid auto-selects the start folder (`pickStartFolder()` in app.js: `img/pictures` at any depth, or a `pictures` folder when `img/` itself was picked, else the first media folder). A pick with no image or audio (`data/`, a non-game folder) fails in the loader with `noMediaMessage()` (constants.js), which names the folder and says to pick the one above it, so the start screen and the open game stay. The lazy scan lists `img/pictures` ahead of everything else
 - `S.files` — `Map<path, entry>` for all media entries
 - `S.folders` — `Map<folderKey, path[]>` grouping for the sidebar
-- `S.currentFolder` / `S.currentMedia` — active folder key and filtered path list
+- `S.currentFolder` / `S.currentMedia` — active folder key and filtered path list; `folderPaths()` (ui.js) returns a folder in natural name order (`byName()`, constants.js: Actor2 before Actor10), the Duplicates folder in its own order
+
+**Sidebar on phones** (≤ 600px): a drawer over the grid, closed after a game opens; `setSidebar(open)` (app.js) also drives the backdrop `#sidebar-scrim`. Picking a folder without subfolders closes it. Desktop keeps the column and its remembered state (`localStorage['sidebarHidden']`).
 - `S.blobCache` — `Map<path, objectURL>` to avoid re-decrypting on every render
 
 **Entry model** (unified for both MV/MZ and RGSSAD):
@@ -98,7 +100,7 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 
 **Feedback:** `js/feedback.js` POSTs to the shared feedback inbox `https://feedback.kokoroou.workers.dev/api/submit` (Cloudflare Worker + D1 in the private repo `Kokoroou/feedbacks`, project key `makerlens-assets`; MakerLens Events sends as `makerlens-events`) only when the user taps a star (the rating is sent at once and the Worker answers with a signed `ref` to that entry; the optional follow-up comment goes as kind `idea` with the same stars plus that `ref`, so both become one entry and ratings are not counted twice; `ref` lives in a variable only) or presses Send. The inbox keeps its projects in D1, managed with `PUT /api/projects/makerlens-assets` (service token, see the feedbacks README): they allow-list this site's origins (`https://makerlens.kokoroou.workers.dev` and the legacy `https://kokoroou.github.io`) and the `meta` fields (`opens`, `browser`); a new field or origin must be added there too, or every submit gets 403. The answered state lives in `localStorage['feedback']` (`{opens, done, skips, nextAt}`), never sent.
 
-**ZIP download:** `downloadFolder()` in `app.js` reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
+**ZIP download:** the toolbar's **Download ZIP** button (`#dl-folder-btn`, icon only on phones) runs `downloadFolder()` in `app.js`, which reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
 
 **Supported formats:**
 

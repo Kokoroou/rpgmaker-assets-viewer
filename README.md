@@ -39,7 +39,7 @@ Algorithms and their sources are documented in the code comments (`js/decrypt-*.
 
 1. Open **[MakerLens](https://makerlens.kokoroou.workers.dev/assets/)**.
 2. Click **Select Game Folder** (or drop the folder anywhere on the page) and choose the game's root directory. For XP / VX / VX Ace you can also click **Select archive**.
-3. Browse, search, click an asset to preview it, or use **Download folder**.
+3. Browse, search, click an asset to preview it, or use **Download ZIP** to save the folder on screen.
 
 Desktop Chrome, Edge, Firefox and Brave work best; mobile browsers may not support folder selection. More help (where the key is, offline use, supported versions): [FAQ](https://makerlens.kokoroou.workers.dev/assets/faq.html).
 
