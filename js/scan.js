@@ -59,7 +59,8 @@ const SLOW_DISK_MS          = 15;   // average disk time per getFile()
 const MEDIA_DIR = /^(img|audio|movies|graphics)$/i;           // children listed early too
 const FIRST_DIR = /^(www|img|audio|movies|graphics)$/i;
 const LAST_DIR  = /^(\..*|js|data|save|fonts|locales|css|node_modules|swiftshader|lib|plugins)$/i;
-const PICTURES_DIR = /(^|\/)img\/pictures$/i;
+// RPG Maker 2000/2003 keep them in Picture/, VX Ace / VX / XP in Graphics/Pictures (not on the legacy copy).
+const PICTURES_DIR = NEW_FEATURES ? /(^|\/)(img\/pictures|graphics\/pictures|picture)$/i : /(^|\/)img\/pictures$/i;
 const ARCHIVE_RE = /\.(rgssad|rgss2a|rgss3a)$/i;
 
 class FolderScan {
@@ -255,7 +256,8 @@ async function detectLazy(fs, root, rootItems) {
   let sys = await has(base, 'data', 'System.json');
   if (!sys && www) { base = www; sys = await has(base, 'data', 'System.json'); }
   let engine = null;
-  if (await has(base, 'js', 'rmmz_core.js')) engine = 'RPG Maker MZ';
+  if (NEW_FEATURES && rootItems.some(it => !fs.isDir(it) && /^RPG_RT\.(ldb|lmt)$/i.test(fs.name(it)))) engine = RM2K_ENGINE;
+  else if (await has(base, 'js', 'rmmz_core.js')) engine = 'RPG Maker MZ';
   else if (await has(base, 'js', 'rpg_core.js')) engine = 'RPG Maker MV';
   let key = '';
   if (sys) {

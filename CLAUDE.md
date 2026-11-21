@@ -35,11 +35,12 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared g
 
 ## Architecture
 
-`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`; `css/tokens.css` is the MakerLens family's design system (Events keeps a verbatim copy and the makerlens build checks they match, so after editing it, copy it to `rpgmaker-events-viewer/css/tokens.css`). Logic is split into fifteen JS files loaded in order:
+`index.html` contains the HTML structure; `privacy.html` is a static privacy page and `faq.html` a static FAQ page (keep long explanations there, the main UI stays terse). The FAQ's `FAQPage` JSON-LD must match its visible questions and answers. CSS is split into modules under `css/`; `css/tokens.css` is the MakerLens family's design system (Events keeps a verbatim copy and the makerlens build checks they match, so after editing it, copy it to `rpgmaker-events-viewer/css/tokens.css`). Logic is split into sixteen JS files loaded in order:
 
 ```
 js/preboot.js        — first script: Select Game Folder, folder input, drops and the View another way dialog work before the rest has loaded; Preboot.attach() at the end of app.js takes over what was picked
 js/constants.js      — regexes, EXT_REMAP, getMimeType(), canonicalExt(), sniffMime()/mimeFor() (type by bytes: some games ship WebP as .png_), savedName() (download name from the real type); NEW_FEATURES (false on the legacy copy) gates mp3/wav/mid listing, typing by bytes and WAV lengths
+js/xyz.js            — RPG Maker 2000/2003 .xyz images: xyzSize(), xyzToPng() (zlib palette + indices → indexed PNG with DecompressionStream/CompressionStream); used by entryToURL()/entryBytes() and the size filter
 js/state.js          — global S object
 js/decrypt-mvmz.js   — decryptMVMZ(buffer, hexKey)
 js/decrypt-rgssad.js — parseRGSSAD(buffer) → [{name, getData}]
@@ -109,6 +110,7 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 | MV audio | `.rpgmvo`, `.rpgmvm` | same as above |
 | XP/VX | `.rgssad`, `.rgss2a` | RGSSAD v1: key `0xDEADCAFE`, cycles per entry |
 | VX Ace | `.rgss3a` | RGSSAD v3: master key from archive header |
+| 2000 / 2003 | `.xyz` (+ plain `.png`/`.bmp`/`.wav`/`.mid`/`.mp3`) | none; `RPG_RT.ldb`/`.lmt` at the root names the engine; `.xyz` → PNG (`js/xyz.js`); `CharSet/` gets the walk animation (rows up, right, down, left: `RM2K_SPRITE_ROWS`). Off on the legacy copy (`NEW_FEATURES`) |
 
 **RGSSAD algorithms** (documented from `references/RPGMakerDecrypter`):
 - v1 key evolution per name byte and per int: `key = (key * 7 + 3) >>> 0`

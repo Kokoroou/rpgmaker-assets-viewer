@@ -122,7 +122,10 @@ function entryFile(entry) {
 async function entryToURL(entry) {
   if (S.blobCache.has(entry.path)) return S.blobCache.get(entry.path);
   let data, url;
-  if (entry._getData) {
+  if (NEW_FEATURES && XYZ_EXT.test(entry.name)) {   // RPG Maker 2000/2003: converted to PNG (js/xyz.js)
+    data = await xyzToPng(entry._getData ? await entry._getData() : await (await entryFile(entry)).arrayBuffer());
+    url  = URL.createObjectURL(new Blob([data], { type: entry._mime = 'image/png' }));
+  } else if (entry._getData) {
     data = await entry._getData();
     if (entry.isAudio) entry._loop = parseOggLoop(data);
     url  = URL.createObjectURL(new Blob([data], { type: entry._mime = mimeFor(entry.name, data) }));
@@ -142,6 +145,8 @@ async function entryToURL(entry) {
 // Decrypted bytes of an entry (ZIP export, duplicate hashing). Unlike
 // entryToURL nothing is cached: callers read each file once.
 async function entryBytes(entry) {
+  if (NEW_FEATURES && XYZ_EXT.test(entry.name))
+    return xyzToPng(entry._getData ? await entry._getData() : await (await entryFile(entry)).arrayBuffer());
   if (entry._getData) return new Uint8Array(await entry._getData());
   const buf = await (await entryFile(entry)).arrayBuffer();
   if (ENC_IMAGE_EXT.test(entry.name) || ENC_AUDIO_EXT.test(entry.name))
@@ -670,8 +675,11 @@ let _spriteLayout = null, _spriteRaf = 0, _spriteT0 = 0;
 
 function _spriteOffer(entry) {
   const name = entry.name.split('/').pop();
-  const inChars = /(^|\/)characters\//i.test(entry.path);
+  // RPG Maker 2000/2003 CharSet/: the same 12×8 grid, rows up, right, down, left (not on the legacy copy).
+  const rm2k = NEW_FEATURES && /(^|\/)charset\//i.test(entry.path);
+  const inChars = rm2k || /(^|\/)characters\//i.test(entry.path);
   _spriteLayout = inChars ? spriteLayout(name, EL.lbImg.naturalWidth, EL.lbImg.naturalHeight) : null;
+  if (_spriteLayout) _spriteLayout.rows = rm2k ? RM2K_SPRITE_ROWS : null;
   EL.lbSprite.style.display = _spriteLayout ? '' : 'none';
   if (!_spriteLayout) return;
   EL.lbSpriteChar.innerHTML = '';
@@ -690,7 +698,8 @@ function _spriteStop() {
 function _spriteDraw(t) {
   if (!_spriteLayout) return;
   const step = Math.floor((t - _spriteT0) / 160);   // ~6 steps/s, cycle 0,1,2,1
-  const f = spriteFrame(_spriteLayout, +EL.lbSpriteChar.value || 0, +EL.lbSpriteDir.value || 0, step);
+  const dir = +EL.lbSpriteDir.value || 0;   // 0 down, 1 left, 2 right, 3 up (the select)
+  const f = spriteFrame(_spriteLayout, +EL.lbSpriteChar.value || 0, _spriteLayout.rows ? _spriteLayout.rows[dir] : dir, step);
   const cv = EL.lbSpriteCv, scale = Math.max(1, Math.floor(Math.min(320 / f.sw, 320 / f.sh)));
   if (cv.width !== f.sw || cv.height !== f.sh) { cv.width = f.sw; cv.height = f.sh; }
   cv.style.width = f.sw * scale + 'px'; cv.style.height = f.sh * scale + 'px';

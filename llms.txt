@@ -38,7 +38,7 @@ All processing happens inside your browser. No files or keys are ever uploaded o
 
 ## Supported formats
 
-`.rpgmvp`, `.png_`, `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_`, `.rgssad`, `.rgss2a`, `.rgss3a`, `.png`, `.jpg`, `.gif`, `.webp`, `.bmp`, `.ogg`, `.m4a`, `.mp3`, `.wav`, `.mid` (download only)
+`.rpgmvp`, `.png_`, `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_`, `.rgssad`, `.rgss2a`, `.rgss3a`, `.png`, `.jpg`, `.gif`, `.webp`, `.bmp`, `.ogg`, `.m4a`, `.mp3`, `.wav`, `.mid` (download only), `.xyz` (RPG Maker 2000 / 2003, shown and saved as PNG)
 
 ## Source
 
