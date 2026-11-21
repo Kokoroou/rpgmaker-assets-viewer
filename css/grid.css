@@ -38,6 +38,9 @@
 }
 #size-slider  { width: 96px; accent-color: var(--a-bg); }
 
+/* The folder download: the tool's main job, so it says what it does (phones: icon only) */
+#dl-folder-btn { gap: 6px; }
+
 /* ── Grid ────────────────────────────────────────────── */
 #grid-wrap { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; }
 #grid {
@@ -166,6 +169,8 @@
   #grid { gap: 8px; }
   #toolbar { gap: 4px 8px; padding: 6px 8px 8px; }
   #toolbar .btn-icon { width: 44px; height: 44px; }
+  #dl-folder-btn { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  #dl-folder-btn .btn-label { display: none; }
   #folder-path { order: 5; flex-basis: 100%; padding: 0 4px; }
   .size-control { margin-left: auto; }
   #size-slider { width: 72px; }

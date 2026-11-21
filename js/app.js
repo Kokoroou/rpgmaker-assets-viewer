@@ -491,7 +491,7 @@ async function openHandoff() {
 
 // ─── Grid activation ──────────────────────────────────
 function showGrid() {
-  EL.countBadge.textContent = S.files.size ? `${S.files.size} items` : '';
+  EL.countBadge.textContent = S.files.size ? `${fmtNum(S.files.size)} file${S.files.size === 1 ? "" : "s"} in this game` : '';
   renderSidebar();
   // Search is only useful once there is something to search
   document.body.classList.toggle('has-files', S.files.size > 0);
