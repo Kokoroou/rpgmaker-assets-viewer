@@ -324,7 +324,7 @@ function onScanChange(scan) {
   if (Loader.active && Loader.owner === scan) renderScanLoader(scan);
   if (Bg.scan !== scan || S.files !== scan.files) return;
   updateBgChip(scan);
-  EL.countBadge.textContent = S.files.size ? `${S.files.size} items` : '';
+  EL.countBadge.textContent = S.files.size ? `${fmtNum(S.files.size)} file${S.files.size === 1 ? "" : "s"} in this game` : '';
   refreshSidebar();
   // Show the first media folder, and move to img/pictures when it turns up
   // (unless the user already chose a folder).
