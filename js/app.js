@@ -495,10 +495,8 @@ function showGrid() {
   renderSidebar();
   // Search is only useful once there is something to search
   document.body.classList.toggle('has-files', S.files.size > 0);
-  const sidebarHidden = localStorage.getItem('sidebarHidden') === '1';
-  EL.sidebar.classList.toggle('hidden', sidebarHidden);
-  $('sidebar-resizer').classList.toggle('hidden', sidebarHidden);
-  $('sidebar-toggle').setAttribute('aria-pressed', sidebarHidden ? 'false' : 'true');
+  // Phones: the sidebar is a drawer, closed until the menu button opens it.
+  setSidebar(!isPhone() && localStorage.getItem('sidebarHidden') !== '1');
   EL.setup.style.display    = 'none';
   EL.toolbar.classList.add('show');
   EL.gridWrap.style.display = 'block';
@@ -658,12 +656,22 @@ $('dl-folder-btn').addEventListener('click', downloadFolder);
 EL.dupeBtn.addEventListener('click', () => Dupes.setOn(!Dupes.on));
 
 // ─── Events: Sidebar toggle ───────────────────────────
+const PHONE = matchMedia('(max-width: 600px)');
+const isPhone = () => PHONE.matches;
+function setSidebar(open) {
+  EL.sidebar.classList.toggle('hidden', !open);
+  $('sidebar-resizer').classList.toggle('hidden', !open);
+  $('sidebar-scrim').hidden = !(open && isPhone());
+  $('sidebar-toggle').setAttribute('aria-pressed', open ? 'true' : 'false');
+}
 $('sidebar-toggle').addEventListener('click', () => {
-  const hidden = EL.sidebar.classList.toggle('hidden');
-  $('sidebar-resizer').classList.toggle('hidden', hidden);
-  $('sidebar-toggle').setAttribute('aria-pressed', hidden ? 'false' : 'true');
-  localStorage.setItem('sidebarHidden', hidden ? '1' : '0');
+  const open = EL.sidebar.classList.contains('hidden');
+  setSidebar(open);
+  if (!isPhone()) localStorage.setItem('sidebarHidden', open ? '0' : '1');   // the drawer is not remembered
 });
+// Phones: tapping outside the drawer, or a folder without subfolders, closes it.
+$('sidebar-scrim').addEventListener('click', () => setSidebar(false));
+PHONE.addEventListener('change', () => { $('sidebar-scrim').hidden = true; });
 
 // ─── Events: Sidebar resize ───────────────────────────
 let _resizing = false;
