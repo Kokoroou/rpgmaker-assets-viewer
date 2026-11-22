@@ -23,7 +23,8 @@ test('countEvent: the fixed names are sent as events with no other data', async 
   const done = countEvent('switch-to-events');
   assert.equal(sent.length, 1);
   assert.deepEqual([...sent[0].searchParams.keys()].sort(), ['e', 'p', 'rnd', 't']);
-  assert.equal(sent[0].searchParams.get('p'), 'switch-to-events');
+  assert.equal(sent[0].searchParams.get('p'), 'as-switch-to-events');   // page code first
+  assert.equal(sent[0].searchParams.get('t'), 'as-switch-to-events');
   images[0].onerror();                          // answered or failed: either way the page may go on
   await done;
   await countEvent('feedback-sent');
@@ -50,7 +51,7 @@ test('countEvent sends each name at most once per page load', async () => {
   await countEvent('open-picker');
   await countEvent('open-picker');
   await countEvent('lightbox-image');
-  assert.deepEqual(sent.map(u => u.searchParams.get('p')), ['open-picker', 'lightbox-image']);
+  assert.deepEqual(sent.map(u => u.searchParams.get('p')), ['as-open-picker', 'as-lightbox-image']);
   for (const u of sent) assert.deepEqual([...u.searchParams.keys()].sort(), ['e', 'p', 'rnd', 't']);
 });
 
