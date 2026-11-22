@@ -9,7 +9,7 @@
 // NEVER sent: file names, folder names, game titles, keys, file contents.
 // Do not add any of those here — see "Legal constraints" in CLAUDE.md.
 //
-// Events: countEvent(name) counts one of the fixed names in EVENTS: how a game was opened and
+// Events: countEvent(name) (sent as 'as-' + name: the page code comes first) counts one of the fixed names in EVENTS: how a game was opened and
 // whether that worked, the engine family, which features were used, the feedback card and the
 // switch to MakerLens Events. Only the name is sent (no rating, no comment, nothing about files
 // or games), and each name at most ONCE per page load, so a count means "page loads where this
@@ -21,6 +21,9 @@
 var countEvent = function () { return Promise.resolve(); };
 (function () {
   var GC_ENDPOINT = 'https://makerlens.goatcounter.com/count';
+  // Every name goes out with the page code in front, so the counter tells the tools apart:
+  // 'as-' = MakerLens Assets, 'ev-' = MakerLens Events (e.g. as-open-ok, ev-open-ok).
+  var PAGE = 'as-';
   var EVENTS = [
     // How a game was opened (the way, never what): folder picker, folder drop, <input webkitdirectory>,
     // archive, single files, game link, handed over from MakerLens Events.
@@ -64,7 +67,7 @@ var countEvent = function () { return Promise.resolve(); };
       img.onload = img.onerror = function () { resolve(); };
       setTimeout(resolve, 400);
       img.src = GC_ENDPOINT + '?' + new URLSearchParams({
-        p: name, t: name, e: 'true', rnd: Math.random().toString(36).slice(2)
+        p: PAGE + name, t: PAGE + name, e: 'true', rnd: Math.random().toString(36).slice(2)
       }).toString();
     });
   };
