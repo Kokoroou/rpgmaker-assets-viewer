@@ -36,7 +36,7 @@
       "name": "How do I extract .rpgmvp, .rpgmvo or .png_ files from RPG Maker MV / MZ?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Click Open Folder and select the game's root folder — the one that contains www/ (MV) or data/ and img/ (MZ). MakerLens reads the encryption key from data/System.json automatically, then decrypts .rpgmvp / .png_ images and .rpgmvo / .rpgmvm / .ogg_ / .m4a_ audio so you can preview and download them."
+        "text": "Open the game’s root folder; MakerLens reads the key for you. Click Open Folder, or drop the folder on the page. Select the game's root folder: the one that contains www/ (MV) or data/ and img/ (MZ). MakerLens reads the encryption key from data/System.json and decrypts the files. Preview them, or download them. It decrypts: Images: .rpgmvp, .png_ Audio: .rpgmvo, .rpgmvm, .ogg_, .m4a_"
       }
     },
     {
@@ -44,7 +44,7 @@
       "name": "How do I extract a .rgss3a, .rgss2a or .rgssad archive?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Click Select archive and choose the archive file, usually named Game.rgss3a (VX Ace), Game.rgss2a (VX) or Game.rgssad (XP). The key is derived from the archive itself, so nothing else is needed. Selecting the game folder also works; MakerLens finds the archive inside it."
+        "text": "Select the archive file. The key comes from the archive, so nothing else is needed. Click Select archive and choose the file. Usual names: Game.rgss3a (VX Ace), Game.rgss2a (VX), Game.rgssad (XP). Selecting the game folder works too; MakerLens finds the archive inside it."
       }
     },
     {
@@ -52,7 +52,7 @@
       "name": "Which folder do I select?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Select the game’s root folder, the one next to Game.exe. MV games keep their files in www/, MZ games in data/ and img/, and games packed in an archive keep a .rgssad, .rgss2a or .rgss3a file at the root. MakerLens finds each of these. RPG Maker 2000 / 2003 games have RPG_RT.ldb and RPG_RT.lmt at the root."
+        "text": "The game’s root folder, the one next to Game.exe. MakerLens finds each layout below. MV: files in www/. MZ: data/ and img/. Packed in an archive: a .rgssad, .rgss2a or .rgss3a file at the root. RPG Maker 2000 / 2003: RPG_RT.ldb and RPG_RT.lmt at the root."
       }
     },
     {
@@ -60,7 +60,7 @@
       "name": "Why does it say it found no images or audio?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The folder you picked holds no image or audio. It is usually a subfolder, such as data/ or js/, or a folder that is not a game. The message names the folder you picked; select the one above it, the game’s root folder. The game you already had open stays on screen."
+        "text": "The folder you picked holds no image or audio. It is usually a subfolder, such as data/ or js/, or a folder that is not a game. The message names the folder you picked. Select the one above it, the game’s root folder. The game you already had open stays on screen."
       }
     },
     {
@@ -68,7 +68,7 @@
       "name": "Can I open a game without picking its folder?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. View another way on the start screen offers three options: an archive (Game.rgss3a and the like) picked on its own, individual files (.png_, .ogg_, .rpgmvp, plain .png and so on), and a game link. A game link comes from the game itself (⚙ → Share → MakerLens link). Its token sits after the #, so no server receives it, and only https://*.workers.dev addresses are accepted."
+        "text": "Yes, with View another way on the start screen. It offers three options. Archive: Game.rgss3a and the like, picked on its own. Individual files: .png_, .ogg_, .rpgmvp, plain .png and so on. Game link: it comes from the game itself (⚙ → Share → MakerLens link). Its token sits after the #, so no server receives it. Only https://*.workers.dev addresses are accepted."
       }
     },
     {
@@ -76,7 +76,7 @@
       "name": "Where is the encryption key? Do I need to enter it?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. RPG Maker MV and MZ store the key as encryptionKey in data/System.json, and MakerLens reads it from there. If images or audio fail to open, make sure you selected the game's root folder, not a subfolder such as img/."
+        "text": "No. MakerLens reads it for you. RPG Maker MV and MZ store the key as encryptionKey in data/System.json. If images or audio fail to open, select the game's root folder, not a subfolder such as img/."
       }
     },
     {
@@ -84,7 +84,7 @@
       "name": "Is this an RPGM unpacker or decrypter?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. MakerLens decrypts RPG Maker MV / MZ images and audio (.rpgmvp, .png_, .rpgmvo, .ogg_) unpacks XP, VX and VX Ace archives (.rgssad, .rgss2a, .rgss3a), and shows RPG Maker 2000 / 2003 .xyz images. It runs online in your browser, so there is nothing to download or install. It extracts images and audio only; other files in an archive, such as scripts and maps, are not shown."
+        "text": "Yes. It runs online in your browser, so there is nothing to download or install. Decrypts RPG Maker MV / MZ images and audio (.rpgmvp, .png_, .rpgmvo, .ogg_). Unpacks XP, VX and VX Ace archives (.rgssad, .rgss2a, .rgss3a). Shows RPG Maker 2000 / 2003 .xyz images. Extracts images and audio only. Other files in an archive, such as scripts and maps, are not shown."
       }
     },
     {
@@ -92,7 +92,7 @@
       "name": "Which RPG Maker versions are supported?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "RPG Maker MZ, MV, VX Ace, VX, XP and 2000 / 2003. RPG Maker 2000 / 2003 games are not encrypted: their .xyz images are shown and downloaded as PNG, next to their .png and .bmp. Unencrypted .png, .jpg, .gif, .webp, .bmp, .ogg, .m4a, .mp3 and .wav files inside a game folder are shown as well; .mid music (2000 / 2003, XP and VX) is listed for download, since browsers cannot play MIDI."
+        "text": "RPG Maker MZ, MV, VX Ace, VX, XP and 2000 / 2003. 2000 / 2003 games are not encrypted: their .xyz images are shown and downloaded as PNG, next to their .png and .bmp. Unencrypted .png, .jpg, .gif, .webp, .bmp, .ogg, .m4a, .mp3 and .wav files inside a game folder are shown as well. .mid music (2000 / 2003, XP and VX) is listed for download, since browsers cannot play MIDI."
       }
     },
     {
@@ -100,7 +100,7 @@
       "name": "Can it find duplicate files?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Press the Unique only button in the toolbar. MakerLens then compares the content of every file in your browser (a SHA-256 hash of the decrypted bytes), hides identical copies, marks each copied file with how many copies exist, and lists them all in a Duplicates folder in the sidebar. With Unique only on, Download folder saves one file per content."
+        "text": "Yes, with the Unique only button in the toolbar. MakerLens compares the content of every file in your browser (a SHA-256 hash of the decrypted bytes). It hides identical copies and marks each copied file with how many copies exist. All copies are listed in a Duplicates folder in the sidebar. With Unique only on, Download folder saves one file per content."
       }
     },
     {
@@ -108,7 +108,7 @@
       "name": "Can I filter by image size or audio length?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Press the Filter button in the toolbar. Choose Images or Audio, set a width and height range in pixels (or pick a preset such as 48×48 tiles or 576×288 face sheets) and a length range in seconds or m:ss. MakerLens reads only the header of each file in the folder on screen, in your browser, to learn its size or length; nothing is decoded or uploaded. Each card then shows its size or length, and Download folder saves only the files that pass the filter."
+        "text": "Yes, with the Filter button in the toolbar. Choose Images or Audio. Set a width and height range in pixels (or pick a preset such as 48×48 tiles or 576×288 face sheets), or a length range in seconds or m:ss. Each card shows its size or length, and Download folder saves only the files that pass the filter. Privacy: MakerLens reads only the header of each file in the folder on screen, in your browser. Nothing is decoded or uploaded."
       }
     },
     {
@@ -116,7 +116,7 @@
       "name": "Can I see a character walk?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Open a character sheet and MakerLens plays its walk cycle. Sheets whose name starts with $ hold one character (3 × 4 frames); other sheets hold eight (12 × 8). RPG Maker 2000 / 2003 CharSet images play too."
+        "text": "Yes. Open a character sheet and its walk cycle plays. Sheets whose name starts with $ hold one character (3 × 4 frames). Other sheets hold eight (12 × 8). RPG Maker 2000 / 2003 CharSet images play too."
       }
     },
     {
@@ -124,7 +124,7 @@
       "name": "Can I browse files one-handed on a phone?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Tap a file to open it, then swipe left or right on it for the next or previous file, swipe down to close, pinch or double-tap to zoom and drag to move a zoomed image. The phone's Back button or back gesture closes the preview too. Close, previous, next and download sit in one bar at the bottom of the screen, within reach of your thumb."
+        "text": "Yes. The preview is built for one hand. Tap a file to open it. Swipe left or right for the next or previous file; swipe down to close. Pinch or double-tap to zoom; drag to move a zoomed image. The phone’s Back button or back gesture closes the preview too. Close, previous, next and download sit in one bar at the bottom, within reach of your thumb."
       }
     },
     {
@@ -132,7 +132,7 @@
       "name": "Can I download all files at once?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Open a folder in the sidebar and use the Download ZIP button in the toolbar to save every asset in it as a single ZIP file. Individual files can be downloaded from the preview."
+        "text": "Yes, as one ZIP file. Open a folder in the sidebar. Press Download ZIP in the toolbar. To save a single file, use the download button in its preview."
       }
     },
     {
@@ -140,7 +140,7 @@
       "name": "Are my game files uploaded anywhere?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. Files are read and decrypted inside your browser; files, file names and keys never leave your device. The page's Content-Security-Policy blocks requests to any server except an anonymous counter, which receives only the page address, the referrer and the names of a few actions (such as how a game was opened or which feature was used, never what was opened), and the optional feedback form, which sends only the rating and comment you choose to send. Details: Privacy & analytics."
+        "text": "No. Your files never leave your device. Files are read and decrypted inside your browser; files, file names and keys stay on your device. The page’s Content-Security-Policy blocks requests to any server except these two. An anonymous counter, which receives only the page address, the referrer and the names of a few actions (such as how a game was opened or which feature was used, never what was opened). The optional feedback form, which sends only the rating and comment you choose to send. Details: Privacy & analytics."
       }
     },
     {
@@ -148,7 +148,7 @@
       "name": "Do I need to install anything? Does it work offline?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No installation is needed: MakerLens runs in modern desktop browsers such as Chrome, Edge and Firefox. Once the page has loaded, opening, previewing and downloading work without an internet connection. You can also download the source code and open index.html locally."
+        "text": "No. It needs no installation, and it works offline once the page has loaded. It runs in modern desktop browsers such as Chrome, Edge and Firefox. Opening, previewing and downloading work without an internet connection after the page has loaded. You can also download the source code and open index.html locally."
       }
     },
     {
@@ -156,7 +156,7 @@
       "name": "Is it legal to extract RPG Maker game assets?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "MakerLens is intended for personal use only, to access assets from games you own. Redistributing extracted assets may violate the game's license or copyright, so check the game's terms before reusing anything."
+        "text": "MakerLens is intended for personal use only, to access assets from games you own. Redistributing extracted assets may violate the game’s license or copyright. Check the game’s terms before reusing anything."
       }
     },
     {
@@ -227,6 +227,12 @@
   .cta { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; margin-top: 32px; border-radius: var(--r); background: var(--a-bg); color: var(--a-on); text-decoration: none; font-weight: 600; }
   .cta:hover { filter: brightness(1.08); }
   :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+  details > .lead { color: var(--t); }
+  details > :not(summary):not(:last-child) { margin-bottom: 10px; }
+  details > ul, details > ol { padding-left: 22px; }
+  details li { line-height: 1.6; }
+  details li + li { margin-top: 6px; }
+  details ol li::marker { font-weight: 700; color: var(--t); }
   :root[data-lens] main summary h3 { font: 700 1.1rem/1.35 var(--serif); letter-spacing: -.01em; margin: 0; }
   :root[data-lens] main .group { font: 700 13px var(--mono); letter-spacing: .02em; text-transform: none; color: var(--t2); margin: 40px 0 12px; }
   :root[data-lens] main .more a { display: inline-block; padding: 6px 0; }
@@ -264,77 +270,175 @@
   <div class="faq">
     <details open>
       <summary><h3>How do I extract .rpgmvp, .rpgmvo or .png_ files from RPG Maker MV / MZ?</h3></summary>
-      <p>Click <strong>Open Folder</strong> and select the game's root folder — the one that contains <code>www/</code> (MV) or <code>data/</code> and <code>img/</code> (MZ). MakerLens reads the encryption key from <code>data/System.json</code> automatically, then decrypts <code>.rpgmvp</code> / <code>.png_</code> images and <code>.rpgmvo</code> / <code>.rpgmvm</code> / <code>.ogg_</code> / <code>.m4a_</code> audio so you can preview and download them.</p>
+      <p class="lead">Open the game’s root folder; MakerLens reads the key for you.</p>
+      <ol>
+        <li>Click <strong>Open Folder</strong>, or drop the folder on the page.</li>
+        <li>Select the game's root folder: the one that contains <code>www/</code> (MV) or <code>data/</code> and <code>img/</code> (MZ).</li>
+        <li>MakerLens reads the encryption key from <code>data/System.json</code> and decrypts the files.</li>
+        <li>Preview them, or download them.</li>
+      </ol>
+      <p>It decrypts:</p>
+      <ul>
+        <li>Images: <code>.rpgmvp</code>, <code>.png_</code></li>
+        <li>Audio: <code>.rpgmvo</code>, <code>.rpgmvm</code>, <code>.ogg_</code>, <code>.m4a_</code></li>
+      </ul>
     </details>
     <details>
       <summary><h3>How do I extract a .rgss3a, .rgss2a or .rgssad archive?</h3></summary>
-      <p>Click <strong>Select archive</strong> and choose the archive file, usually named <code>Game.rgss3a</code> (VX Ace), <code>Game.rgss2a</code> (VX) or <code>Game.rgssad</code> (XP). The key is derived from the archive itself, so nothing else is needed. Selecting the game folder also works; MakerLens finds the archive inside it.</p>
+      <p class="lead">Select the archive file. The key comes from the archive, so nothing else is needed.</p>
+      <ul>
+        <li>Click <strong>Select archive</strong> and choose the file.</li>
+        <li>Usual names: <code>Game.rgss3a</code> (VX Ace), <code>Game.rgss2a</code> (VX), <code>Game.rgssad</code> (XP).</li>
+        <li>Selecting the game folder works too; MakerLens finds the archive inside it.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Which folder do I select?</h3></summary>
-      <p>Select the game’s root folder, the one next to <code>Game.exe</code>. MV games keep their files in <code>www/</code>, MZ games in <code>data/</code> and <code>img/</code>, and games packed in an archive keep a <code>.rgssad</code>, <code>.rgss2a</code> or <code>.rgss3a</code> file at the root. MakerLens finds each of these. RPG Maker 2000 / 2003 games have <code>RPG_RT.ldb</code> and <code>RPG_RT.lmt</code> at the root.</p>
+      <p class="lead">The game’s root folder, the one next to <code>Game.exe</code>. MakerLens finds each layout below.</p>
+      <ul>
+        <li>MV: files in <code>www/</code>.</li>
+        <li>MZ: <code>data/</code> and <code>img/</code>.</li>
+        <li>Packed in an archive: a <code>.rgssad</code>, <code>.rgss2a</code> or <code>.rgss3a</code> file at the root.</li>
+        <li>RPG Maker 2000 / 2003: <code>RPG_RT.ldb</code> and <code>RPG_RT.lmt</code> at the root.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Why does it say it found no images or audio?</h3></summary>
-      <p>The folder you picked holds no image or audio. It is usually a subfolder, such as <code>data/</code> or <code>js/</code>, or a folder that is not a game. The message names the folder you picked; select the one above it, the game’s root folder. The game you already had open stays on screen.</p>
+      <p class="lead">The folder you picked holds no image or audio.</p>
+      <ul>
+        <li>It is usually a subfolder, such as <code>data/</code> or <code>js/</code>, or a folder that is not a game.</li>
+        <li>The message names the folder you picked.</li>
+        <li>Select the one above it, the game’s root folder.</li>
+        <li>The game you already had open stays on screen.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Can I open a game without picking its folder?</h3></summary>
-      <p>Yes. <strong>View another way</strong> on the start screen offers three options: an <strong>archive</strong> (<code>Game.rgss3a</code> and the like) picked on its own, <strong>individual files</strong> (<code>.png_</code>, <code>.ogg_</code>, <code>.rpgmvp</code>, plain <code>.png</code> and so on), and a <strong>game link</strong>. A game link comes from the game itself (⚙ → Share → MakerLens link). Its token sits after the <code>#</code>, so no server receives it, and only <code>https://*.workers.dev</code> addresses are accepted.</p>
+      <p class="lead">Yes, with <strong>View another way</strong> on the start screen. It offers three options.</p>
+      <ul>
+        <li><strong>Archive</strong>: <code>Game.rgss3a</code> and the like, picked on its own.</li>
+        <li><strong>Individual files</strong>: <code>.png_</code>, <code>.ogg_</code>, <code>.rpgmvp</code>, plain <code>.png</code> and so on.</li>
+        <li><strong>Game link</strong>: it comes from the game itself (⚙ → Share → MakerLens link). Its token sits after the <code>#</code>, so no server receives it. Only <code>https://*.workers.dev</code> addresses are accepted.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Where is the encryption key? Do I need to enter it?</h3></summary>
-      <p>No. RPG Maker MV and MZ store the key as <code>encryptionKey</code> in <code>data/System.json</code>, and MakerLens reads it from there. If images or audio fail to open, make sure you selected the game's root folder, not a subfolder such as <code>img/</code>.</p>
+      <p class="lead">No. MakerLens reads it for you.</p>
+      <ul>
+        <li>RPG Maker MV and MZ store the key as <code>encryptionKey</code> in <code>data/System.json</code>.</li>
+        <li>If images or audio fail to open, select the game's root folder, not a subfolder such as <code>img/</code>.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Is this an RPGM unpacker or decrypter?</h3></summary>
-      <p>Yes. MakerLens decrypts RPG Maker MV / MZ images and audio (<code>.rpgmvp</code>, <code>.png_</code>, <code>.rpgmvo</code>, <code>.ogg_</code>) unpacks XP, VX and VX Ace archives (<code>.rgssad</code>, <code>.rgss2a</code>, <code>.rgss3a</code>), and shows RPG Maker 2000 / 2003 <code>.xyz</code> images. It runs online in your browser, so there is nothing to download or install. It extracts images and audio only; other files in an archive, such as scripts and maps, are not shown.</p>
+      <p class="lead">Yes. It runs online in your browser, so there is nothing to download or install.</p>
+      <ul>
+        <li>Decrypts RPG Maker MV / MZ images and audio (<code>.rpgmvp</code>, <code>.png_</code>, <code>.rpgmvo</code>, <code>.ogg_</code>).</li>
+        <li>Unpacks XP, VX and VX Ace archives (<code>.rgssad</code>, <code>.rgss2a</code>, <code>.rgss3a</code>).</li>
+        <li>Shows RPG Maker 2000 / 2003 <code>.xyz</code> images.</li>
+        <li>Extracts images and audio only. Other files in an archive, such as scripts and maps, are not shown.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Which RPG Maker versions are supported?</h3></summary>
-      <p>RPG Maker MZ, MV, VX Ace, VX, XP and 2000 / 2003. RPG Maker 2000 / 2003 games are not encrypted: their <code>.xyz</code> images are shown and downloaded as PNG, next to their <code>.png</code> and <code>.bmp</code>. Unencrypted <code>.png</code>, <code>.jpg</code>, <code>.gif</code>, <code>.webp</code>, <code>.bmp</code>, <code>.ogg</code>, <code>.m4a</code>, <code>.mp3</code> and <code>.wav</code> files inside a game folder are shown as well; <code>.mid</code> music (2000 / 2003, XP and VX) is listed for download, since browsers cannot play MIDI.</p>
+      <p class="lead">RPG Maker MZ, MV, VX Ace, VX, XP and 2000 / 2003.</p>
+      <ul>
+        <li>2000 / 2003 games are not encrypted: their <code>.xyz</code> images are shown and downloaded as PNG, next to their <code>.png</code> and <code>.bmp</code>.</li>
+        <li>Unencrypted <code>.png</code>, <code>.jpg</code>, <code>.gif</code>, <code>.webp</code>, <code>.bmp</code>, <code>.ogg</code>, <code>.m4a</code>, <code>.mp3</code> and <code>.wav</code> files inside a game folder are shown as well.</li>
+        <li><code>.mid</code> music (2000 / 2003, XP and VX) is listed for download, since browsers cannot play MIDI.</li>
+      </ul>
     </details>
   </div>
   <h2 class="group lens-only">Browsing and downloading</h2>
   <div class="faq">
     <details>
       <summary><h3>Can it find duplicate files?</h3></summary>
-      <p>Yes. Press the <strong>Unique only</strong> button in the toolbar. MakerLens then compares the content of every file in your browser (a SHA-256 hash of the decrypted bytes), hides identical copies, marks each copied file with how many copies exist, and lists them all in a <strong>Duplicates</strong> folder in the sidebar. With Unique only on, <strong>Download folder</strong> saves one file per content.</p>
+      <p class="lead">Yes, with the <strong>Unique only</strong> button in the toolbar.</p>
+      <ul>
+        <li>MakerLens compares the content of every file in your browser (a SHA-256 hash of the decrypted bytes).</li>
+        <li>It hides identical copies and marks each copied file with how many copies exist.</li>
+        <li>All copies are listed in a <strong>Duplicates</strong> folder in the sidebar.</li>
+        <li>With Unique only on, <strong>Download folder</strong> saves one file per content.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Can I filter by image size or audio length?</h3></summary>
-      <p>Yes. Press the <strong>Filter</strong> button in the toolbar. Choose Images or Audio, set a width and height range in pixels (or pick a preset such as 48×48 tiles or 576×288 face sheets) and a length range in seconds or m:ss. MakerLens reads only the header of each file in the folder on screen, in your browser, to learn its size or length; nothing is decoded or uploaded. Each card then shows its size or length, and <strong>Download folder</strong> saves only the files that pass the filter.</p>
+      <p class="lead">Yes, with the <strong>Filter</strong> button in the toolbar.</p>
+      <ol>
+        <li>Choose Images or Audio.</li>
+        <li>Set a width and height range in pixels (or pick a preset such as 48×48 tiles or 576×288 face sheets), or a length range in seconds or m:ss.</li>
+        <li>Each card shows its size or length, and <strong>Download folder</strong> saves only the files that pass the filter.</li>
+      </ol>
+      <p>Privacy: MakerLens reads only the header of each file in the folder on screen, in your browser. Nothing is decoded or uploaded.</p>
     </details>
     <details>
       <summary><h3>Can I see a character walk?</h3></summary>
-      <p>Yes. Open a character sheet and MakerLens plays its walk cycle. Sheets whose name starts with <code>$</code> hold one character (3 × 4 frames); other sheets hold eight (12 × 8). RPG Maker 2000 / 2003 <code>CharSet</code> images play too.</p>
+      <p class="lead">Yes. Open a character sheet and its walk cycle plays.</p>
+      <ul>
+        <li>Sheets whose name starts with <code>$</code> hold one character (3 × 4 frames).</li>
+        <li>Other sheets hold eight (12 × 8).</li>
+        <li>RPG Maker 2000 / 2003 <code>CharSet</code> images play too.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Can I browse files one-handed on a phone?</h3></summary>
-      <p>Yes. Tap a file to open it, then swipe left or right on it for the next or previous file, swipe down to close, pinch or double-tap to zoom and drag to move a zoomed image. The phone's <strong>Back</strong> button or back gesture closes the preview too. Close, previous, next and download sit in one bar at the bottom of the screen, within reach of your thumb.</p>
+      <p class="lead">Yes. The preview is built for one hand.</p>
+      <ul>
+        <li>Tap a file to open it.</li>
+        <li>Swipe left or right for the next or previous file; swipe down to close.</li>
+        <li>Pinch or double-tap to zoom; drag to move a zoomed image.</li>
+        <li>The phone’s <strong>Back</strong> button or back gesture closes the preview too.</li>
+        <li>Close, previous, next and download sit in one bar at the bottom, within reach of your thumb.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Can I download all files at once?</h3></summary>
-      <p>Yes. Open a folder in the sidebar and use the <strong>Download ZIP</strong> button in the toolbar to save every asset in it as a single ZIP file. Individual files can be downloaded from the preview.</p>
+      <p class="lead">Yes, as one ZIP file.</p>
+      <ol>
+        <li>Open a folder in the sidebar.</li>
+        <li>Press <strong>Download ZIP</strong> in the toolbar.</li>
+      </ol>
+      <p>To save a single file, use the download button in its preview.</p>
     </details>
   </div>
   <h2 class="group lens-only">Privacy, install and legal</h2>
   <div class="faq">
     <details>
       <summary><h3>Are my game files uploaded anywhere?</h3></summary>
-      <p>No. Files are read and decrypted inside your browser; files, file names and keys never leave your device. The page's Content-Security-Policy blocks requests to any server except an anonymous counter, which receives only the page address, the referrer and the names of a few actions (such as how a game was opened or which feature was used, never what was opened), and the optional feedback form, which sends only the rating and comment you choose to send. Details: <a href="privacy.html">Privacy &amp; analytics</a>.</p>
+      <p class="lead">No. Your files never leave your device.</p>
+      <ul>
+        <li>Files are read and decrypted inside your browser; files, file names and keys stay on your device.</li>
+        <li>The page’s Content-Security-Policy blocks requests to any server except these two.</li>
+        <li>An anonymous counter, which receives only the page address, the referrer and the names of a few actions (such as how a game was opened or which feature was used, never what was opened).</li>
+        <li>The optional feedback form, which sends only the rating and comment you choose to send.</li>
+      </ul>
+      <p>Details: <a href="privacy.html">Privacy &amp; analytics</a>.</p>
     </details>
     <details>
       <summary><h3>Do I need to install anything? Does it work offline?</h3></summary>
-      <p>No installation is needed: MakerLens runs in modern desktop browsers such as Chrome, Edge and Firefox. Once the page has loaded, opening, previewing and downloading work without an internet connection. You can also download the <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer">source code</a> and open <code>index.html</code> locally.</p>
+      <p class="lead">No. It needs no installation, and it works offline once the page has loaded.</p>
+      <ul>
+        <li>It runs in modern desktop browsers such as Chrome, Edge and Firefox.</li>
+        <li>Opening, previewing and downloading work without an internet connection after the page has loaded.</li>
+        <li>You can also download the <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer">source code</a> and open <code>index.html</code> locally.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Is it legal to extract RPG Maker game assets?</h3></summary>
-      <p>MakerLens is intended for personal use only, to access assets from games you own. Redistributing extracted assets may violate the game's license or copyright, so check the game's terms before reusing anything.</p>
+      <p class="lead">MakerLens is intended for personal use only, to access assets from games you own.</p>
+      <ul>
+        <li>Redistributing extracted assets may violate the game’s license or copyright.</li>
+        <li>Check the game’s terms before reusing anything.</li>
+      </ul>
     </details>
     <details>
       <summary><h3>Can I read the game’s dialogue and events too?</h3></summary>
-      <p>Yes, with <a href="https://makerlens.kokoroou.workers.dev/events/">MakerLens Events</a>, the other MakerLens tool. In Chrome or Edge, once a game folder is open, the <strong>Assets | Events</strong> switch in the header carries the same folder to it without picking it again. The folder stays on your device. See the <a href="https://makerlens.kokoroou.workers.dev/events/faq.html">Events FAQ</a>.</p>
+      <p class="lead">Yes, with <a href="https://makerlens.kokoroou.workers.dev/events/">MakerLens Events</a>, the other MakerLens tool.</p>
+      <ul>
+        <li>In Chrome or Edge, once a game folder is open, the <strong>Assets | Events</strong> switch in the header carries the same folder to it without picking it again.</li>
+        <li>The folder stays on your device.</li>
+        <li>See the <a href="https://makerlens.kokoroou.workers.dev/events/faq.html">Events FAQ</a>.</li>
+      </ul>
     </details>
   </div>
 

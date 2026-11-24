@@ -1,5 +1,5 @@
 // ─── Where the public site lives ──────────────────────
-// Home:   https://makerlens.kokoroou.workers.dev/assets/   (Cloudflare Worker,
+// Home:   https://makerlens.kokoroou.workers.dev/assets/ (
 //         built from the Kokoroou/makerlens repo, which copies this repo in)
 // Legacy: https://kokoroou.github.io/rpgmaker-assets-viewer/   (GitHub Pages,
 //         still deployed by .github/workflows/deploy.yml; shows a "moved" banner)

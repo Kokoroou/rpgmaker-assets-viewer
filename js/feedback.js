@@ -23,7 +23,7 @@
 // A "don't ask again" flag like the theme preference, not an identifier.
 //
 // Sent ONLY when the user taps a star or presses Send, to the developer's feedback inbox
-// (Cloudflare Worker at feedback.kokoroou.workers.dev, which validates exactly
+// (feedback.kokoroou.workers.dev, which validates exactly
 // these fields and stores no IP or identifier):
 //   { project, kind, rating, comment, lang, meta: { opens (bucket), browser (only if ticked) }, ref }
 // `ref` is the opaque signed pointer to the star just sent (it names an entry, not a person);
