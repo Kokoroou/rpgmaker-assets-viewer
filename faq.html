@@ -156,8 +156,10 @@
   ]
 }
 </script>
+<script src="js/lens-gate.js"></script>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/moved.css">
+<link rel="stylesheet" href="css/lens.css">
 <script>(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
 <style>
   body { margin: 0; background: var(--bg); color: var(--t); font: 16px/1.7 var(--font); -webkit-font-smoothing: antialiased; }
@@ -185,10 +187,31 @@
 </head>
 <body>
 <script src="js/site.js"></script>
+<svg class="lens-only lens-sprite" width="0" height="0" aria-hidden="true">
+  <symbol id="i-lens" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><rect class="lp" x="7" y="7" width="2" height="2"/><rect class="lp" x="9" y="9" width="2" height="2"/><rect class="lp" x="11" y="7" width="2" height="2"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></symbol>
+</svg>
+<header class="lens-header lens-only">
+  <a class="lens-logo" href="https://makerlens.kokoroou.workers.dev/" aria-label="MakerLens Assets, go to the MakerLens home page"><span class="logo-mark"><svg class="lens-only" width="20" height="20" aria-hidden="true"><use href="#i-lens"/></svg></span><span class="lens-word">Maker<span>Lens</span></span><em class="logo-sub">Assets</em></a>
+  <nav class="lens-nav" aria-label="MakerLens tools"><a href="./" aria-current="page">Assets</a><a href="https://makerlens.kokoroou.workers.dev/events/">Events</a></nav>
+  <button class="btn-icon lens-theme" type="button" data-lens-theme aria-label="Switch theme" title="Switch theme"><svg class="icon-sun" width="20" height="20" aria-hidden="true"><use href="#i-sun"/></svg><svg class="icon-moon" width="20" height="20" aria-hidden="true"><use href="#i-moon"/></svg></button>
+</header>
 <main>
   <a class="back" href="./">← Back to MakerLens</a>
   <h1>RPG Maker extractor FAQ</h1>
   <p>MakerLens opens encrypted RPG Maker game files in your browser so you can preview and download the images and audio inside. <strong>Your files never leave your device.</strong></p>
+
+  <section class="lens-howto lens-only" aria-labelledby="howto-title">
+    <h2 id="howto-title">How to use</h2>
+    <ol>
+      <li>Click <strong>Select Game Folder</strong> (or <strong>Open Folder</strong>) and pick the game's main folder, the one next to <code>Game.exe</code>. You can also drop it anywhere on the page.</li>
+      <li>Browse the folders in the sidebar and click an asset to preview it. The download button in the preview saves that file.</li>
+      <li>Use <strong>Filter</strong> to narrow by type, image size or audio length, and <strong>Unique only</strong> to hide identical copies.</li>
+      <li><strong>Download ZIP</strong> in the toolbar saves every file shown in the folder at once.</li>
+      <li>In Chrome or Edge, the <strong>Assets | Events</strong> switch in the header opens the same game in MakerLens Events to read its dialogue.</li>
+    </ol>
+  </section>
 
   <div class="faq">
     <details open>
@@ -254,6 +277,14 @@
 
   <a class="cta" href="./">Open MakerLens</a>
 </main>
+<footer class="lens-foot lens-only">
+  <div class="lens-foot-in">
+    <div class="lens-foot-about"><p class="lens-foot-brand">Maker<span>Lens</span></p><p>Free RPG Maker tools that run in your browser. Your files never leave your device.</p></div>
+    <nav aria-label="Tools"><p class="lens-foot-h">Tools</p><ul><li><a href="./">Assets</a></li><li><a href="https://makerlens.kokoroou.workers.dev/events/">Events</a></li></ul></nav>
+    <nav aria-label="About"><p class="lens-foot-h">About</p><ul><li><a href="https://makerlens.kokoroou.workers.dev/privacy.html">Privacy</a></li><li><a href="https://makerlens.kokoroou.workers.dev/legal.html">Legal</a></li><li><a href="faq.html">FAQ</a></li></ul></nav>
+  </div>
+</footer>
 <script src="js/analytics.js"></script>
+<script src="js/lens-static.js"></script>
 </body>
 </html>

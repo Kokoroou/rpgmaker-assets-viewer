@@ -59,6 +59,19 @@ for (const page of PAGES) {
     }
   }
 
+  // 2b. External scripts pinned by hash (privacy.html's CSP has no 'self': the gate and the theme
+  //     toggle are allowed by integrity="sha256-…" + the same hash in script-src, so the legacy
+  //     copy's blocked site.js stays blocked and that page does not change).
+  for (const m of html.matchAll(/<script\s[^>]*src="([^"]+)"[^>]*>/gi)) {
+    const integ = (m[0].match(/integrity="sha256-([^"]+)"/) || [])[1];
+    const src = m[1];
+    if (!/^js\/lens-/.test(src) || /'self'/.test(scriptSrc)) continue;
+    const want = createHash('sha256').update(readFileSync(join(root, src))).digest('base64');
+    if (integ !== want || !allowedHashes.has(want)) {
+      fail(page, `${src} needs integrity="sha256-${want}" on its script tag and 'sha256-${want}' in script-src (file changed?)`);
+    }
+  }
+
   // 3. External hosts in the CSP
   for (const m of policy.matchAll(/https?:\/\/([^\s;'"]+)/g)) {
     if (!pageHosts(page).has(m[1])) fail(page, `CSP allows external host '${m[1]}' (only GoatCounter, and in index.html the feedback Worker and *.workers.dev game links, are allowed)`);
