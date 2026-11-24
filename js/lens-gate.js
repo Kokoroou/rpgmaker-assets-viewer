@@ -1,7 +1,7 @@
 // MakerLens redesign gate. Loaded synchronously in <head> BEFORE the stylesheets.
 // Every rule of css/lens.css sits under :root[data-lens], so the legacy GitHub Pages copy
 // (kokoroou.github.io, which must keep its old look) renders exactly as before.
-// Local copies, previews and the Cloudflare home all get the new look.
+// Local copies, previews and the MakerLens home all get the new look.
 // Same file in MakerLens Events. Do not add anything here that the legacy host would notice.
 (function () {
   var d = document.documentElement;
