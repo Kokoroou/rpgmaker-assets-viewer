@@ -68,7 +68,7 @@ for (const page of PAGES) {
     if (!/^js\/lens-/.test(src) || /'self'/.test(scriptSrc)) continue;
     const want = createHash('sha256').update(readFileSync(join(root, src))).digest('base64');
     if (integ !== want || !allowedHashes.has(want)) {
-      fail(page, `${src} needs integrity="sha256-${want}" on its <script> and 'sha256-${want}' in script-src (file changed?)`);
+      fail(page, `${src} needs integrity="sha256-${want}" on its script tag and 'sha256-${want}' in script-src (file changed?)`);
     }
   }
 
