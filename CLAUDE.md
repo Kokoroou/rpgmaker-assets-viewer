@@ -56,6 +56,8 @@ js/app.js            — event handlers, runLoad()/loadGameFolder()/loadMVMZFold
 js/site.js           — SITE: public hosts (isPublic/isLegacy), homeURL() mapping legacy GitHub Pages URLs to /assets/ on the new home; on the legacy host inserts the "moved" banner (#moved, css/moved.css). Loaded first thing in <body> on all three pages (before app scripts, so the banner shows at once; moved.css is linked in <head>, never @imported)
 js/feedback.js       — Feedback: one-time 1-tap star prompt (from the 2nd opened game, via commitLibrary → noteOpen), optional follow-up comment, and the About bug/idea form (#feedback)
 js/analytics.js      — anonymous GoatCounter page-view ping (path, referrer, traffic-source params) + countEvent() for the fixed names in EVENTS, each at most once per page load; call it through track() (constants.js)
+js/lens-gate.js      — tiny, loaded synchronously in <head> BEFORE the CSS on all three pages: sets <html data-lens> on every host except kokoroou.github.io (legacy), and keeps <meta name="theme-color"> in step with the theme toggle. On privacy.html (CSP without 'self') it is allowed by integrity="sha256-…" + the same hash in script-src; check-site.mjs checks the hash, so recompute it when you edit the file
+js/lens-static.js    — theme toggle (same rule/key as app.js) for the lens-only header of faq.html and privacy.html; does nothing without data-lens (same hash rule on privacy.html)
 ```
 
 All files share a single global scope — no modules.
@@ -126,6 +128,14 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 ## References directory
 
 `references/RPGMakerDecrypter/` contains a local clone of [uuksu/RPGMakerDecrypter](https://github.com/uuksu/RPGMakerDecrypter) (MIT, C#) kept for offline reference. It is excluded from git via `.gitignore`. Do not commit files from it; cite it in comments or docs instead.
+
+## MakerLens redesign layer (`css/lens.css`) — legacy stays untouched
+
+`css/lens.css` (linked after the existing CSS on all three pages) is the family's "skin": serif titles, mono labels/file names, 1px frame, the lens mark with three green pixels, 44px touch targets on phones, no text under 12px. `tokens.css` is NOT touched; layout, IDs and JS flows stay as they were. It is copied verbatim to `rpgmaker-events-viewer/css/lens.css` (like `tokens.css`), so keep it generic (shared classes `.btn-*`, `.logo-mark`, `#setup`, `#drop-zone`, toolbar, `.about-*`, `.tool-switch`), never named after one tool; edit it here and copy it over.
+
+- **The GitHub Pages copy (`kokoroou.github.io`) deploys from these same files and must look exactly as before.** Every rule in `lens.css` sits under `:root[data-lens]` (set by `js/lens-gate.js`); only `.lens-only` / `.lens-sr` are defined outside it (both `display:none`). Never add a rule outside the gate, and never touch `js/site.js`'s banner or `deploy.yml` for the redesign. `tests/lens.test.mjs` checks the gate and that nothing else sits outside it.
+- New markup is `lens-only` (hidden on legacy): the app's `<h1 class="lens-only lens-sr">MakerLens Assets</h1>` (the visible start title is an `<h2 class="lens-only">` twin of the legacy `<h1 class="lens-hide">`, so each host has exactly one h1), the second logo SVG (`#i-lens`), the static pages' header/footer and the faq's "How to use" (outside the `<details>`, so the FAQPage JSON-LD still matches).
+- To check legacy is unchanged: screenshot a page with `js/lens-gate.js` routed to an empty body and compare with the same page at the base commit; pixels must match.
 
 ## Which site to build for
 

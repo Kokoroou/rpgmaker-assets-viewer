@@ -7,12 +7,14 @@
 <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)">
 <!-- No scripts except the theme snippet (same hash as index.html); no network requests. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk=' 'sha256-yS1O7LZKolLSAlHIIdtyKX27F/yr1wvnMEdhveSV5lY=' 'sha256-5xHn42AluyZ1H6FsU5b9Cr7i8+KCbrn2JRQ4sGqvX6s='; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Privacy — Anonymous Stats, No Uploads | MakerLens</title>
 <meta name="description" content="How MakerLens handles your files and what anonymous usage data it counts.">
 <link rel="canonical" href="https://makerlens.kokoroou.workers.dev/assets/privacy.html"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -- a canonical URL, not a fetched resource -->
+<script src="js/lens-gate.js" integrity="sha256-yS1O7LZKolLSAlHIIdtyKX27F/yr1wvnMEdhveSV5lY="></script>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/moved.css">
+<link rel="stylesheet" href="css/lens.css">
 <script>(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
 <style>
   body { margin: 0; background: var(--bg); color: var(--t); font: 16px/1.7 var(--font); -webkit-font-smoothing: antialiased; }
@@ -32,6 +34,16 @@
 </head>
 <body>
 <script src="js/site.js"></script>
+<svg class="lens-only lens-sprite" width="0" height="0" aria-hidden="true">
+  <symbol id="i-lens" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><rect class="lp" x="7" y="7" width="2" height="2"/><rect class="lp" x="9" y="9" width="2" height="2"/><rect class="lp" x="11" y="7" width="2" height="2"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></symbol>
+</svg>
+<header class="lens-header lens-only">
+  <a class="lens-logo" href="https://makerlens.kokoroou.workers.dev/" aria-label="MakerLens Assets, go to the MakerLens home page"><span class="logo-mark"><svg class="lens-only" width="20" height="20" aria-hidden="true"><use href="#i-lens"/></svg></span><span class="lens-word">Maker<span>Lens</span></span><em class="logo-sub">Assets</em></a>
+  <nav class="lens-nav" aria-label="MakerLens tools"><a href="./" aria-current="page">Assets</a><a href="https://makerlens.kokoroou.workers.dev/events/">Events</a></nav>
+  <button class="btn-icon lens-theme" type="button" data-lens-theme aria-label="Switch theme" title="Switch theme"><svg class="icon-sun" width="20" height="20" aria-hidden="true"><use href="#i-sun"/></svg><svg class="icon-moon" width="20" height="20" aria-hidden="true"><use href="#i-moon"/></svg></button>
+</header>
 <main>
   <a class="back" href="./">← Back to MakerLens</a>
   <h1>Privacy</h1>
@@ -56,5 +68,13 @@
   <p>The site is served by Cloudflare Workers (the old address by GitHub Pages). Like any host, they see your IP address to deliver the pages, under their own privacy policies; request logs for the MakerLens Worker are off. MakerLens is a personal open-source project by Trương Tuấn Anh (<a href="https://github.com/Kokoroou" rel="noopener">Kokoroou</a>). The code, including what is sent above, is public on <a href="https://github.com/Kokoroou/rpgmaker-assets-viewer" rel="noopener">GitHub</a> (<a href="https://github.com/Kokoroou/rpgmaker-events-viewer" rel="noopener">Events</a>). For a privacy question or request, open an issue there.</p>
   <p>Last updated: 21 November 2026.</p>
 </main>
+<footer class="lens-foot lens-only">
+  <div class="lens-foot-in">
+    <div class="lens-foot-about"><p class="lens-foot-brand">Maker<span>Lens</span></p><p>Free RPG Maker tools that run in your browser. Your files never leave your device.</p></div>
+    <nav aria-label="Tools"><p class="lens-foot-h">Tools</p><ul><li><a href="./">Assets</a></li><li><a href="https://makerlens.kokoroou.workers.dev/events/">Events</a></li></ul></nav>
+    <nav aria-label="About"><p class="lens-foot-h">About</p><ul><li><a href="privacy.html">Privacy</a></li><li><a href="https://github.com/Kokoroou/rpgmaker-assets-viewer/blob/main/LEGAL.md" rel="noopener">Legal</a></li><li><a href="faq.html">FAQ</a></li></ul></nav>
+  </div>
+</footer>
+<script src="js/lens-static.js" integrity="sha256-5xHn42AluyZ1H6FsU5b9Cr7i8+KCbrn2JRQ4sGqvX6s="></script>
 </body>
 </html>
