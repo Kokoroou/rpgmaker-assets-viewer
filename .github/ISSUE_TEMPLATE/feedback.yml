@@ -37,6 +37,7 @@ body:
         - Not sure
         - RPG Maker MV or MZ (folder with data/System.json)
         - RPG Maker XP / VX / VX Ace (.rgssad, .rgss2a, .rgss3a)
+        - RPG Maker 2000 / 2003 (RPG_RT.ldb, Map####.lmu)
         - Not related to a game
       default: 0
   - type: input
