@@ -1,0 +1,36 @@
+# Release with release-please, using the shared release workflow of agent-toolkit
+# (same as Kokoroou/rpgmaker-web-toolkit).
+#
+# Every push to main updates a release PR ("chore(main): release x.y.z") that bumps
+# version.txt and CHANGELOG.md from the Conventional Commits merged since the last
+# release (feat → minor, fix → patch, feat!/BREAKING-CHANGE → major; docs/ci/chore/…
+# alone make no release). Merging it tags vX.Y.Z and creates the GitHub Release.
+# Nothing is built or attached: the site is deployed by makerlens' deploy.yml, not
+# from releases. The first release is v1.0.0 (initial-version in
+# release-please-config.json; the manifest starts empty).
+#
+# One-time setup: Settings → Actions → General → "Allow GitHub Actions to create and
+# approve pull requests". Optional: AGENT_APP_ID / AGENT_APP_PRIVATE_KEY (agent-toolkit's
+# GitHub App), so the release PR also triggers CI.
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    uses: kokoroou/agent-toolkit/.github/workflows/release.yml@v0
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    with:
+      config-file: release-please-config.json
+      manifest-file: .release-please-manifest.json
+    secrets:
+      agent_app_id: ${{ secrets.AGENT_APP_ID }}
+      agent_app_private_key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
