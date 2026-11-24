@@ -137,6 +137,8 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 - New markup is `lens-only` (hidden on legacy): the app's `<h1 class="lens-only lens-sr">MakerLens Assets</h1>` (the visible start title is an `<h2 class="lens-only">` twin of the legacy `<h1 class="lens-hide">`, so each host has exactly one h1), the second logo SVG (`#i-lens`), the static pages' header/footer and the faq's "How to use" (outside the `<details>`, so the FAQPage JSON-LD still matches).
 - To check legacy is unchanged: screenshot a page with `js/lens-gate.js` routed to an empty body and compare with the same page at the base commit; pixels must match.
 
+- **Header and footer of `faq.html` are the family's** (the same as the MakerLens home, Privacy and Legal pages): markup with `.top` / `.foot`, styled by `css/family-chrome.css` (gated by `:root[data-lens]`, like `lens.css`). It is a verbatim copy in `rpgmaker-events-viewer/css/` and mirrors `.top` / `.foot` of `Kokoroou/makerlens` `site/css/landing.css`: edit all three together. The theme button keeps `data-lens-theme` (`js/lens-static.js`).
+
 ## Which site to build for
 
 New features target only the Cloudflare home (`https://makerlens.kokoroou.workers.dev/assets/`). The legacy GitHub Pages copy (`kokoroou.github.io/rpgmaker-assets-viewer/`) is changed only when the owner asks for it by name: no legacy-specific code, banners or workflow edits (`deploy.yml`, `js/site.js`) on our own initiative. The code is shared, so the legacy copy still receives common `js/`/`css/` changes on deploy; a feature that should not run there is gated with `SITE.isLegacy`.
