@@ -143,3 +143,7 @@ New features target only the Cloudflare home (`https://makerlens.kokoroou.worker
 - **Folder picker:** `pickFolder()` in `app.js` prefers `showDirectoryPicker` (Chrome/Edge prompt says "view files") and falls back to `<input webkitdirectory>` (Chrome's prompt for it says "upload", which contradicts the privacy promise).
 
 - **Page titles** follow the family format `{Topic} — {Qualifier} | MakerLens` (about 60 chars, `og:title`/`twitter:title` identical): see the Page titles section of `Kokoroou/makerlens` CLAUDE.md.
+
+## Releases
+
+`.github/workflows/release.yml` (release-please, via agent-toolkit's shared `release.yml@v0`, same as rpgmaker-web-toolkit) keeps a `chore(main): release X.Y.Z` PR up to date from the Conventional Commits on `main` (`feat:` → minor, `fix:` → patch, `feat!:` → major; `docs:` `ci:` `chore:` `refactor:` `test:` alone make no release). Merging it tags `vX.Y.Z` and creates the GitHub Release; nothing is attached (the site is deployed by makerlens' `deploy.yml`). The first release is `v1.0.0` (`initial-version`). So squash-merge PRs with a Conventional Commit title, and never edit `CHANGELOG.md` or `version.txt` by hand.
