@@ -6,6 +6,11 @@ input  { font: inherit; }
 a, button, [role="button"], .card, .folder-item, input[type="range"] { cursor: pointer; }
 svg { flex-shrink: 0; }
 
+/* Features the legacy copy (kokoroou.github.io) does not have, e.g. RPG Maker 2000/2003.
+   js/lens-gate.js sets data-lens in <head> on every other host, before any CSS, so these never
+   flash there; app.js removes them later (NEW_FEATURES). Same host test as SITE.isLegacy. */
+:root:not([data-lens]) [data-new] { display: none !important; }
+
 /* ── Body ────────────────────────────────────────────── */
 body {
   font-family: var(--font);

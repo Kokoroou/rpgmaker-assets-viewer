@@ -31,3 +31,9 @@ test('lens.css: everything but the two helper classes sits inside :root[data-len
   }
   assert.deepEqual(outside, ['.lens-only', '.lens-sr', ':root[data-lens]']);
 });
+
+test('legacy copy: [data-new] is hidden by CSS from the first paint, not only by app.js', () => {
+  const css = readFileSync('css/base.css', 'utf8');
+  assert.match(css, /:root:not\(\[data-lens\]\) \[data-new\] \{ display: none !important; \}/);
+  assert.match(readFileSync('css/style.css', 'utf8'), /@import 'base\.css';/);
+});
