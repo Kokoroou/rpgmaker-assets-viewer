@@ -88,6 +88,29 @@
   .f-name { font-size: 14px; }
   .f-count { font: 12px var(--mono); }
   .folder-dupes .f-sub { font-size: 12px; }
+  /* An on/off switch at the end of a sidebar row (Duplicates: "Unique only"). The button is
+     44px tall on phones; the track it draws stays small. */
+  .folder-item.has-switch { padding-right: 4px; }
+  .row-switch {
+    flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 36px; margin-left: 4px; padding: 0;
+    background: none; border: 0; border-radius: var(--r); cursor: pointer;
+  }
+  .row-switch::before {
+    content: ""; width: 34px; height: 20px; border-radius: 999px;
+    background: var(--t3);
+    transition: background .15s var(--ease);
+  }
+  .row-switch-knob {
+    position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3);
+    transform: translateX(-7px); transition: transform .15s var(--ease);
+  }
+  .row-switch { position: relative; }
+  .row-switch[aria-checked="true"]::before { background: var(--a-bg); }
+  .row-switch[aria-checked="true"] .row-switch-knob { transform: translateX(7px); }
+  .row-switch:focus-visible { outline: 2px solid var(--a); outline-offset: -2px; }
+  @media (prefers-reduced-motion: reduce) { .row-switch::before, .row-switch-knob { transition: none; } }
   #sb-back { font: 700 12px var(--mono); }
 
   /* ── Toolbar ── */
@@ -259,6 +282,7 @@
     #open-btn { width: 44px; height: 44px; }
     #logo { gap: 8px; }
     .folder-item { min-height: 44px; }
+    .row-switch { height: 44px; }
     .alt-dialog { padding: 20px; }
     .lb-btn { width: 44px; height: 44px; }
     .btn-ghost, .btn-sm, .fp-head .btn-sm { min-height: 44px; height: 44px; }
