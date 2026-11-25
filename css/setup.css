@@ -131,6 +131,7 @@
 .privacy-note a:hover, .about-note a:hover, .about-more a:hover, .about-sub a:hover { text-decoration-color: currentColor; }
 .privacy-note strong { color: var(--t); font-weight: 600; }
 .privacy-note .sep { color: var(--bd2); }
+.privacy-note .pn-links { display: inline-flex; align-items: center; gap: 8px; }
 
 /* ── View another way (dialog) ───────────────────────── */
 .alt-dialog {

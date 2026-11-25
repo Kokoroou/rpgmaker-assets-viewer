@@ -260,6 +260,9 @@
     .lb-btn { width: 44px; height: 44px; }
     .btn-ghost, .btn-sm, .fp-head .btn-sm { min-height: 44px; height: 44px; }
     .setup-alt .btn-ghost { min-height: 44px; }
+    /* the FAQ · Privacy links get their own centred line, without a leading dot */
+    .privacy-note .pn-links { flex-basis: 100%; justify-content: center; }
+    .privacy-note .pn-links > .sep:first-child { display: none; }
     .size-control { height: 44px; }
     #size-slider { height: 44px; }
     .fp-type label, .fp-range input, .fp-chip { height: 44px; }
