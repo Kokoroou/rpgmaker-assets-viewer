@@ -10,7 +10,7 @@
      (same hash), and the anonymous page counter (js/analytics.js) as the only other host. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' https://makerlens.goatcounter.com; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>RPG Maker Extractor FAQ — .rpgmvp, .png_, .rgss3a | MakerLens</title>
-<meta name="description" content="How to open and extract RPG Maker MV, MZ, XP, VX, VX Ace, 2000 and 2003 assets: .rpgmvp, .png_, .rpgmvo, .ogg_, .rgssad, .rgss2a, .rgss3a. Where the key is, ZIP export, privacy and legal notes.">
+<meta name="description" content="How to open and extract RPG Maker 2000, 2003, XP, VX, VX Ace, MV and MZ assets: .rpgmvp, .png_, .rpgmvo, .ogg_, .rgssad, .rgss2a, .rgss3a. Where the key is, ZIP export, privacy and legal notes.">
 <link rel="canonical" href="https://makerlens.kokoroou.workers.dev/assets/faq.html"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -- a canonical URL, not a fetched resource -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MakerLens">
@@ -52,7 +52,7 @@
       "name": "Which folder do I select?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The game’s root folder, the one next to Game.exe. MakerLens finds each layout below. MV: files in www/. MZ: data/ and img/. Packed in an archive: a .rgssad, .rgss2a or .rgss3a file at the root. RPG Maker 2000 / 2003: RPG_RT.ldb and RPG_RT.lmt at the root."
+        "text": "The game’s root folder, the one next to Game.exe. MakerLens finds each layout below. RPG Maker 2000 / 2003: RPG_RT.ldb and RPG_RT.lmt at the root. XP, VX and VX Ace, packed in an archive: a .rgssad, .rgss2a or .rgss3a file at the root. MV: files in www/. MZ: data/ and img/."
       }
     },
     {
@@ -84,7 +84,7 @@
       "name": "Is this an RPGM unpacker or decrypter?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. It runs online in your browser, so there is nothing to download or install. Decrypts RPG Maker MV / MZ images and audio (.rpgmvp, .png_, .rpgmvo, .ogg_). Unpacks XP, VX and VX Ace archives (.rgssad, .rgss2a, .rgss3a). Shows RPG Maker 2000 / 2003 .xyz images. Extracts images and audio only. Other files in an archive, such as scripts and maps, are not shown."
+        "text": "Yes. It runs online in your browser, so there is nothing to download or install. Shows RPG Maker 2000 / 2003 .xyz images. Unpacks XP, VX and VX Ace archives (.rgssad, .rgss2a, .rgss3a). Decrypts RPG Maker MV / MZ images and audio (.rpgmvp, .png_, .rpgmvo, .ogg_). Extracts images and audio only. Other files in an archive, such as scripts and maps, are not shown."
       }
     },
     {
@@ -92,7 +92,7 @@
       "name": "Which RPG Maker versions are supported?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "RPG Maker MZ, MV, VX Ace, VX, XP and 2000 / 2003. 2000 / 2003 games are not encrypted: their .xyz images are shown and downloaded as PNG, next to their .png and .bmp. Unencrypted .png, .jpg, .gif, .webp, .bmp, .ogg, .m4a, .mp3 and .wav files inside a game folder are shown as well. .mid music (2000 / 2003, XP and VX) is listed for download, since browsers cannot play MIDI."
+        "text": "RPG Maker 2000 / 2003, XP, VX, VX Ace, MV and MZ. 2000 / 2003 games are not encrypted: their .xyz images are shown and downloaded as PNG, next to their .png and .bmp. Unencrypted .png, .jpg, .gif, .webp, .bmp, .ogg, .m4a, .mp3 and .wav files inside a game folder are shown as well. .mid music (2000 / 2003, XP and VX) is listed for download, since browsers cannot play MIDI."
       }
     },
     {
@@ -253,7 +253,7 @@
 <main>
   <a class="back" href="./">← Back to MakerLens Assets</a>
   <h1>RPG Maker extractor FAQ</h1>
-  <p class="intro">MakerLens Assets opens encrypted RPG Maker game files (MV, MZ, VX Ace, VX, XP, 2000 and 2003) in your browser so you can preview and download the images and audio inside. It works on released games, with no editor and no plugin. <strong>Your files never leave your device.</strong></p>
+  <p class="intro">MakerLens Assets opens encrypted RPG Maker game files (2000, 2003, XP, VX, VX Ace, MV and MZ) in your browser so you can preview and download the images and audio inside. It works on released games, with no editor and no plugin. <strong>Your files never leave your device.</strong></p>
 
   <section class="lens-howto lens-only" aria-labelledby="howto-title">
     <h2 id="howto-title">How to use</h2>
@@ -296,10 +296,10 @@
       <summary><h3>Which folder do I select?</h3></summary>
       <p class="lead">The game’s root folder, the one next to <code>Game.exe</code>. MakerLens finds each layout below.</p>
       <ul>
+        <li>RPG Maker 2000 / 2003: <code>RPG_RT.ldb</code> and <code>RPG_RT.lmt</code> at the root.</li>
+        <li>XP, VX and VX Ace, packed in an archive: a <code>.rgssad</code>, <code>.rgss2a</code> or <code>.rgss3a</code> file at the root.</li>
         <li>MV: files in <code>www/</code>.</li>
         <li>MZ: <code>data/</code> and <code>img/</code>.</li>
-        <li>Packed in an archive: a <code>.rgssad</code>, <code>.rgss2a</code> or <code>.rgss3a</code> file at the root.</li>
-        <li>RPG Maker 2000 / 2003: <code>RPG_RT.ldb</code> and <code>RPG_RT.lmt</code> at the root.</li>
       </ul>
     </details>
     <details>
@@ -333,15 +333,15 @@
       <summary><h3>Is this an RPGM unpacker or decrypter?</h3></summary>
       <p class="lead">Yes. It runs online in your browser, so there is nothing to download or install.</p>
       <ul>
-        <li>Decrypts RPG Maker MV / MZ images and audio (<code>.rpgmvp</code>, <code>.png_</code>, <code>.rpgmvo</code>, <code>.ogg_</code>).</li>
-        <li>Unpacks XP, VX and VX Ace archives (<code>.rgssad</code>, <code>.rgss2a</code>, <code>.rgss3a</code>).</li>
         <li>Shows RPG Maker 2000 / 2003 <code>.xyz</code> images.</li>
+        <li>Unpacks XP, VX and VX Ace archives (<code>.rgssad</code>, <code>.rgss2a</code>, <code>.rgss3a</code>).</li>
+        <li>Decrypts RPG Maker MV / MZ images and audio (<code>.rpgmvp</code>, <code>.png_</code>, <code>.rpgmvo</code>, <code>.ogg_</code>).</li>
         <li>Extracts images and audio only. Other files in an archive, such as scripts and maps, are not shown.</li>
       </ul>
     </details>
     <details>
       <summary><h3>Which RPG Maker versions are supported?</h3></summary>
-      <p class="lead">RPG Maker MZ, MV, VX Ace, VX, XP and 2000 / 2003.</p>
+      <p class="lead">RPG Maker 2000 / 2003, XP, VX, VX Ace, MV and MZ.</p>
       <ul>
         <li>2000 / 2003 games are not encrypted: their <code>.xyz</code> images are shown and downloaded as PNG, next to their <code>.png</code> and <code>.bmp</code>.</li>
         <li>Unencrypted <code>.png</code>, <code>.jpg</code>, <code>.gif</code>, <code>.webp</code>, <code>.bmp</code>, <code>.ogg</code>, <code>.m4a</code>, <code>.mp3</code> and <code>.wav</code> files inside a game folder are shown as well.</li>

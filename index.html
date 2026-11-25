@@ -12,22 +12,22 @@
      If you edit the inline theme script below, update its sha256 hash here. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4y43hFgwC1OkJEl8rt2hTAZwj1vpL1XrKqU9Jg4KOXk='; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://makerlens.goatcounter.com; media-src 'self' blob:; connect-src 'self' https://feedback.kokoroou.workers.dev https://*.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>RPG Maker Asset Extractor — 2000 to MZ, All Versions | MakerLens</title>
-<meta name="description" content="Free online RPG Maker extractor, no download needed. Extract images and audio from MV, MZ, XP, VX, VX Ace, 2000 and 2003 games in your browser. Files are never uploaded.">
-<meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker MV MZ XP VX asset viewer">
+<meta name="description" content="Free online RPG Maker extractor, no download needed. Extract images and audio from 2000, 2003, XP, VX, VX Ace, MV and MZ games in your browser. Files are never uploaded.">
+<meta name="keywords" content="RPG Maker asset viewer, RPG Maker extractor, rpgmvp viewer, rpgmvo extractor, RGSSAD viewer, decrypt RPG Maker, RPG Maker XP VX MV MZ asset viewer">
 <link rel="canonical" href="https://makerlens.kokoroou.workers.dev/assets/"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -- a canonical URL, not a fetched resource -->
 <meta name="google-site-verification" content="D46-YM3xEG9mxpWY-GFgkCDtK37Q7nqxAwHNLEpttl8" />
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MakerLens">
 <meta property="og:url" content="https://makerlens.kokoroou.workers.dev/assets/">
 <meta property="og:title" content="RPG Maker Asset Extractor — 2000 to MZ, All Versions | MakerLens">
-<meta property="og:description" content="View and extract images and audio from RPG Maker MV, MZ, XP, VX, VX Ace, 2000 and 2003 games. Runs in your browser — your files are never uploaded.">
+<meta property="og:description" content="View and extract images and audio from RPG Maker 2000, 2003, XP, VX, VX Ace, MV and MZ games. Runs in your browser — your files are never uploaded.">
 <meta property="og:image" content="https://makerlens.kokoroou.workers.dev/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="MakerLens — view and extract RPG Maker assets in your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="RPG Maker Asset Extractor — 2000 to MZ, All Versions | MakerLens">
-<meta name="twitter:description" content="View and extract images and audio from RPG Maker MV, MZ, XP, VX, VX Ace, 2000 and 2003 games. Free, browser-based, files never uploaded.">
+<meta name="twitter:description" content="View and extract images and audio from RPG Maker 2000, 2003, XP, VX, VX Ace, MV and MZ games. Free, browser-based, files never uploaded.">
 <meta name="twitter:image" content="https://makerlens.kokoroou.workers.dev/assets/og-image.png">
 <meta name="twitter:image:alt" content="MakerLens — view and extract RPG Maker assets in your browser">
 <script type="application/ld+json">
@@ -37,7 +37,7 @@
   "@id": "https://makerlens.kokoroou.workers.dev/assets/#app",
   "name": "MakerLens Assets",
   "alternateName": ["MakerLens RPG Maker Extractor", "MakerLens"],
-  "description": "Browser-based tool to view, preview, and extract encrypted images and audio from RPG Maker MV, MZ, XP, VX, VX Ace, 2000 and 2003 games. Supports .rpgmvp, .png_, .rpgmvo, .ogg_, RGSSAD archives and 2000/2003 .xyz images. Files are processed locally and never uploaded.",
+  "description": "Browser-based tool to view, preview, and extract encrypted images and audio from RPG Maker 2000, 2003, XP, VX, VX Ace, MV and MZ games. Supports 2000/2003 .xyz images, RGSSAD archives and .rpgmvp, .png_, .rpgmvo, .ogg_. Files are processed locally and never uploaded.",
   "url": "https://makerlens.kokoroou.workers.dev/assets/",
   "image": "https://makerlens.kokoroou.workers.dev/assets/og-image.png",
   "screenshot": "https://makerlens.kokoroou.workers.dev/assets/screenshots/start-laptop.png",
@@ -47,8 +47,9 @@
   "isPartOf": { "@type": "WebSite", "@id": "https://makerlens.kokoroou.workers.dev/#website", "name": "MakerLens", "url": "https://makerlens.kokoroou.workers.dev/" },
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "featureList": [
-    "View and extract RPG Maker MV/MZ encrypted assets (.rpgmvp, .png_, .rpgmvo, .ogg_)",
+    "View RPG Maker 2000/2003 .xyz images as PNG",
     "Open RGSSAD archives (.rgssad, .rgss2a, .rgss3a) for XP, VX, VX Ace",
+    "View and extract RPG Maker MV/MZ encrypted assets (.rpgmvp, .png_, .rpgmvo, .ogg_)",
     "Preview images and OGG/M4A audio in the browser",
     "Search files by name, filter by type, image size and audio length",
     "Download individual assets or entire folders as ZIP",
@@ -184,7 +185,7 @@
           <button class="btn-primary btn-lg" id="open-game-btn">Select Game Folder</button>
           <div class="dz-hint">or drop it anywhere on this page</div>
           <ul class="engine-chips" aria-label="Supported engines">
-            <li>MV</li><li>MZ</li><li>XP</li><li>VX</li><li>VX Ace</li><li data-new>2000</li><li data-new>2003</li>
+            <li data-new>2000</li><li data-new>2003</li><li>XP</li><li>VX</li><li>VX Ace</li><li>MV</li><li>MZ</li>
           </ul>
           <div id="setup-status" role="status"></div>
         </div>
@@ -339,11 +340,11 @@
       <table class="about-formats">
         <thead><tr><th>Engine</th><th>Game files</th></tr></thead>
         <tbody>
-          <tr><td>RPG Maker MZ</td><td>.png_ · .ogg_ · .m4a_</td></tr>
-          <tr><td>RPG Maker MV</td><td>.rpgmvp · .rpgmvo · .rpgmvm</td></tr>
+          <tr data-new><td>RPG Maker 2000 / 2003</td><td>.xyz images (not encrypted)</td></tr>
           <tr><td>RPG Maker XP / VX</td><td>.rgssad · .rgss2a</td></tr>
           <tr><td>RPG Maker VX Ace</td><td>.rgss3a</td></tr>
-          <tr data-new><td>RPG Maker 2000 / 2003</td><td>.xyz images (not encrypted)</td></tr>
+          <tr><td>RPG Maker MV</td><td>.rpgmvp · .rpgmvo · .rpgmvm</td></tr>
+          <tr><td>RPG Maker MZ</td><td>.png_ · .ogg_ · .m4a_</td></tr>
         </tbody>
       </table>
     </div>

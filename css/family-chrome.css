@@ -12,7 +12,7 @@
 :root[data-lens] .top { display: block; background: var(--bg); border-bottom: 2px solid var(--t); position: sticky; top: 0; z-index: 20; }
 :root[data-lens] .top a, :root[data-lens] .foot a { text-decoration-color: var(--a); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 :root[data-lens] .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-:root[data-lens] .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; }
+:root[data-lens] .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 54px; }
 :root[data-lens] .brand { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; text-decoration: none; font: 700 20px/1 var(--chrome-serif); letter-spacing: -.02em; color: var(--t); }
 :root[data-lens] .brand b { font-weight: 700; font-style: italic; color: var(--a); }
 :root[data-lens] .brand:hover { color: var(--t); }
@@ -54,7 +54,7 @@
 }
 @media (max-width: 640px) {
   :root[data-lens] .wrap { padding: 0 16px; }
-  :root[data-lens] .bar { gap: 8px; min-height: 56px; }
+  :root[data-lens] .bar { gap: 8px; min-height: 54px; }
   :root[data-lens] .top .brand > span { display: none; }
   :root[data-lens] .top .brand { flex: none; min-width: 44px; justify-content: center; }
   :root[data-lens] .top nav { flex: 1 1 auto; justify-content: center; gap: 8px; }

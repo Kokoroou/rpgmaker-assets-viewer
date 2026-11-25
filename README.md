@@ -1,6 +1,6 @@
 # MakerLens Assets
 
-See and save the images and audio of an RPG Maker game, right in your browser. Supports **MV, MZ, VX Ace, VX, XP, 2000 and 2003**. Everything runs on your device: your game files and keys are never uploaded.
+See and save the images and audio of an RPG Maker game, right in your browser. Supports **2000, 2003, XP, VX, VX Ace, MV and MZ**. Everything runs on your device: your game files and keys are never uploaded.
 
 **[Try it live →](https://makerlens.kokoroou.workers.dev/assets/)**
 
@@ -37,10 +37,10 @@ See and save the images and audio of an RPG Maker game, right in your browser. S
 
 | Engine | Files | Decryption |
 |--------|-------|------------|
-| MV | `.rpgmvp` (image), `.rpgmvo` / `.rpgmvm` (audio) | 16-byte XOR with the key from `System.json` |
-| MZ | `.png_` (image), `.ogg_` / `.m4a_` (audio) | same |
 | XP / VX | `.rgssad`, `.rgss2a` (RGSSAD v1) | key embedded in the archive |
 | VX Ace | `.rgss3a` (RGSSAD v3) | per-file keys embedded in the archive |
+| MV | `.rpgmvp` (image), `.rpgmvo` / `.rpgmvm` (audio) | 16-byte XOR with the key from `System.json` |
+| MZ | `.png_` (image), `.ogg_` / `.m4a_` (audio) | same with the same key |
 | Any | `.png` `.jpg` `.gif` `.webp` `.bmp` `.ogg` `.m4a` `.mp3` `.wav` | none, shown as is (typed by their bytes, so a WebP saved as `.png_` still shows and downloads as `.webp`) |
 | XP / VX / 2000 / 2003 | `.mid` | listed and downloaded; browsers cannot play MIDI |
 | 2000 / 2003 | `.xyz` (image) | none: zlib-compressed 256-colour image, shown and saved as an indexed PNG (`js/xyz.js`) |

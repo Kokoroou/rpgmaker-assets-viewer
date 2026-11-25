@@ -35,20 +35,28 @@
   #header :focus-visible, #toolbar :focus-visible { outline-offset: -2px; }  /* never clipped by the bar's edge */
   .btn-primary:focus-visible { outline-color: var(--t); }
 
-  /* ── Header ── */
-  #header { border-bottom: 1px solid var(--bd2); }
+  /* ── Header: the family's bar (Kokoroou/makerlens site/css/landing.css .top, css/family-chrome.css):
+     56px in all, a 2px ink rule under it, the lens mark in ink (24px, no box) with three green
+     pixels, the serif "Maker*Lens*" at 20px. On phones (<= 640px) the word goes and the mark
+     stays, followed by the tool's name chip. ── */
+  #header { height: var(--hh); border-bottom: 2px solid var(--t); }
   #logo {
-    font-family: var(--serif); font-size: 19px; font-weight: 700; letter-spacing: -.02em;
-    min-height: 44px; min-width: 44px;
+    font-family: var(--serif); font-size: 20px; font-weight: 700; letter-spacing: -.02em;
+    gap: 8px; min-height: 44px; min-width: 44px; color: var(--t);
   }
-  #logo span span { font-style: italic; }
+  #logo span span { font-style: italic; color: var(--a); }
   .logo-mark {
-    width: 32px; height: 32px;
-    border: 1px solid var(--t); border-radius: var(--r);
-    background: var(--s1); color: var(--t);
+    width: 24px; height: 24px;
+    border: 0; border-radius: 0; background: none; color: var(--t);
   }
   .logo-mark > svg:not(.lens-only) { display: none; }
+  .logo-mark svg.lens-only { display: block; width: 24px; height: 24px; color: var(--t); }
   .logo-mark .lp { fill: var(--a); }
+  @media (max-width: 640px) {
+    #logo .logo-full { display: none; }
+    #logo .logo-abbr { display: inline-flex; align-items: center; font-size: 0; }
+    #logo .logo-abbr .logo-sub { margin-left: 0; }
+  }
   .logo-sub {
     font: 700 12px/1 var(--mono); font-style: normal; letter-spacing: 0;
     color: var(--t2);

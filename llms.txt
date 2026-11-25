@@ -6,9 +6,9 @@
 
 MakerLens Assets lets you open encrypted RPG Maker game files directly in your browser and preview or download the images and audio inside.
 
-- **RPG Maker MV / MZ**: open the game folder; the encryption key is auto-read from `data/System.json`. Supports `.rpgmvp`, `.png_` (images) and `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_` (audio).
-- **RPG Maker XP / VX / VX Ace**: open the game folder, or a `.rgssad`, `.rgss2a`, or `.rgss3a` archive directly. No key needed — it's embedded in the archive.
 - **RPG Maker 2000 / 2003**: open the game folder; `.xyz` images are shown and saved as PNG, next to plain `.png`, `.bmp`, `.wav`, `.mid` and `.mp3` files. Nothing is encrypted.
+- **RPG Maker XP / VX / VX Ace**: open the game folder, or a `.rgssad`, `.rgss2a`, or `.rgss3a` archive directly. No key needed — it's embedded in the archive.
+- **RPG Maker MV / MZ**: open the game folder; the encryption key is auto-read from `data/System.json`. Supports `.rpgmvp`, `.png_` (images) and `.rpgmvo`, `.rpgmvm`, `.ogg_`, `.m4a_` (audio).
 - Also: filter by image size or audio length, hide files with identical content ("Unique only"), download a folder as a ZIP.
 
 ## Who it's for
