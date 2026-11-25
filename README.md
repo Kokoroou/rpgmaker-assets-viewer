@@ -8,6 +8,12 @@ See and save the images and audio of an RPG Maker game, right in your browser. S
 
 <video src="https://github.com/user-attachments/assets/aa643c3b-81a1-4a13-936a-ebf4ea69e886" controls width="100%"></video>
 
+| Start screen | A game open |
+|---|---|
+| ![MakerLens Assets start screen on a desktop browser](docs/screenshots/start-desktop.png) | ![MakerLens Assets showing a game's pictures folder on a desktop browser](docs/screenshots/viewer-desktop.png) |
+
+<sub>Screenshots use a demo game made for this README, not a real game.</sub>
+
 ## Features
 
 - **Zero install, no build** — open the site, or `index.html` locally, in any modern browser
