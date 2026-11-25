@@ -56,6 +56,8 @@ const ICONS = {
   folder:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 015.5 5H9l2 2.5h7.5A2.5 2.5 0 0121 10v7.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 17.5z"/></svg>',
   folderOpen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V7.5A2.5 2.5 0 015.5 5H9l2 2.5h6A2.5 2.5 0 0119.5 10v.5"/><path d="M3 17l2.2-5.6A2 2 0 017.1 10H20a1 1 0 01.9 1.4l-2.4 6A2.5 2.5 0 0116.2 19H5a2 2 0 01-2-2z"/></svg>',
   search:     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
+  // two files with "=" between them: the same content twice (not the "copy" icon)
+  same:       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="7" height="14" rx="1.5"/><rect x="15" y="5" width="7" height="14" rx="1.5"/><path d="M10.8 10.5h2.4M10.8 13.5h2.4"/></svg>',
   copies:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
   music:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
 };
@@ -323,21 +325,40 @@ function renderSidebar() {
     }
   }
 
-  // Virtual "Duplicates" folder (js/dupes.js): shown once copies are found,
-  // and from the moment "Unique only" is on, highlighted and set apart from
-  // the real folders so the toggle's result is easy to find.
-  if (!sPath && (Dupes.on || Dupes.copies)) {
+  // Virtual "Duplicates" folder (js/dupes.js). MakerLens look: always listed once a game is
+  // open, with the "Unique only" switch in its row (the toolbar button is legacy only).
+  // Legacy copy: shown once copies are found or "Unique only" is on, as before.
+  const lens = document.documentElement.hasAttribute('data-lens');
+  if (!sPath && (Dupes.on || Dupes.copies || (lens && S.files.size))) {
     const item = document.createElement('div');
-    item.className = 'folder-item folder-dupes' + (Dupes.on ? ' on' : '');
+    item.className = 'folder-item folder-dupes' + (Dupes.on ? ' on' : '') + (lens ? ' has-switch' : '');
     item.dataset.folder = DUPES_KEY;
-    const sub   = Dupes.on ? Dupes.sidebarNote() : '';
+    const sub   = Dupes.on || Dupes.running ? Dupes.sidebarNote()
+                : !lens ? '' : !Dupes.settled ? 'Same content, other name' : Dupes.copies ? 'Unique only off' : 'None found';
     const count = Dupes.running && !Dupes.copies ? '<span class="status-spinner" aria-hidden="true"></span>'
-                : `<span class="f-count">${fmtNum(Dupes.copies)}</span>`;
-    item.innerHTML = `<span class="f-icon">${ICONS.copies}</span>`
+                : Dupes.copies || !lens ? `<span class="f-count">${fmtNum(Dupes.copies)}</span>` : '';
+    item.innerHTML = `<span class="f-icon">${lens ? ICONS.same : ICONS.copies}</span>`
       + `<span class="f-name">Duplicates${sub ? `<span class="f-sub">${escapeHtml(sub)}</span>` : ''}</span>${count}`;
     item.title = 'Files whose content also exists at another path';
-    item.addEventListener('click', () => { S.userNav = true; showFolder(DUPES_KEY); });
+    item.addEventListener('click', () => {
+      S.userNav = true;
+      if (!Dupes.on && !Dupes.running && Dupes.settled < S.files.size) Dupes.start();   // look for copies without hiding them
+      showFolder(DUPES_KEY);
+    });
     if (S.currentFolder === DUPES_KEY) item.classList.add('active');
+    if (lens) {
+      // "Unique only": hide the copies in every folder (and in the ZIP).
+      const sw = document.createElement('button');
+      sw.type = 'button';
+      sw.className = 'row-switch';
+      sw.setAttribute('role', 'switch');
+      sw.setAttribute('aria-checked', Dupes.on ? 'true' : 'false');
+      sw.setAttribute('aria-label', 'Unique only: hide identical copies in every folder');
+      sw.title = Dupes.on ? 'Unique only is on: identical copies are hidden' : 'Unique only: hide identical copies in every folder';
+      sw.innerHTML = '<span class="row-switch-knob"></span>';
+      sw.addEventListener('click', e => { e.stopPropagation(); toggleUnique(); });
+      item.appendChild(sw);
+    }
     EL.sidebar.appendChild(item);
     const div = document.createElement('div');
     div.className = 'sb-divider';

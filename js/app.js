@@ -667,7 +667,9 @@ $('about-modal').addEventListener('click', e => { if (e.target === $('about-moda
 $('dl-folder-btn').addEventListener('click', downloadFolder);
 
 // ─── Events: Unique only (js/dupes.js) ────────────────
-EL.dupeBtn.addEventListener('click', () => { if (!Dupes.on) track('dupes-on'); Dupes.setOn(!Dupes.on); });
+// The toolbar button (legacy copy) and the switch in the sidebar's Duplicates row (ui.js).
+function toggleUnique() { if (!Dupes.on) track('dupes-on'); Dupes.setOn(!Dupes.on); }
+EL.dupeBtn.addEventListener('click', toggleUnique);
 
 // ─── Events: Sidebar toggle ───────────────────────────
 const PHONE = matchMedia('(max-width: 600px)');

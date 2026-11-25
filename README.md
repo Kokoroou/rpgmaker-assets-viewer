@@ -17,7 +17,7 @@ See and save the images and audio of an RPG Maker game, right in your browser. S
 - **Fast on big games** — folders are scanned lazily in the background; thumbnails load on demand
 - **Image and audio preview** — grid, lightbox with keyboard navigation and, on phones, swipe / pinch gestures with a bottom control bar, in-browser audio player
 - **Export** — download one asset from its preview, or every file shown in the current folder (after search, filters and Unique only) with **Download ZIP**; files that cannot be read are listed, not silently dropped
-- **Duplicate finder** — "Unique only" hides files with identical content (SHA-256 of the decrypted bytes, computed in the browser); copies are badged and grouped in a Duplicates folder
+- **Duplicate finder** — the "Unique only" switch on the sidebar's Duplicates row hides files with identical content (SHA-256 of the decrypted bytes, computed in the browser); copies are badged and grouped in a Duplicates folder
 - **Search and filters** — by name, by type (images / audio), image width and height (with presets such as 48×48 tiles), and audio length; sizes and lengths are read from file headers only
 - **Adjustable tiles, light/dark theme**
 
