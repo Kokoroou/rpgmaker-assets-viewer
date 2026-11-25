@@ -148,7 +148,10 @@
   .fp-range legend { font-size: 14px; }
   .fp-note { font-size: 14px; }
   .fp-type label { font-size: 14px; }
-  .fp-chip { font-size: 12px; }
+  .fp-chip { font-size: 12px; border-color: var(--bd); }
+  /* common sizes: their own row, clear of the height inputs; the one matching the bounds is lit */
+  .fp-presets { margin: 4px 0 16px; }
+  .fp-chip[aria-pressed="true"] { border-color: var(--a); background: var(--a10); color: var(--t); }
   .btn-sm, .fp-head .btn-sm { font-size: 14px; }
   .about-formats th { font-size: 14px; }
   .fp-unit { font-size: 14px; }
@@ -266,7 +269,7 @@
     .size-control { height: 44px; }
     #size-slider { height: 44px; }
     .fp-type label, .fp-range input, .fp-chip { height: 44px; }
-    .fp-presets { gap: 8px; }
+    .fp-presets { gap: 8px; margin: 8px 0 16px; }
   }
 
   @media (prefers-reduced-motion: reduce) {

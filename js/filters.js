@@ -461,6 +461,16 @@ function readFilterPanel() {
   };
 }
 
+// Light the size chip whose width and height both equal the bounds now typed.
+function syncPresetChips() {
+  FP.panel.querySelectorAll('[data-preset]').forEach(b => {
+    const [w, h] = b.dataset.preset.split('x');
+    const on = FP.minW.value.trim() === w && FP.maxW.value.trim() === w
+      && FP.minH.value.trim() === h && FP.maxH.value.trim() === h;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
 function openFilterPanel(open) {
   FP.panel.hidden = !open;
   FP.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -471,6 +481,7 @@ if (FP.btn) {
   let t = 0;
   FP.btn.addEventListener('click', () => openFilterPanel(FP.panel.hidden));
   FP.panel.addEventListener('input', () => {
+    syncPresetChips();
     clearTimeout(t);
     t = setTimeout(() => Filter.set(readFilterPanel()), 300);
   });
@@ -479,9 +490,12 @@ if (FP.btn) {
   });
   FP.panel.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
     const [w, h] = b.dataset.preset.split('x');
-    FP.minW.value = FP.maxW.value = w;
-    FP.minH.value = FP.maxH.value = h;
-    FP.panel.querySelector('#flt-type-image').checked = true;
+    // a second tap on the lit size takes it off again
+    const off = b.getAttribute('aria-pressed') === 'true';
+    FP.minW.value = FP.maxW.value = off ? '' : w;
+    FP.minH.value = FP.maxH.value = off ? '' : h;
+    if (!off) FP.panel.querySelector('#flt-type-image').checked = true;
+    syncPresetChips();
     clearTimeout(t);
     Filter.set(readFilterPanel());
   }));
@@ -491,6 +505,7 @@ if (FP.btn) {
       el.setAttribute('aria-invalid', 'false');
     }
     FP.panel.querySelector('#flt-type-all').checked = true;
+    syncPresetChips();
     clearTimeout(t);
     Filter.set({});
   });
