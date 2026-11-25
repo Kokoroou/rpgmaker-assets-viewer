@@ -169,8 +169,8 @@
     background: var(--bg); border-bottom: 1px solid var(--bd2);
   }
   .lens-logo {
-    display: inline-flex; align-items: center; gap: 10px; min-height: 44px;
-    font: 700 19px/1 var(--serif); letter-spacing: -.02em; color: var(--t); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+    font: 700 20px/1 var(--serif); letter-spacing: -.02em; color: var(--t); text-decoration: none;
   }
   .lens-word span { font-style: italic; color: var(--a); }
   .lens-nav { display: flex; gap: 4px; margin-left: auto; }
