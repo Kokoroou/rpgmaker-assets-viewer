@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 // Runs js/site.js + js/analytics.js with a fake browser; returns the requests and countEvent.
-function setup({ host = 'makerlens.kokoroou.workers.dev', dnt, gpc } = {}) {
+function setup({ host = 'makerlens.kokoroou.com', dnt, gpc } = {}) {
   const sent = [], images = [];
   class Image { set src(u) { sent.push(new URL(u)); images.push(this); } }
   const ctx = vm.createContext({

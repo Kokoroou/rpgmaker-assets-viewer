@@ -37,10 +37,10 @@ What sets it apart (keep investing here): walking-sprite animation, music loop p
 size/length filters, ZIP that follows the filter, per-file error reports, speed on large games.
 
 **Family:** MakerLens Assets is one tool of the MakerLens family
-(<https://makerlens.kokoroou.workers.dev/>); MakerLens Events reads the same game's event flow.
+(<https://makerlens.kokoroou.com/>); MakerLens Events reads the same game's event flow.
 
 Which features come next is decided from anonymous usage counts and feedback (what is counted:
-[privacy page](https://makerlens.kokoroou.workers.dev/assets/privacy.html#analytics)); the owner keeps the
+[privacy page](https://makerlens.kokoroou.com/assets/privacy.html#analytics)); the owner keeps the
 analysis and decision notes outside this repository.
 
 ---

@@ -1,5 +1,5 @@
 // ─── Where the public site lives ──────────────────────
-// Home:   https://makerlens.kokoroou.workers.dev/assets/ (
+// Home:   https://makerlens.kokoroou.com/assets/ (
 //         built from the Kokoroou/makerlens repo, which copies this repo in)
 // Legacy: https://kokoroou.github.io/rpgmaker-assets-viewer/   (GitHub Pages,
 //         still deployed by .github/workflows/deploy.yml; shows a "moved" banner)
@@ -7,7 +7,7 @@
 // analytics.js and feedback.js use SITE.isPublic so local copies and previews
 // stay silent. Each page loads this file before them.
 var SITE = (function () {
-  var HOME   = { host: 'makerlens.kokoroou.workers.dev', base: '/assets/' };
+  var HOME   = { host: 'makerlens.kokoroou.com', base: '/assets/' };
   var LEGACY = { host: 'kokoroou.github.io', base: '/rpgmaker-assets-viewer/' };
 
   // Same page on the new home; keeps the query (utm_source…) and the hash.
@@ -94,7 +94,7 @@ var SITE = (function () {
   var text = document.createElement('p');
   text.textContent = 'MakerLens Events plays every scene in a game\u2019s data, even the ones you never unlocked. Free, in your browser.';
   var link = document.createElement('a');
-  link.href = 'https://makerlens.kokoroou.workers.dev/events/';
+  link.href = 'https://makerlens.kokoroou.com/events/';
   link.textContent = 'Watch Hidden Scenes \u2192';
 
   card.appendChild(close);

@@ -1,4 +1,4 @@
-# Ask Kokoroou/makerlens to rebuild and redeploy https://makerlens.kokoroou.workers.dev/
+# Ask Kokoroou/makerlens to rebuild and redeploy https://makerlens.kokoroou.com/
 # after every push to main (its Deploy workflow listens for "tool-updated").
 #
 # Needs the secret MAKERLENS_DISPATCH_TOKEN: a fine-grained personal access token

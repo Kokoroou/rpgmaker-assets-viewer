@@ -8,7 +8,7 @@ vm.runInContext(readFileSync(new URL('../js/remote.js', import.meta.url), 'utf8'
 const { Remote } = ctx;
 
 const TOKEN = 'aabbccddeeff.' + 's'.repeat(32);
-const LINK = `https://makerlens.kokoroou.workers.dev/assets/#game=${encodeURIComponent('https://my-game.alice.workers.dev')}&t=${TOKEN}`;
+const LINK = `https://makerlens.kokoroou.com/assets/#game=${encodeURIComponent('https://my-game.alice.workers.dev')}&t=${TOKEN}`;
 
 const code = fn => { try { fn(); } catch (e) { return e.code; } return null; };
 
@@ -26,7 +26,7 @@ test('parseLink: only https workers.dev games, a well-formed token, no credentia
     assert.equal(code(() => Remote.parseLink(link(bad))), 'link', bad);
   }
   assert.equal(code(() => Remote.parseLink('')), 'link');
-  assert.equal(code(() => Remote.parseLink('https://makerlens.kokoroou.workers.dev/assets/')), 'link');
+  assert.equal(code(() => Remote.parseLink('https://makerlens.kokoroou.com/assets/')), 'link');
   assert.equal(code(() => Remote.parseLink(`https://x/#game=https%3A%2F%2Fg.alice.workers.dev&t=short`)), 'link');
   assert.equal(code(() => Remote.parseLink(`https://x/#game=https%3A%2F%2Fg.alice.workers.dev&t=${TOKEN}%0A`)), 'link', 'no control characters in the token');
 });
@@ -83,7 +83,7 @@ test('client: a manifest without files is refused', async () => {
 test('switchURL: the same link for the other tool, token only after the #', () => {
   const link = Remote.parseLink(LINK);
   const events = Remote.switchURL(link, 'events');
-  assert.equal(events, `https://makerlens.kokoroou.workers.dev/events/#game=${encodeURIComponent('https://my-game.alice.workers.dev')}&t=${TOKEN}`);
+  assert.equal(events, `https://makerlens.kokoroou.com/events/#game=${encodeURIComponent('https://my-game.alice.workers.dev')}&t=${TOKEN}`);
   assert.deepEqual({ ...Remote.parseLink(events) }, { ...link }, 'round trip');
   assert.equal(new URL(events).search, '');
   assert.equal(code(() => Remote.switchURL(link, 'elsewhere')), 'link');

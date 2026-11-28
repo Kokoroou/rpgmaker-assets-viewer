@@ -13,7 +13,7 @@ test('outside a browser the site is neither public nor legacy', () => {
 });
 
 test('homeURL maps each legacy page to the same page under /assets/', () => {
-  const home = 'https://makerlens.kokoroou.workers.dev/assets/';
+  const home = 'https://makerlens.kokoroou.com/assets/';
   assert.equal(SITE.homeURL('/rpgmaker-assets-viewer/'), home);
   assert.equal(SITE.homeURL('/rpgmaker-assets-viewer/index.html'), home + 'index.html');
   assert.equal(SITE.homeURL('/rpgmaker-assets-viewer/faq.html'), home + 'faq.html');
@@ -21,7 +21,7 @@ test('homeURL maps each legacy page to the same page under /assets/', () => {
 });
 
 test('homeURL keeps traffic-source params and falls back to the tool root', () => {
-  const home = 'https://makerlens.kokoroou.workers.dev/assets/';
+  const home = 'https://makerlens.kokoroou.com/assets/';
   assert.equal(SITE.homeURL('/rpgmaker-assets-viewer/', '?utm_source=chatgpt.com'), home + '?utm_source=chatgpt.com');
   assert.equal(SITE.homeURL('/somewhere-else/x.html', '?a=1'), home + '?a=1');
 });

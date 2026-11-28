@@ -13,11 +13,11 @@ MakerLens Assets lets you open encrypted RPG Maker game files directly in your b
 
 ## Who it's for
 
-Modders and translators working with the rights holder's permission, developers and artists recovering their own work, and anyone who wants to look at a game's images and music without installing software. Not a batch/CLI converter. Part of the MakerLens family (https://makerlens.kokoroou.workers.dev/); MakerLens Events (https://makerlens.kokoroou.workers.dev/events/) shows the same game's event flow.
+Modders and translators working with the rights holder's permission, developers and artists recovering their own work, and anyone who wants to look at a game's images and music without installing software. Not a batch/CLI converter. Part of the MakerLens family (https://makerlens.kokoroou.com/); MakerLens Events (https://makerlens.kokoroou.com/events/) shows the same game's event flow.
 
 ## Key features
 
-- Zero install — runs in any modern browser at https://makerlens.kokoroou.workers.dev/assets/
+- Zero install — runs in any modern browser at https://makerlens.kokoroou.com/assets/
 - Auto key detection from `System.json`
 - Audio preview with duration display
 - Lightbox image viewer with keyboard navigation
@@ -28,15 +28,15 @@ Modders and translators working with the rights holder's permission, developers 
 
 ## Use it
 
-https://makerlens.kokoroou.workers.dev/assets/ — select the game folder (any version) or the archive (XP/VX/VX Ace), or paste a game link made by rpgmaker-web-toolkit. Chrome and Edge open folders directly; other browsers pick the folder through the file dialog.
+https://makerlens.kokoroou.com/assets/ — select the game folder (any version) or the archive (XP/VX/VX Ace), or paste a game link made by rpgmaker-web-toolkit. Chrome and Edge open folders directly; other browsers pick the folder through the file dialog.
 
 ## FAQ
 
-How to open .rpgmvp / .png_ / .rgss3a files, where the key comes from, ZIP export, supported versions and legal notes: https://makerlens.kokoroou.workers.dev/assets/faq.html
+How to open .rpgmvp / .png_ / .rgss3a files, where the key comes from, ZIP export, supported versions and legal notes: https://makerlens.kokoroou.com/assets/faq.html
 
 ## Privacy
 
-All processing happens inside your browser. No files or keys are ever uploaded or sent to any server. The public site counts anonymous page visits (page path and referrer) and a few actions by fixed name (how a game was opened, which feature was used; never what was opened), with GoatCounter and no cookies. Details: https://makerlens.kokoroou.workers.dev/assets/privacy.html
+All processing happens inside your browser. No files or keys are ever uploaded or sent to any server. The public site counts anonymous page visits (page path and referrer) and a few actions by fixed name (how a game was opened, which feature was used; never what was opened), with GoatCounter and no cookies. Details: https://makerlens.kokoroou.com/assets/privacy.html
 
 ## Supported formats
 
