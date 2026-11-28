@@ -3,7 +3,7 @@
 # Deploy does not wait for the whole CI workflow on purpose: its Semgrep job scans the
 # full tree on main, so a pre-existing finding would block every deploy.
 #
-# The public home is now https://makerlens.kokoroou.workers.dev/assets/ (built by the
+# The public home is now https://makerlens.kokoroou.com/assets/ (built by the
 # Kokoroou/makerlens repo); this copy keeps old links working and shows a "moved"
 # banner (js/site.js).
 #

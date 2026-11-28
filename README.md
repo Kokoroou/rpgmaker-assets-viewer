@@ -2,9 +2,9 @@
 
 See and save the images and audio of an RPG Maker game, right in your browser. Supports **2000, 2003, XP, VX, VX Ace, MV and MZ**. Everything runs on your device: your game files and keys are never uploaded.
 
-**[Try it live →](https://makerlens.kokoroou.workers.dev/assets/)**
+**[Try it live →](https://makerlens.kokoroou.com/assets/)**
 
-**Who it's for:** modders and translators working with permission, developers and artists recovering their own work, and anyone who wants to look at a game's images and music without installing unknown software. Free, no account, no ads. Part of the [MakerLens](https://makerlens.kokoroou.workers.dev/) family: to read the same game's dialogue, choices and switches, use [MakerLens Events](https://makerlens.kokoroou.workers.dev/events/).
+**Who it's for:** modders and translators working with permission, developers and artists recovering their own work, and anyone who wants to look at a game's images and music without installing unknown software. Free, no account, no ads. Part of the [MakerLens](https://makerlens.kokoroou.com/) family: to read the same game's dialogue, choices and switches, use [MakerLens Events](https://makerlens.kokoroou.com/events/).
 
 <video src="https://github.com/user-attachments/assets/aa643c3b-81a1-4a13-936a-ebf4ea69e886" controls width="100%"></video>
 
@@ -29,7 +29,7 @@ See and save the images and audio of an RPG Maker game, right in your browser. S
 
 ## Getting started
 
-1. Open **[MakerLens Assets](https://makerlens.kokoroou.workers.dev/assets/)**.
+1. Open **[MakerLens Assets](https://makerlens.kokoroou.com/assets/)**.
 2. Click **Select Game Folder** (or drop the folder anywhere on the page) and pick the game's **main folder: the one with `Game.exe` in it** (`RPG_RT.exe` for 2000/2003). That works for every version: MV keeps its files in `www/`, MZ in `img/` and `audio/`, VX Ace / VX / XP in `Game.rgss3a` (or `.rgss2a`, `.rgssad`) next to `Game.exe`, 2000/2003 in folders such as `Picture/` and `Music/`, and the viewer finds them.
 3. The pictures folder opens first. Pick other folders in the sidebar, click a file to preview it (its download button saves that one file), or press **Download ZIP** to save every file shown in that folder (not its subfolders; search, filters and Unique only decide what is shown).
 
@@ -37,7 +37,7 @@ See and save the images and audio of an RPG Maker game, right in your browser. S
 
 **Other ways in** (the **View another way** button): an archive file on its own, individual files such as `.png_` or `.rpgmvp`, or a link made in a game published with rpgmaker-web-toolkit.
 
-**Browsers:** desktop Chrome, Edge, Firefox and Brave work best. On a phone, folder selection may not be offered; individual files (View another way) still work, and the viewer adapts to the small screen. More help (where the key is, offline use): [FAQ](https://makerlens.kokoroou.workers.dev/assets/faq.html).
+**Browsers:** desktop Chrome, Edge, Firefox and Brave work best. On a phone, folder selection may not be offered; individual files (View another way) still work, and the viewer adapts to the small screen. More help (where the key is, offline use): [FAQ](https://makerlens.kokoroou.com/assets/faq.html).
 
 ## Supported formats
 
@@ -55,7 +55,7 @@ Algorithms and their sources are documented in the code comments (`js/decrypt-*.
 
 ## Privacy and legal
 
-- **Privacy:** your files and keys are processed only in your browser; nothing about them is sent anywhere. The public site does send two things: an anonymous count of page visits and of a few actions by name (GoatCounter: how a game was opened, which feature was used, never what), and feedback only when you choose to send it. What is sent, and what never is, is defined in [`privacy.html`](https://makerlens.kokoroou.workers.dev/assets/privacy.html), the single source of truth. A Content-Security-Policy makes the browser block every other host.
+- **Privacy:** your files and keys are processed only in your browser; nothing about them is sent anywhere. The public site does send two things: an anonymous count of page visits and of a few actions by name (GoatCounter: how a game was opened, which feature was used, never what), and feedback only when you choose to send it. What is sent, and what never is, is defined in [`privacy.html`](https://makerlens.kokoroou.com/assets/privacy.html), the single source of truth. A Content-Security-Policy makes the browser block every other host.
 - **Legal:** intended for your own assets or work done with the rights holder's permission. See [`LEGAL.md`](LEGAL.md) for intended use, user responsibility and takedown policy.
 
 ## Documentation

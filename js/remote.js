@@ -54,7 +54,7 @@ const Remote = (() => {
     try { return parseLink(hash); } catch { return null; }
   }
 
-  const HOME = 'https://makerlens.kokoroou.workers.dev/';
+  const HOME = 'https://makerlens.kokoroou.com/';
   const TOOLS = ['assets', 'events'];
 
   // { origin, token } -> the link for `tool` ('assets' | 'events'), for the button that switches

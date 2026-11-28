@@ -18,7 +18,7 @@ test('lens-gate: legacy host gets no data-lens', () => {
   assert.equal('data-lens' in run('kokoroou.github.io'), false);
 });
 test('lens-gate: home, local and preview hosts get data-lens', () => {
-  for (const h of ['makerlens.kokoroou.workers.dev', 'localhost', 'x.pages.dev']) assert.equal('data-lens' in run(h), true, h);
+  for (const h of ['makerlens.kokoroou.com', 'localhost', 'x.pages.dev']) assert.equal('data-lens' in run(h), true, h);
 });
 
 test('lens.css: everything but the two helper classes sits inside :root[data-lens]', () => {

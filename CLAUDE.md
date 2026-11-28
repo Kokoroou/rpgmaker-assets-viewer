@@ -27,7 +27,7 @@ node --test "tests/*.test.mjs"     # decrypt-mvmz / decrypt-rgssad / constants o
 Run both before pushing. Tests load `js/*.js` into a `node:vm` context (shared global scope, like the browser); fixtures are built in the test, never real game assets.
 
 - `.github/workflows/ci.yml` — calls `kokoroou/agent-toolkit/.github/workflows/quality.yml@v0` (lint = `check-site.mjs`, test = `node --test`, plus Gitleaks + Semgrep) on PRs and pushes to `main`.
-- **Public home:** `https://makerlens.kokoroou.workers.dev/assets/` (one Cloudflare Worker for the whole MakerLens family, built and deployed by the `Kokoroou/makerlens` repo, which runs `scripts/assemble-site.sh` from this repo into `/assets/`). Canonical, `og:*`, JSON-LD and `llms.txt` use that URL. There is no `sitemap.xml` here: search engines only read the root domain's, so this tool's URLs live in `makerlens/site/sitemap.xml` (add new pages and bump `lastmod` there).
+- **Public home:** `https://makerlens.kokoroou.com/assets/` (one Cloudflare Worker for the whole MakerLens family, built and deployed by the `Kokoroou/makerlens` repo, which runs `scripts/assemble-site.sh` from this repo into `/assets/`). Canonical, `og:*`, JSON-LD and `llms.txt` use that URL. There is no `sitemap.xml` here: search engines only read the root domain's, so this tool's URLs live in `makerlens/site/sitemap.xml` (add new pages and bump `lastmod` there).
 - `scripts/assemble-site.sh <dir>` — copies the public files (pages, `css/`, `js/`, images, `llms.txt`, `screenshots/`, LICENSE/LEGAL/README). A new top-level file the site serves must be added there.
 - `.github/workflows/deploy.yml` — on a push to `main`, reruns the two checks above, then publishes the **legacy** copy to GitHub Pages (`kokoroou.github.io/rpgmaker-assets-viewer/`), which keeps old links working and shows the "moved" banner from `js/site.js`. Requires Settings → Pages → Source = "GitHub Actions".
 - `.github/workflows/notify-makerlens.yml` — after a push to `main`, sends `repository_dispatch` (`tool-updated`) to `Kokoroou/makerlens` so the new home redeploys; needs the secret `MAKERLENS_DISPATCH_TOKEN` (skips with a notice without it).
@@ -62,7 +62,7 @@ js/lens-static.js    — theme toggle (same rule/key as app.js) for the lens-onl
 
 All files share a single global scope — no modules.
 
-The header logo is a plain link to the MakerLens home page (`https://makerlens.kokoroou.workers.dev/`); the open game is not kept (everything is in memory).
+The header logo is a plain link to the MakerLens home page (`https://makerlens.kokoroou.com/`); the open game is not kept (everything is in memory).
 
 **State object `S`** (global, in-memory):
 - `S.key` — fallback hex encryption key (single game at the root, or derived from a PNG header); in memory only (never persisted)
@@ -100,7 +100,7 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 
 **Loading overlay:** every open action goes through `runLoad(task)` in `app.js`, which drives `Loader` (`#loader`, `css/loader.css`): named steps (`detect`/`scan`/`load`/`current` for lazy folders, `scan`/`detect`/`index` for file lists, `read`/`table`/`index` for archives), a determinate or sweeping progress bar, Cancel and an error state. Loaders build into new Maps and only `commitLibrary()` swaps them into `S` (and aborts the previous background scan), so Cancel or a failure keeps the previously open game. Long loops call `Loader.check()` (throws `AbortError` after Cancel) at their yield points.
 
-**Feedback:** `js/feedback.js` POSTs to the shared feedback inbox `https://feedback.kokoroou.workers.dev/api/submit` (Cloudflare Worker + D1 in the private repo `Kokoroou/feedbacks`, project key `makerlens-assets`; MakerLens Events sends as `makerlens-events`) only when the user taps a star (the rating is sent at once and the Worker answers with a signed `ref` to that entry; the optional follow-up comment goes as kind `idea` with the same stars plus that `ref`, so both become one entry and ratings are not counted twice; `ref` lives in a variable only) or presses Send. The inbox keeps its projects in D1, managed with `PUT /api/projects/makerlens-assets` (service token, see the feedbacks README): they allow-list this site's origins (`https://makerlens.kokoroou.workers.dev` and the legacy `https://kokoroou.github.io`) and the `meta` fields (`opens`, `browser`); a new field or origin must be added there too, or every submit gets 403. The answered state lives in `localStorage['feedback']` (`{opens, done, skips, nextAt}`), never sent.
+**Feedback:** `js/feedback.js` POSTs to the shared feedback inbox `https://feedback.kokoroou.workers.dev/api/submit` (Cloudflare Worker + D1 in the private repo `Kokoroou/feedbacks`, project key `makerlens-assets`; MakerLens Events sends as `makerlens-events`) only when the user taps a star (the rating is sent at once and the Worker answers with a signed `ref` to that entry; the optional follow-up comment goes as kind `idea` with the same stars plus that `ref`, so both become one entry and ratings are not counted twice; `ref` lives in a variable only) or presses Send. The inbox keeps its projects in D1, managed with `PUT /api/projects/makerlens-assets` (service token, see the feedbacks README): they allow-list this site's origins (`https://makerlens.kokoroou.com` and the legacy `https://kokoroou.github.io`) and the `meta` fields (`opens`, `browser`); a new field or origin must be added there too, or every submit gets 403. The answered state lives in `localStorage['feedback']` (`{opens, done, skips, nextAt}`), never sent.
 
 **ZIP download:** the toolbar's **Download ZIP** button (`#dl-folder-btn`, icon only on phones) runs `downloadFolder()` in `app.js`, which reads raw data for each entry in `S.currentFolder`, applies decryption if needed, then calls `buildZip(items)` (uncompressed/store method, pure JS CRC32 via `_CRC32` table). Output is a Blob downloaded directly in-browser.
 
@@ -142,7 +142,7 @@ The header logo is a plain link to the MakerLens home page (`https://makerlens.k
 
 ## Which site to build for
 
-New features target only the Cloudflare home (`https://makerlens.kokoroou.workers.dev/assets/`). The legacy GitHub Pages copy (`kokoroou.github.io/rpgmaker-assets-viewer/`) is changed only when the owner asks for it by name: no legacy-specific code, banners or workflow edits (`deploy.yml`, `js/site.js`) on our own initiative. The code is shared, so the legacy copy still receives common `js/`/`css/` changes on deploy; a feature that should not run there is gated with `SITE.isLegacy`.
+New features target only the Cloudflare home (`https://makerlens.kokoroou.com/assets/`). The legacy GitHub Pages copy (`kokoroou.github.io/rpgmaker-assets-viewer/`) is changed only when the owner asks for it by name: no legacy-specific code, banners or workflow edits (`deploy.yml`, `js/site.js`) on our own initiative. The code is shared, so the legacy copy still receives common `js/`/`css/` changes on deploy; a feature that should not run there is gated with `SITE.isLegacy`.
 
 ## Legal constraints
 
