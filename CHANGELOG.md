@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/Kokoroou/rpgmaker-assets-viewer/compare/v1.0.0...v1.1.0) (2026-11-28)
+
+
+### Features
+
+* **faq:** align the Assets FAQ with the Events FAQ and the family header and footer ([#64](https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/64)) ([79de57c](https://github.com/Kokoroou/rpgmaker-assets-viewer/commit/79de57c89d7893c3bc71cfb663657bfe6b7d0a45))
+* **faq:** list-style answers, pinned family header, new share image ([#65](https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/65)) ([cd29006](https://github.com/Kokoroou/rpgmaker-assets-viewer/commit/cd29006523cb9a20937ebaf11e81432b07fbc448))
+* MakerLens redesign layer for Assets, gated off the legacy copy ([#62](https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/62)) ([7d357a0](https://github.com/Kokoroou/rpgmaker-assets-viewer/commit/7d357a0bd93cd5e1f40f586d62be5afb5b5903af))
+* Unique only as a switch in the sidebar's Duplicates row ([#68](https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/68)) ([27e0aca](https://github.com/Kokoroou/rpgmaker-assets-viewer/commit/27e0aca5f58cc1c54b7e5e76334a6f476b5730ec))
+* use the new home makerlens.kokoroou.com ([#70](https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/70)) ([67315dc](https://github.com/Kokoroou/rpgmaker-assets-viewer/commit/67315dce259facb732611e8be0a2699065477df9))
+* versions in release order, new share image, family header in the app ([#66](https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/66)) ([2151fdf](https://github.com/Kokoroou/rpgmaker-assets-viewer/commit/2151fdf972252b5b349d290aca8a40d61c891ea6))
+
+
+### Bug Fixes
+
+* start screen note, filter size presets, 2000/2003 hidden on the legacy copy from first paint ([#67](https://github.com/Kokoroou/rpgmaker-assets-viewer/issues/67)) ([8ab1122](https://github.com/Kokoroou/rpgmaker-assets-viewer/commit/8ab1122d2adf35ea5ea092ea475fbc867c8851db))
+
 ## 1.0.0 (2026-11-24)
 
 
